@@ -27,7 +27,7 @@ namespace ExcelDna.CustomRegistration
         /// <param name="nativeAsyncIfAvailable">Under Excel 2010 and later, indicates whether the native async feature should be used.
         /// Does not apply to functions returning IObservable.</param>
         /// <returns>The list of RegistrationEntries, with the affected functions wrapped to allow registration in Excel.</returns>
-        public static IEnumerable<RegistrationEntry> ProcessAsyncRegistrations(this IEnumerable<RegistrationEntry> registrations, bool nativeAsyncIfAvailable = false)
+        public static IEnumerable<ExcelFunctionRegistration> ProcessAsyncRegistrations(this IEnumerable<ExcelFunctionRegistration> registrations, bool nativeAsyncIfAvailable = false)
         {
             // Decide whether Tasks should be using native async
             bool useNativeAsync = nativeAsyncIfAvailable && ExcelDnaUtil.ExcelVersion >= 14.0;
@@ -48,7 +48,7 @@ namespace ExcelDna.CustomRegistration
                             reg.FunctionLambda = useNativeAsync ? WrapMethodNativeAsyncTaskWithCancellation(reg.FunctionLambda)
                                                                 : WrapMethodRunTaskWithCancellation(reg.FunctionLambda);
                             // Also need to strip out the info for the last argument which is the CancellationToken
-                            reg.ArgumentAttributes.RemoveAt(reg.ArgumentAttributes.Count - 1);
+                            reg.ParameterRegistrations.RemoveAt(reg.ParameterRegistrations.Count - 1);
                         }
                         else
                         {

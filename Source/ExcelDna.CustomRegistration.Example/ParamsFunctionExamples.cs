@@ -23,5 +23,19 @@ namespace ExcelDna.CustomRegistration.Example
         {
             return input + "," + QtherInpEt + ", : " + args.Length;
         }
+
+        [ExcelFunction(ExplicitRegistration = true)]
+        public static string dnaParamsFunc2(
+            [ExcelArgument(Name = "first.Input", Description = "is a useful start")]
+            object input,
+            [ExcelArgument(Name = "second.Input", Description = "is some more stuff")]
+            string input2, 
+            [ExcelArgument(Description = "is another param ")]
+            string QtherInpEt,
+            [ExcelArgument(Name = "Value", Description = "gives the Rest")]
+            params object[] args)
+        {
+            return input + "," + QtherInpEt + ", : " + args.Length;
+        }
     }
 }

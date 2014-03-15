@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using ExcelDna.Integration;
@@ -8,7 +9,12 @@ namespace ExcelDna.CustomRegistration
 {
     public static class ParamsRegistration
     {
-        public static IEnumerable<RegistrationEntry> ProcessParamsRegistrations(this IEnumerable<RegistrationEntry> registrations)
+        /// <summary>
+        /// Adds parameters to amy function ending in a params parameter, to take the total number of parameters to 125 (or 29 under Excel 2003).
+        /// </summary>
+        /// <param name="registrations"></param>
+        /// <returns></returns>
+        public static IEnumerable<ExcelFunctionRegistration> ProcessParamsRegistrations(this IEnumerable<ExcelFunctionRegistration> registrations)
         {
             foreach (var reg in registrations)
             {
@@ -18,30 +24,42 @@ namespace ExcelDna.CustomRegistration
                     {
                         reg.FunctionLambda = WrapMethodParams(reg.FunctionLambda);
 
+                        // Clean out ParamArray attribute for the last parameter (there will be one)
+                        var lastParam = reg.ParameterRegistrations.Last();
+                        lastParam.CustomAttributes.RemoveAll(att => att is ParamArrayAttribute);
+
                         // Add more attributes for the 'params' arguments
                         // Adjust the first one from myInput to myInput1
-                        var paramsArgAttrib = reg.ArgumentAttributes.Last();
+                        var paramsArgAttrib = lastParam.ArgumentAttribute;
                         paramsArgAttrib.Name = paramsArgAttrib.Name + "1";
 
                         // Add the ellipse argument
-                        reg.ArgumentAttributes.Add(new ExcelArgumentAttribute
-                            {
-                                Name = "...",
-                                Description = paramsArgAttrib.Description,
-                                AllowReference = paramsArgAttrib.AllowReference
-                            });
-                        // And the rest with no Name
-                        var restCount = reg.FunctionLambda.Parameters.Count - reg.ArgumentAttributes.Count;
-                        var restAttrib = new ExcelArgumentAttribute
-                            {
-                                Name = string.Empty,
-                                Description = paramsArgAttrib.Description,
-                                AllowReference = paramsArgAttrib.AllowReference
-                            };
+                        reg.ParameterRegistrations.Add(
+                            new ExcelParameterRegistration(
+                                new ExcelArgumentAttribute
+                                    {
+                                        Name = "...",
+                                        Description = paramsArgAttrib.Description,
+                                        AllowReference = paramsArgAttrib.AllowReference
+                                    }));
+
+                        // And the rest with no Name, but copying the description
+                        var restCount = reg.FunctionLambda.Parameters.Count - reg.ParameterRegistrations.Count;
                         for (int i = 0; i < restCount; i++)
                         {
-                            reg.ArgumentAttributes.Add(restAttrib);
+                            reg.ParameterRegistrations.Add(
+                                new ExcelParameterRegistration(
+                                    new ExcelArgumentAttribute
+                                        {
+                                            Name = string.Empty,
+                                            Description = paramsArgAttrib.Description,
+                                            AllowReference = paramsArgAttrib.AllowReference
+                                        }));
                         }
+
+                        // Check that we still have a valid registration structure
+                        // TODO: Make this safer...
+                        Debug.Assert(reg.IsValid());
                     }
                 }
                 catch (Exception ex)
@@ -110,7 +128,8 @@ namespace ExcelDna.CustomRegistration
             int maxArguments;
             if (ExcelDnaUtil.ExcelVersion >= 12.0)
             {
-                maxArguments = 125; // Constrained by 255 char registration string, take off 3 type chars, use up to 2 chars per param (& return)
+                maxArguments = 125; // Constrained by 255 char registration string, take off 3 type chars, use up to 2 chars per param (before we start doing object...) (& also return)
+                                    // CONSIDER: Might improve this if we generate the delegate based on the max length...
             }
             else
             {
@@ -170,10 +189,10 @@ namespace ExcelDna.CustomRegistration
             return Expression.Lambda(delegateType, blockExpr, paramsParamExprs);
         }
 
-        static bool IsParamsMethod(RegistrationEntry reg)
+        static bool IsParamsMethod(ExcelFunctionRegistration reg)
         {
-            var lastParamAtt = reg.ArgumentAttributes.LastOrDefault();
-            return lastParamAtt is ExcelParamsArgumentAttribute;
+            var lastParam = reg.ParameterRegistrations.LastOrDefault();
+            return lastParam != null && lastParam.CustomAttributes.Any(att => att is ParamArrayAttribute);
         }
     }
 }

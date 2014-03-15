@@ -20,8 +20,8 @@ namespace ExcelDna.CustomRegistration.Utils
 
     sealed class CancellationDisposable : IDisposable
     {
-        bool suppress;
-        readonly CancellationTokenSource cts;
+        bool _suppress;
+        readonly CancellationTokenSource _cts;
         public CancellationDisposable(CancellationTokenSource cts)
         {
             if (cts == null)
@@ -29,7 +29,7 @@ namespace ExcelDna.CustomRegistration.Utils
                 throw new ArgumentNullException("cts");
             }
 
-            this.cts = cts;
+            _cts = cts;
         }
 
         public CancellationDisposable()
@@ -39,18 +39,18 @@ namespace ExcelDna.CustomRegistration.Utils
 
         public void SuppressCancel()
         {
-            suppress = true;
+            _suppress = true;
         }
 
         public CancellationToken Token
         {
-            get { return cts.Token; }
+            get { return _cts.Token; }
         }
 
         public void Dispose()
         {
-            if (!suppress) cts.Cancel();
-            cts.Dispose();  // Not really needed...
+            if (!_suppress) _cts.Cancel();
+            _cts.Dispose();  // Not really needed...
         }
     }
 }

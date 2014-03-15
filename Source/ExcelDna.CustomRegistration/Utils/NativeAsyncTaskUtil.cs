@@ -9,7 +9,7 @@ namespace ExcelDna.CustomRegistration.Utils
     public static class NativeAsyncTaskUtil
     {
         // Everything here has to happen on the main thead.
-        static int _initializeCount = 0;
+        static int _initializeCount;
 
         public static void Initialize()
         {

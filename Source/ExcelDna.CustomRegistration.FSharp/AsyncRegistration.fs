@@ -22,7 +22,7 @@ module FsAsyncRegistration =
             let innerCall = Expression.Invoke(functionLambda, funcParams)
             let observeCall = Expression.Call(convert, innerCall)
             Expression.Lambda(observeCall, functionLambda.Parameters)
-        let convertMapping (reg : RegistrationEntry) =
+        let convertMapping (reg : ExcelFunctionRegistration) =
             if reg.FunctionLambda.ReturnType.IsGenericType && reg.FunctionLambda.ReturnType.GetGenericTypeDefinition() = typedefof<Async<_>> then
                reg.FunctionLambda <- convertAsync reg.FunctionLambda
             reg
