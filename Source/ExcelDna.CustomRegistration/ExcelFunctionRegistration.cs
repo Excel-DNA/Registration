@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration
@@ -22,6 +23,46 @@ namespace ExcelDna.CustomRegistration
             ArgumentAttribute = argumentAttribute;
 
             CustomAttributes = new List<object>();
+        }
+
+        /// <summary>
+        /// Also craetes attributes from Optional / Default Value
+        /// </summary>
+        /// <param name="parameterInfo"></param>
+        public ExcelParameterRegistration(ParameterInfo parameterInfo)
+        {
+            CustomAttributes = new List<object>();
+
+            var allParameterAttributes = parameterInfo.GetCustomAttributes(true);
+            foreach (var att in allParameterAttributes)
+            {
+                var argAtt = att as ExcelArgumentAttribute;
+                if (argAtt != null)
+                {
+                    ArgumentAttribute = argAtt;
+                    if (string.IsNullOrEmpty(ArgumentAttribute.Name))
+                        ArgumentAttribute.Name = parameterInfo.Name;
+                }
+                else
+                {
+                    CustomAttributes.Add(att);
+                }
+            }
+
+            // Check that the ExcelArgumentAttribute has been set
+            if (ArgumentAttribute == null)
+            {
+                ArgumentAttribute = new ExcelArgumentAttribute { Name = parameterInfo.Name };
+            }
+
+            // Extra processing for Optional / Default values
+            // TODO: Also consider DefaultValueAttribute (which is wrong, but might be used...)
+            if (parameterInfo.IsOptional && parameterInfo.DefaultValue != DBNull.Value)
+            {
+                Debug.Assert(CustomAttributes.OfType<OptionalAttribute>().Any());
+                Debug.Assert(!CustomAttributes.OfType<DefaultParameterValueAttribute>().Any());
+                CustomAttributes.Add(new DefaultParameterValueAttribute(parameterInfo.DefaultValue));
+            }
         }
 
         // Checks that the property invariants are met, particularly regarding the attributes lists.
@@ -111,6 +152,8 @@ namespace ExcelDna.CustomRegistration
 
         // NOTE: 16 parameter max for Expression.GetDelegateType
         // Copies all the (non Excel...) attributes from the method into the CustomAttribute lists.
+        // TODO: What about native async function, which returns 'Void'?
+
         /// <summary>
         /// Creates a new ExcelFunctionRegistration from a MethodInfo, with a LambdaExpression that represents a call to the method.
         /// Uses the Name and Parameter Names from the MethodInfo to fill in the default attributes.
@@ -120,8 +163,6 @@ namespace ExcelDna.CustomRegistration
         public ExcelFunctionRegistration(MethodInfo methodInfo)
         {
             CustomAttributes = new List<object>();
-            ReturnCustomAttributes = new List<object>();
-            ParameterRegistrations = new List<ExcelParameterRegistration>();
 
             var paramExprs = methodInfo.GetParameters()
                              .Select(pi => Expression.Parameter(pi.ParameterType, pi.Name))
@@ -150,40 +191,8 @@ namespace ExcelDna.CustomRegistration
                 FunctionAttribute = new ExcelFunctionAttribute { Name = methodInfo.Name };
             }
 
-            foreach (var pi in methodInfo.GetParameters())
-            {
-                ExcelArgumentAttribute argumentAttribute = null;
-                var paramCustomAttributes = new List<object>();
-
-                var allParameterAttributes = pi.GetCustomAttributes(true);
-                foreach (var att in allParameterAttributes)
-                {
-                    var argAtt = att as ExcelArgumentAttribute;
-                    if (argAtt != null)
-                    {
-                        argumentAttribute = argAtt;
-                        if (string.IsNullOrEmpty(argumentAttribute.Name))
-                            argumentAttribute.Name = pi.Name;
-                    }
-                    else
-                    {
-                        paramCustomAttributes.Add(att);
-                    }
-                }
-
-                // Check that the ExcelArgumentAttribute has been set
-                if (argumentAttribute == null)
-                {
-                    argumentAttribute = new ExcelArgumentAttribute { Name = pi.Name };
-                }
-
-                var paramReg = new ExcelParameterRegistration(argumentAttribute);
-                paramReg.CustomAttributes.AddRange(paramCustomAttributes);
-
-                ParameterRegistrations.Add(paramReg);
-            }
-
-            ReturnCustomAttributes.AddRange(methodInfo.ReturnParameter.GetCustomAttributes(true));
+            ParameterRegistrations = methodInfo.GetParameters().Select(pi => new ExcelParameterRegistration(pi)).ToList();
+            ReturnCustomAttributes = methodInfo.ReturnParameter.GetCustomAttributes(true).ToList();
 
             // Check that we haven't made a mistake
             Debug.Assert(IsValid());

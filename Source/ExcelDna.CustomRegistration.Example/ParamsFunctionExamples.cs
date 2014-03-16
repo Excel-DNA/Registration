@@ -9,8 +9,12 @@ namespace ExcelDna.CustomRegistration.Example
         // Via the CustomRegistration helper will be registered in Excel as a function with 29 or 125 arguments,
         // and the wrapper will automatically remove 'ExcelMissing' values.
         //
-        // Without the ExplicitRegistration=true, this function would be registed automatically by Excel-DNA 
+        // If ExplicitRegistration="true" was _not_ in the .dna file, then
+        // this function would normally be registed automatically by Excel-DNA.
         // (without the params processing) before being registered again here with the params expansion.
+        //
+        // We prevent that by adding the ExplicitRegistration=true falg.
+        // 
         // Check how the parameters and their descriptions appear in the Function Arguments dialog...
         [ExcelFunction(ExplicitRegistration = true)]
         public static string dnaParamsFunc(

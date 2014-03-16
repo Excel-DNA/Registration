@@ -45,6 +45,10 @@
   <ItemGroup>
     <Compile Include="AsyncRegistration.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="ParameterConversionRegistration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ParameterConversions.cs" />
     <Compile Include="ParamsRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registration.cs" />

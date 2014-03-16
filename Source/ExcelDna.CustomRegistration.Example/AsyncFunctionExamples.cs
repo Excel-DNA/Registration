@@ -8,15 +8,23 @@ namespace ExcelDna.CustomRegistration.Example
 {
     public static class AsyncFunctionExamples
     {
-        // Will be registered in Excel by Excel-DNA, without being picked up by our CustomRegistration processing
-        // since there is no ExcelFunction attribute.
-        // Adding ExplicitRegistration="true" in the .dna file would prevent this function from being registered.
+        // Will not be registered in Excel by Excel-DNA, without being picked up by our CustomRegistration processing
+        // since there is no ExcelFunction attribute, and ExplicitRegistration="true" in the .dna file prevents this 
+        // function from being registered by the default processing.
         public static string dnaSayHello(string name)
         {
             return "Hello " + name + "!";
         }
 
+        // Will be picked up by our explicit processing, no conversions applied, and normal registration
+        [ExcelFunction(Name="dnaSayHello")]
+        public static string dnaSayHello2(string name)
+        {
+            return "Hello " + name + "!";
+        }
+
         // A simple function that can take a long time to complete.
+        [ExcelAsyncFunction(Name="dnaDelayedHello")]
         public static string dnaDelayedHello(string name, int msToSleep)
         {
             Thread.Sleep(msToSleep);
