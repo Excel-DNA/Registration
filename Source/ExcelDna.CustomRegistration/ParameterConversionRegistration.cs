@@ -316,6 +316,8 @@ namespace ExcelDna.CustomRegistration
                     Expression wrappedExpr = param;
                     if (paramConversions != null)
                     {
+                        // If we have a list, there should be at least one conversion in it.
+                        Debug.Assert(paramConversion.Count > 0);
                         // Need to go in reverse for the parameter wrapping
                         // Need to now build from the inside out
                         wrappingParameters[i] = Expr.Parameter(paramConversions.Last().Parameters[0].Type, param.Name);
