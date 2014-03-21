@@ -8,122 +8,10 @@ using Expr = System.Linq.Expressions.Expression;
 namespace ExcelDna.CustomRegistration
 {
     // CONSIDER: Can one use an ExpressionVisitor to do these things....?
-
-    // Some concerns: What about native async function, they return 'void' type?
-    // (Might interfere with our abuse of void in the Dictionary)
-
-    // TODO: Maybe need to turn these into objects with type and name so that we can trace and debug....
-    public delegate LambdaExpression ParameterConversion(Type parameterType, ExcelParameterRegistration parameterRegistration);
-    public delegate LambdaExpression ReturnConversion(Type returnType, List<object> returnCustomAttributes);
-
     public static class ParameterConversionRegistration
     {
-        // UGLY: We use Void as a special value to indicate the conversions to be processed for all types
-        //       I try to hide that as an implementation, to the external functions use null to indicate the universal case.
-        readonly static Dictionary<Type, List<ParameterConversion>> _parameterConversions = new Dictionary<Type, List<ParameterConversion>>();
-        readonly static Dictionary<Type, List<ReturnConversion>> _returnConversions = new Dictionary<Type, List<ReturnConversion>>();
-
-        #region Various overloads for adding conversions
-
-        // Most general case - called by the overloads below
-        /// <summary>
-        /// Converts a parameter from an Excel-friendly type (e.g. object, or string) to an add-in friendly type, e.g. double? or InternalType.
-        /// Will only be considered for those parameters that have a 'to' type that matches targetTypeOrNull,
-        ///  or for all types if null is passes for the first parameter.
-        /// </summary>
-        /// <param name="targetTypeOrNull"></param>
-        /// <param name="parameterConversion"></param>
-        public static void AddParameterConversion(Type targetTypeOrNull, ParameterConversion parameterConversion)
+        public static IEnumerable<ExcelFunctionRegistration> ProcessParameterConversions(this IEnumerable<ExcelFunctionRegistration> registrations, ParameterConversionConfiguration conversionConfig)
         {
-            var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
-
-            List<ParameterConversion> typeConversions;
-            if (_parameterConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
-            {
-                typeConversions.Add(parameterConversion);
-            }
-            else
-            {
-                _parameterConversions[targetTypeOrVoid] = new List<ParameterConversion> { parameterConversion };
-            }
-        }
-
-        public static void AddParameterConversion(ParameterConversion parameterConversion)
-        {
-            AddParameterConversion(null, parameterConversion);
-        }
-
-        public static void AddParameterConversion<TTo>(ParameterConversion parameterConversion)
-        {
-            AddParameterConversion(typeof(TTo), parameterConversion);
-        }
-
-        public static void AddParameterConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert)
-        {
-            AddParameterConversion<TTo>((unusedParamType, unusedParamReg) => convert);
-        }
-
-        // This is a nice signature for registering conversions, but is worse than Expression<...> when applying
-        public static void AddParameterConversionFunc<TFrom, TTo>(Func<TFrom, TTo> convert)
-        {
-            AddParameterConversion<TTo>(
-                (unusedParamType, unusedParamReg) => 
-                    (Expression<Func<TFrom, TTo>>)(value => convert(value)));
-        }
-
-        public static void AddParameterConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
-        {
-            // CONSIDER: We really don't want our the CustomRegistration compilation to build out a closure object here...
-            AddParameterConversion<TTo>(
-                (unusedParamType, paramReg) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(paramReg.CustomAttributes, value)));
-        }
-
-        // Most general case - called by the overloads below
-        public static void AddReturnConversion(Type targetTypeOrNull, ReturnConversion returnConversion)
-        {
-            var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
-
-            List<ReturnConversion> typeConversions;
-            if (_returnConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
-            {
-                typeConversions.Add(returnConversion);
-            }
-            else
-            {
-                _returnConversions[targetTypeOrVoid] = new List<ReturnConversion> { returnConversion };
-            }
-        }
-
-        public static void AddReturnConversion<TFrom>(ReturnConversion returnConversion)
-        {
-            AddReturnConversion(typeof(TFrom), returnConversion);
-        }
-
-        public static void AddReturnConversion<TFrom, TTo>(Func<TFrom, TTo> convert)
-        {
-            AddReturnConversion<TFrom>(
-                (unusedReturnType, unusedAttributes) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convert(value)));
-        }
-
-        public static void AddReturnConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
-        {
-            AddReturnConversion<TFrom>(
-                (unusedReturnType, returnAttributes) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(returnAttributes, value)));
-        }
-        #endregion
-
-        public static IEnumerable<ExcelFunctionRegistration> ProcessParameterConversions(this IEnumerable<ExcelFunctionRegistration> registrations)
-        {
-            // Make sure that there are 'global' type and return value conversion ists registered - even though they might be empty.
-            if (!_parameterConversions.ContainsKey(typeof(void)))
-                _parameterConversions.Add(typeof(void), new List<ParameterConversion>());
-
-            if (!_returnConversions.ContainsKey(typeof(void)))
-                _returnConversions.Add(typeof(void), new List<ReturnConversion>());
-
             foreach (var reg in registrations)
             {
                 // Keep a list of conversions for each parameter
@@ -136,12 +24,12 @@ namespace ExcelDna.CustomRegistration
                     var paramReg = reg.ParameterRegistrations[i];
 
                     // NOTE: We add null for cases where no conversions apply.
-                    var paramConversions = GetParameterConversions(initialParamType, paramReg);
+                    var paramConversions = GetParameterConversions(conversionConfig, initialParamType, paramReg);
                     paramsConversions.Add(paramConversions);
                 } // for each parameter
 
                 // Process return conversions
-                var returnConversions = GetReturnConversions(reg.FunctionLambda.ReturnType, reg.ReturnCustomAttributes);
+                var returnConversions = GetReturnConversions(conversionConfig, reg.FunctionLambda.ReturnType, reg.ReturnCustomAttributes);
 
                 // Now we apply all the conversions
                 ApplyConversions(reg, paramsConversions, returnConversions);
@@ -151,7 +39,7 @@ namespace ExcelDna.CustomRegistration
         }
 
         // Should return null if there are no conversions to apply
-        static List<LambdaExpression> GetParameterConversions(Type initialParamType, ExcelParameterRegistration paramReg)
+        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramReg)
         {
             // paramReg Might be modified internally, should not become a different object
             var paramType = initialParamType; // Might become a different type as we convert
@@ -160,7 +48,7 @@ namespace ExcelDna.CustomRegistration
             List<LambdaExpression> paramConversions = null;
 
             // Get hold of the global conversions list (which we assume is always present)
-            var globalParameterConversions = _parameterConversions[typeof(void)];
+            var globalParameterConversions = conversionConfig.ParameterConversions[typeof(void)];
 
             // Try to repeatedly apply conversions until none are applicable.
             // We add a simple guard to covers for cycles and ill-behaved conversions functions
@@ -172,7 +60,7 @@ namespace ExcelDna.CustomRegistration
                 // First check specific type conversions, 
                 // then also the global type conversions (that are not restricted to a specific type)
                 List<ParameterConversion> typeConversions;
-                if (_parameterConversions.TryGetValue(paramType, out typeConversions))
+                if (conversionConfig.ParameterConversions.TryGetValue(paramType, out typeConversions))
                     typeConversions.AddRange(globalParameterConversions);
                 else
                     typeConversions = globalParameterConversions;
@@ -212,7 +100,7 @@ namespace ExcelDna.CustomRegistration
             return paramConversions;
         }
 
-        static List<LambdaExpression> GetReturnConversions(Type initialReturnType, List<object> returnCustomAttributes)
+        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, List<object> returnCustomAttributes)
         {
             // returnCustomAttributes list might be modified, should not become a different object
             var returnType = initialReturnType; // Might become a different type as we convert
@@ -221,7 +109,7 @@ namespace ExcelDna.CustomRegistration
             List<LambdaExpression> returnConversions = null;
 
             // Get hold of the global conversions list (which we assume is always present)
-            var globalReturnConversions = _returnConversions[typeof(void)];
+            var globalReturnConversions = conversionConfig.ReturnConversions[typeof(void)];
 
             // Try to repeatedly apply conversions until none are applicable.
             // We add a simple guard to covers for cycles and ill-behaved conversions functions
@@ -233,7 +121,7 @@ namespace ExcelDna.CustomRegistration
                 // First check specific type conversions, 
                 // then also the global type conversions (that are not restricted to a specific type)
                 List<ReturnConversion> typeConversions;
-                if (_returnConversions.TryGetValue(returnType, out typeConversions))
+                if (conversionConfig.ReturnConversions.TryGetValue(returnType, out typeConversions))
                     typeConversions.AddRange(globalReturnConversions);
                 else
                     typeConversions = globalReturnConversions;

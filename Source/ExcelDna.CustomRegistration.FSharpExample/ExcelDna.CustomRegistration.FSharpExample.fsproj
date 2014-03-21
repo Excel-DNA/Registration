@@ -11,6 +11,8 @@
     <AssemblyName>ExcelDna.CustomRegistration.FSharpExample</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>ExcelDna.CustomRegistration.FSharpExample</Name>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -76,6 +78,7 @@
 xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.xll*" /C /Y
 "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.dna" /Y</PostBuildEvent>
   </PropertyGroup>
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
