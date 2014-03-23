@@ -1,4 +1,5 @@
-﻿using ExcelDna.Integration;
+﻿using System;
+using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration.Example
 {
@@ -8,6 +9,126 @@ namespace ExcelDna.CustomRegistration.Example
 
     public static class ParameterConversionExamples
     {
+        // Explore conversions from object -> different types
+        [ExcelFunction(IsMacroType=true)]
+        public static string dnaConversionTest([ExcelArgument(AllowReference=true)] object arg)
+        {
+            // This is the full gamut we need to support
+            if (arg is double)
+                return "Double: " + (double)arg;
+            else if (arg is string)
+                return "String: " + (string)arg;
+            else if (arg is bool)
+                return "Boolean: " + (bool)arg;
+            else if (arg is ExcelError)
+                return "ExcelError: " + arg.ToString();
+            else if (arg is object[,])
+                // The object array returned here may contain a mixture of different types,
+                // reflecting the different cell contents.
+                return string.Format("Array[{0},{1}]", ((object[,])arg).GetLength(0), ((object[,])arg).GetLength(1));
+            else if (arg is ExcelMissing)
+                return "<<Missing>>"; // Would have been System.Reflection.Missing in previous versions of ExcelDna
+            else if (arg is ExcelEmpty)
+                return "<<Empty>>"; // Would have been null
+            else if (arg is ExcelReference)
+                // Calling xlfRefText here requires IsMacroType=true for this function.
+                return "Reference: " + XlCall.Excel(XlCall.xlfReftext, arg, true);
+            else
+                return "!? Unheard Of ?!";
+        }
+
+        [Flags]
+        internal enum XlType12 : uint
+        {
+            XlTypeNumber = 0x0001,
+            XlTypeString = 0x0002,
+            XlTypeBoolean = 0x0004,
+            XlTypeReference = 0x0008,
+            XlTypeError = 0x0010,
+            XlTypeArray = 0x0040,
+            XlTypeMissing = 0x0080,
+            XlTypeEmpty = 0x0100,
+            XlTypeInt = 0x0800,     // int16 in XlOper, int32 in XlOper12, never passed into UDF
+        }
+
+        [ExcelFunction]
+        public static string dnaConversionToString([ExcelArgument(AllowReference = true)] object arg)
+        {
+            return (string)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeString);
+        }
+
+        [ExcelFunction]
+        public static string dnaDirectString(string arg)
+        {
+            return arg;
+        }
+
+        [ExcelFunction]
+        public static double dnaConversionToDouble([ExcelArgument(AllowReference = true)] object arg)
+        {
+            return (double)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeNumber);
+        }
+
+        [ExcelFunction]
+        public static double dnaDirectDouble(double arg)
+        {
+            return arg;
+        }
+
+        [ExcelFunction]
+        public static int dnaConversionToInt32([ExcelArgument(AllowReference = true)] object arg)
+        {
+            // The explicit conversion to Int does truncation, which is different to how functions registered
+            // as taking an int argument (type "J") are handled.
+            object result = XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeInt);
+            double numResult = (double)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeNumber);
+            return (int)Math.Round(numResult, MidpointRounding.AwayFromZero);
+        }
+
+        [ExcelFunction]
+        public static int dnaDirectInt32(int arg)
+        {
+            return arg;
+        }
+
+        [ExcelFunction]
+        public static long dnaConversionToInt64([ExcelArgument(AllowReference = true)] object arg)
+        {
+            double numResult = (double)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeNumber);
+            return (long)Math.Round(numResult, MidpointRounding.AwayFromZero);
+        }
+
+        [ExcelFunction]
+        public static long dnaDirectInt64(long arg)
+        {
+            return arg;
+        }
+
+        [ExcelFunction]
+        public static DateTime dnaConversionToDateTime([ExcelArgument(AllowReference = true)] object arg)
+        {
+            return DateTime.FromOADate((double)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeNumber));
+        }
+
+        [ExcelFunction]
+        public static DateTime dnaDirectDateTime(DateTime arg)
+        {
+            return arg;
+        }
+
+        [ExcelFunction]
+        public static bool dnaConversionToBoolean([ExcelArgument(AllowReference = true)] object arg)
+        {
+            // This is the full gamut we need to support
+            return (bool)XlCall.Excel(XlCall.xlCoerce, arg, (int)XlType12.XlTypeBoolean);
+        }
+
+        [ExcelFunction]
+        public static bool dnaDirectBoolean(bool arg)
+        {
+            return arg;
+        }
+        
         [ExcelFunction]
         public static string dnaParameterConvertTest(double? optTest)
         {
@@ -32,10 +153,47 @@ namespace ExcelDna.CustomRegistration.Example
         // This function cannot be called yet, since the cast from what Excel passes in (object) to the int we expect fails.
         // It will need some improved conversion function in the OptionalParameterConversion.
         [ExcelFunction]
-        public static string dnaOptionalIntFail(int optOptTest = 42)
+        public static string dnaOptionalInt(int optOptTest = 42)
         {
             return "VALUE: " + optOptTest.ToString("F1");
         }
+
+        [ExcelFunction]
+        public static string dnaOptionalString(string optOptTest = "Hello World!")
+        {
+            return optOptTest;
+        }
+
+        [ExcelFunction]
+        public static string dnaNullableDouble(double? val)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
+        [ExcelFunction]
+        public static string dnaNullableInt(int? val)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
+        [ExcelFunction]
+        public static string dnaNullableLong(long? val)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
+        [ExcelFunction]
+        public static string dnaNullableDateTime(DateTime? val)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
+        [ExcelFunction]
+        public static string dnaNullableBoolean(bool? val)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
     }
 
     // Here I test some custom conversions, including a two-hop conversion

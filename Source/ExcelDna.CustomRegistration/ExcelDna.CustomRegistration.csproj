@@ -31,8 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\Libraries\ExcelDna.Integration.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\packages\Excel-DNA.0.32.0-rc3\lib\ExcelDna.Integration.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,6 +44,10 @@
   <ItemGroup>
     <Compile Include="AsyncRegistration.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="MethodExecutionHandler.cs" />
+    <Compile Include="MethodExecutionConfiguration.cs" />
+    <Compile Include="MethodExecutionRegistration.cs" />
+    <Compile Include="MethodExecutionHandlers.cs" />
     <Compile Include="ParameterConversionConfiguration.cs" />
     <Compile Include="ParameterConversionRegistration.cs">
       <SubType>Code</SubType>
