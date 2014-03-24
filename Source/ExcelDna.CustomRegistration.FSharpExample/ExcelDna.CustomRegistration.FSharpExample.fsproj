@@ -56,6 +56,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <Compile Include="OptionalExamples.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj">

@@ -142,19 +142,25 @@ namespace ExcelDna.CustomRegistration
             var paramsParamExprs = new List<ParameterExpression>(normalParams);
             var blockExprs = new List<Expression>();
             var blockVars = new List<ParameterExpression>();
-            var argsListVarExpr = Expression.Variable(typeof(List<object>));
+
+            // We know that last parameter is an array type
+            var argsArrayType = functionLambda.Parameters.Last().Type;
+            var argsType = argsArrayType.GetElementType();
+            var argsListType = typeof(List<>).MakeGenericType(argsType);
+            var argsListVarExpr = Expression.Variable(argsListType);
             blockVars.Add(argsListVarExpr);
-            var argListAssignExpr = Expression.Assign(argsListVarExpr, Expression.New(typeof(List<object>)));
+            var argListAssignExpr = Expression.Assign(argsListVarExpr, Expression.New(argsListType));
             blockExprs.Add(argListAssignExpr);
             for (int i = 1; i <= paramsParamCount; i++)
             {
                 var paramExpr = Expression.Parameter(typeof(object), "arg" + i);
                 paramsParamExprs.Add(paramExpr);
                 var testParam = Expression.IfThen(Expression.Not(Expression.TypeIs(paramExpr, typeof(ExcelMissing))), 
-                                                Expression.Call(argsListVarExpr, "Add", null, paramExpr));
+                                                Expression.Call(argsListVarExpr, "Add", null, 
+                                                TypeConversion.GetConversion(paramExpr, argsType)));
                 blockExprs.Add(testParam);
             }
-            var argArrayVarExpr = Expression.Variable(typeof(object[]));
+            var argArrayVarExpr = Expression.Variable(argsArrayType);
             blockVars.Add(argArrayVarExpr);
 
             var argArrayAssignExpr = Expression.Assign(argArrayVarExpr, Expression.Call(argsListVarExpr, "ToArray", null));
@@ -192,7 +198,8 @@ namespace ExcelDna.CustomRegistration
         static bool IsParamsMethod(ExcelFunctionRegistration reg)
         {
             var lastParam = reg.ParameterRegistrations.LastOrDefault();
-            return lastParam != null && lastParam.CustomAttributes.Any(att => att is ParamArrayAttribute);
+            return lastParam != null && lastParam.CustomAttributes.Any(att => att is ParamArrayAttribute)
+                && reg.FunctionLambda.Parameters.Last().Type.IsArray;
         }
     }
 }

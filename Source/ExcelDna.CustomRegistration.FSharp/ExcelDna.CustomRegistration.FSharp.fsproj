@@ -47,6 +47,7 @@
     <Compile Include="FsAsyncUtil.fs" />
     <Compile Include="AsyncRegistration.fs" />
     <Compile Include="Registration.fs" />
+    <Compile Include="FsParameterConversions.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">

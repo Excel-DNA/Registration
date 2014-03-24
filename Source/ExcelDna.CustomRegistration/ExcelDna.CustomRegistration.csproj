@@ -57,6 +57,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registration.cs" />
     <Compile Include="ExcelFunctionRegistration.cs" />
+    <Compile Include="TypeConversion.cs" />
     <Compile Include="Utils\AsyncTaskUtil.cs" />
     <Compile Include="Utils\Disposables.cs" />
     <Compile Include="Utils\NativeAsyncTaskUtil.cs" />
