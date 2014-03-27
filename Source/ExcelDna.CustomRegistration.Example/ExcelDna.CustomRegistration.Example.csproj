@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ExampleAddIn.cs" />
     <Compile Include="AsyncFunctionExamples.cs" />
+    <Compile Include="MethodLoggingHandler.cs" />
     <Compile Include="ParameterConversionExamples.cs" />
     <Compile Include="ParamsFunctionExamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

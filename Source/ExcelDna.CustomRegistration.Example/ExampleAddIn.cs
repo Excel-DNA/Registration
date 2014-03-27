@@ -12,12 +12,15 @@ namespace ExcelDna.CustomRegistration.Example
             // CONSIDER: We might change the registration to be an object...?
             var conversionConfig = GetParameterConversionConfig();
 
+            var methodHandlerConfig = GetMethodExecutionConfig();
+
             // Get all the ExcelFunction functions, process and register
             // Since the .dna file has ExplicitExports="true", these explicit regisrations are the only ones - there is no default processing
             Registration.GetExcelFunctions()
                         .ProcessParameterConversions(conversionConfig)
                         .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
                         .ProcessParamsRegistrations()
+                        .ProcessMethodExecutionHandlers(methodHandlerConfig)
                         .RegisterFunctions();
         }
 
@@ -49,6 +52,13 @@ namespace ExcelDna.CustomRegistration.Example
             // conversionConfig.AddParameterConversionFunc<string, TestType>(ConvertToTestType);
 
             return conversionConfig;
+        }
+
+        static MethodExecutionConfiguration GetMethodExecutionConfig()
+        {
+            var config = new MethodExecutionConfiguration();
+            config.AddMethodHandler(MethodLoggingHandler.LoggingHandlerSelector);
+            return config;
         }
 
         public void AutoClose()

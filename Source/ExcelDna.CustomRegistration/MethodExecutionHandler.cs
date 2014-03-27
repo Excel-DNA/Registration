@@ -28,17 +28,18 @@ namespace ExcelDna.CustomRegistration
     // CONSIDER: One might make a generic typed version of this...
     public class MethodExecutionArgs
     {
-        public object Tag { get; set; }
-        // Can't change arguments
+        // Can't change arguments - Make ReadOnly collection?
         public object[] Arguments { get; private set; }
         public object ReturnValue { get; set; }
         // Can't change exception
         public Exception Exception { get; set; }
         public FlowBehavior FlowBehavior { get; set; }
         // public Method ...?
+        public object Tag { get; set; }
 
-        internal MethodExecutionArgs(object[] parameters)
+        public MethodExecutionArgs(object[] arguments)
         {
+            Arguments = arguments;
         }
     }
 
