@@ -6,7 +6,7 @@ using System.Text;
 namespace ExcelDna.CustomRegistration
 {
     // Some standard handlers...?
-    public static class MethodExecutionHandlers
+    public static class FunctionExecutionHandlers
     {
     }
 }

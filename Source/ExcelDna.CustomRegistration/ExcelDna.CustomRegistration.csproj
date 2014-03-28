@@ -44,10 +44,10 @@
   <ItemGroup>
     <Compile Include="AsyncRegistration.cs" />
     <Compile Include="Attributes.cs" />
-    <Compile Include="MethodExecutionHandler.cs" />
-    <Compile Include="MethodExecutionConfiguration.cs" />
-    <Compile Include="MethodExecutionRegistration.cs" />
-    <Compile Include="MethodExecutionHandlers.cs" />
+    <Compile Include="FunctionExecutionHandler.cs" />
+    <Compile Include="FunctionExecutionConfiguration.cs" />
+    <Compile Include="FunctionExecutionRegistration.cs" />
+    <Compile Include="FunctionExecutionHandlers.cs" />
     <Compile Include="ParameterConversionConfiguration.cs" />
     <Compile Include="ParameterConversionRegistration.cs">
       <SubType>Code</SubType>

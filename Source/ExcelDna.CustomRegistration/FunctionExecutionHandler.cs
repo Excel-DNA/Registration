@@ -26,7 +26,7 @@ namespace ExcelDna.CustomRegistration
     }
 
     // CONSIDER: One might make a generic typed version of this...
-    public class MethodExecutionArgs
+    public class FunctionExecutionArgs
     {
         // Can't change arguments - Make ReadOnly collection?
         public object[] Arguments { get; private set; }
@@ -37,7 +37,7 @@ namespace ExcelDna.CustomRegistration
         // public Method ...?
         public object Tag { get; set; }
 
-        public MethodExecutionArgs(object[] arguments)
+        public FunctionExecutionArgs(object[] arguments)
         {
             Arguments = arguments;
         }
@@ -63,11 +63,11 @@ namespace ExcelDna.CustomRegistration
           }
         }
     */
-    public abstract class MethodExecutionHandler
+    public abstract class FunctionExecutionHandler
     {
-        public abstract void OnEntry(MethodExecutionArgs args);
-        public abstract void OnSuccess(MethodExecutionArgs args);
-        public abstract void OnException(MethodExecutionArgs args);
-        public abstract void OnExit(MethodExecutionArgs args);
+        public abstract void OnEntry(FunctionExecutionArgs args);
+        public abstract void OnSuccess(FunctionExecutionArgs args);
+        public abstract void OnException(FunctionExecutionArgs args);
+        public abstract void OnExit(FunctionExecutionArgs args);
     }
 }

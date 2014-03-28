@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using ExcelDna.CustomRegistration.Utils;
@@ -20,6 +21,7 @@ namespace ExcelDna.CustomRegistration.Example
         [ExcelFunction(Name="dnaSayHello")]
         public static string dnaSayHello2(string name)
         {
+            if (name == "Bang!") throw new ArgumentException("Bad name!");
             return "Hello " + name + "!";
         }
 

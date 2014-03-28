@@ -9,6 +9,7 @@ namespace ExcelDna.CustomRegistration
 {
     // Ideas:
     // * Parameter and Return Type conversions, including Range, Optional etc.
+    // * Disable in wizard
     // * General function wrapper - with OnEnter OnSucceed OnException OnExit etc.
     // * Object Instances - Methods and Properties (with INotifyPropertyChanged support, and Disposable from Observable handles)
     // * Struct semantics, like built-in COMPLEX data

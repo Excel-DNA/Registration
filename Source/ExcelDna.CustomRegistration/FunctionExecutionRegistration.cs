@@ -6,35 +6,35 @@ using Expr = System.Linq.Expressions.Expression;
 
 namespace ExcelDna.CustomRegistration
 {
-    public static class MethodExecutionRegistration
+    public static class FunctionExecutionRegistration
     {
-        public static IEnumerable<ExcelFunctionRegistration> ProcessMethodExecutionHandlers(this IEnumerable<ExcelFunctionRegistration> registrations, MethodExecutionConfiguration methodHandlerConfig)
+        public static IEnumerable<ExcelFunctionRegistration> ProcessFunctionExecutionHandlers(this IEnumerable<ExcelFunctionRegistration> registrations, FunctionExecutionConfiguration functionHandlerConfig)
         {
             foreach (var registration in registrations)
             {
                 var reg = registration; // Ensure safe semantics for captured foreach variable
-                var handlers = methodHandlerConfig.MethodHandlerSelectors
-                                                  .Select(mhSelector => mhSelector(reg))
-                                                  .Where(mh => mh != null);
+                var handlers = functionHandlerConfig.FunctionHandlerSelectors
+                                                  .Select(fhSelector => fhSelector(reg))
+                                                  .Where(fh => fh != null);
                 ApplyMethodHandlers(reg, handlers);
 
                 yield return reg;
             }
         }
 
-        static void ApplyMethodHandlers(ExcelFunctionRegistration reg, IEnumerable<MethodExecutionHandler> handlers)
+        static void ApplyMethodHandlers(ExcelFunctionRegistration reg, IEnumerable<FunctionExecutionHandler> handlers)
         {
-            // The order of method handlers is important - we follow PostSharp's convention.
+            // The order of method handlers is important - we follow PostSharp's convention for MethodExecutionHandlers.
             // The are passed from high priority (most inside) to low priority (most outside)
-            // Imagine 2 MethodHandlers, mh1 then mh2
-            // So mh1 (highest priority)  will be 'inside' and mh2 will be outside (lower priority)
+            // Imagine 2 FunctionHandlers, fh1 then fh2
+            // So fh1 (highest priority)  will be 'inside' and fh2 will be outside (lower priority)
             foreach (var handler in handlers)
             {
                 reg.FunctionLambda = ApplyMethodHandler(reg.FunctionLambda, handler);
             }
         }
         
-        static LambdaExpression ApplyMethodHandler(LambdaExpression functionLambda, MethodExecutionHandler handler)
+        static LambdaExpression ApplyMethodHandler(LambdaExpression functionLambda, FunctionExecutionHandler handler)
         {
             //  public static int MyMethod(object arg0, int arg1) { ... }
              
@@ -43,57 +43,57 @@ namespace ExcelDna.CustomRegistration
             // (the 'handler' object is captured and called mh)
             //public static int MyMethodWrapped(object arg0, int arg1)
             //{
-            //    var mhArgs = new MethodExecutionArgs(new object[] { arg0, arg1});
+            //    var fhArgs = new FunctionExecutionArgs(new object[] { arg0, arg1});
             //    int result = default(int);
             //    try
             //    {
-            //        mh.OnEntry(mhArgs);
-            //        if (mhArgs.FlowBehavior == FlowBehavior.Return)
+            //        fh.OnEntry(fhArgs);
+            //        if (fhArgs.FlowBehavior == FlowBehavior.Return)
             //        {
-            //            result = (int)mhArgs.ReturnValue;
+            //            result = (int)fhArgs.ReturnValue;
             //        }
             //        else
             //        {
             //             // Inner call
             //             result = MyMethod(arg0, arg1);
-            //             mhArgs.ReturnValue = result;
-            //             mh.OnSuccess(mhArgs);
-            //             result = (int)mhArgs.ReturnValue;
+            //             fhArgs.ReturnValue = result;
+            //             fh.OnSuccess(fhArgs);
+            //             result = (int)fhArgs.ReturnValue;
             //        }
             //    }
             //    catch ( Exception ex )
             //    {
-            //        mhArgs.Exception = ex;
-            //        mh.OnException(mhArgs);
+            //        fhArgs.Exception = ex;
+            //        fh.OnException(fhArgs);
             //        // Makes no sense to me yet - I've removed this FlowBehavior enum value.
-            //        // if (mhArgs.FlowBehavior == FlowBehavior.Continue)
+            //        // if (fhArgs.FlowBehavior == FlowBehavior.Continue)
             //        // {
             //        //     // Finally will run, but can't change return value
             //        //     // Should we assign result...?
             //        //     // So Default value will be returned....?????
-            //        //     mhArgs.Exception = null;
+            //        //     fhArgs.Exception = null;
             //        // }
             //        // else 
-            //        if (mhArgs.FlowBehavior == FlowBehavior.Return)
+            //        if (fhArgs.FlowBehavior == FlowBehavior.Return)
             //        {
             //            // Clear the Exception and return the ReturnValue instead
             //            // Finally will run, but can't further change return value
-            //            mhArgs.Exception = null;
-            //            result = (int)mhArgs.ReturnValue;
+            //            fhArgs.Exception = null;
+            //            result = (int)fhArgs.ReturnValue;
             //        }
-            //        else if (mhArgs.FlowBehavior == FlowBehavior.ThrowException)
+            //        else if (fhArgs.FlowBehavior == FlowBehavior.ThrowException)
             //        {
-            //            throw mhArgs.Exception;
+            //            throw fhArgs.Exception;
             //        }
-            //        else // if (mhArgs.FlowBehavior == FlowBehavior.Default || mhArgs.FlowBehavior == FlowBehavior.RethrowException)
+            //        else // if (fhArgs.FlowBehavior == FlowBehavior.Default || fhArgs.FlowBehavior == FlowBehavior.RethrowException)
             //        {
             //            throw;
             //        }
             //    }
             //    finally
             //    {
-            //        mh.OnExit(mhArgs);
-            //        // NOTE: mhArgs.ReturnValue is not used again here...!
+            //        fh.OnExit(fhArgs);
+            //        // NOTE: fhArgs.ReturnValue is not used again here...!
             //    }
             //    
             //    return result;
@@ -103,19 +103,19 @@ namespace ExcelDna.CustomRegistration
             // Ensure the handler object is captured.
             var mh = Expression.Constant(handler);
 
-            // Prepare the methodHandlerArgs that will be threaded through the handler, 
+            // Prepare the functionHandlerArgs that will be threaded through the handler, 
             // and a bunch of expressions that access various properties on it.
-            var mhArgs = Expr.Variable(typeof(MethodExecutionArgs), "mhArgs");
-            var mhArgsReturnValue = SymbolExtensions.GetProperty(mhArgs, (MethodExecutionArgs mea) => mea.ReturnValue);
-            var mhArgsException = SymbolExtensions.GetProperty(mhArgs, (MethodExecutionArgs mea) => mea.Exception);
-            var mhArgsFlowBehaviour = SymbolExtensions.GetProperty(mhArgs, (MethodExecutionArgs mea) => mea.FlowBehavior);
+            var fhArgs = Expr.Variable(typeof(FunctionExecutionArgs), "fhArgs");
+            var fhArgsReturnValue = SymbolExtensions.GetProperty(fhArgs, (FunctionExecutionArgs mea) => mea.ReturnValue);
+            var fhArgsException = SymbolExtensions.GetProperty(fhArgs, (FunctionExecutionArgs mea) => mea.Exception);
+            var fhArgsFlowBehaviour = SymbolExtensions.GetProperty(fhArgs, (FunctionExecutionArgs mea) => mea.FlowBehavior);
 
             // Set up expressions to call the various handler methods.
             // TODO: Later we can determine which of these are actually implemented, and only write out the code needed in the particular case.
-            var onEntry = Expr.Call(mh, SymbolExtensions.GetMethodInfo<MethodExecutionHandler>(meh => meh.OnEntry(null)), mhArgs);
-            var onSuccess = Expr.Call(mh, SymbolExtensions.GetMethodInfo<MethodExecutionHandler>(meh => meh.OnSuccess(null)), mhArgs);
-            var onException = Expr.Call(mh, SymbolExtensions.GetMethodInfo<MethodExecutionHandler>(meh => meh.OnException(null)), mhArgs);
-            var onExit = Expr.Call(mh, SymbolExtensions.GetMethodInfo<MethodExecutionHandler>(meh => meh.OnExit(null)), mhArgs);
+            var onEntry = Expr.Call(mh, SymbolExtensions.GetMethodInfo<FunctionExecutionHandler>(meh => meh.OnEntry(null)), fhArgs);
+            var onSuccess = Expr.Call(mh, SymbolExtensions.GetMethodInfo<FunctionExecutionHandler>(meh => meh.OnSuccess(null)), fhArgs);
+            var onException = Expr.Call(mh, SymbolExtensions.GetMethodInfo<FunctionExecutionHandler>(meh => meh.OnException(null)), fhArgs);
+            var onExit = Expr.Call(mh, SymbolExtensions.GetMethodInfo<FunctionExecutionHandler>(meh => meh.OnExit(null)), fhArgs);
 
             // Create the array of parameter values that will be put into the method handler args.
             var paramsArray = Expr.NewArrayInit(typeof(object), functionLambda.Parameters.Select(p => Expr.Convert(p, typeof(object))));
@@ -125,26 +125,26 @@ namespace ExcelDna.CustomRegistration
             var ex = Expression.Parameter(typeof(Exception), "ex");
 
             // A bunch of helper expressions:
-            // : new MethodExecutionArgs(new object[] { arg0, arg1 })
-            var mhArgsConstr = typeof(MethodExecutionArgs).GetConstructor(new[] { typeof(object[]) });
-            var newMhArgs = Expr.New(mhArgsConstr, paramsArray);
-            // : result = (int)mhArgs.ReturnValue
-            var resultFromReturnValue = Expr.Assign(result, Expr.Convert(mhArgsReturnValue, functionLambda.ReturnType));
-            // : mhArgs.ReturnValue = (object)result
-            var returnValueFromResult = Expr.Assign(mhArgsReturnValue, Expr.Convert(result, typeof(object)));
+            // : new FunctionExecutionArgs(new object[] { arg0, arg1 })
+            var fhArgsConstr = typeof(FunctionExecutionArgs).GetConstructor(new[] { typeof(object[]) });
+            var newfhArgs = Expr.New(fhArgsConstr, paramsArray);
+            // : result = (int)fhArgs.ReturnValue
+            var resultFromReturnValue = Expr.Assign(result, Expr.Convert(fhArgsReturnValue, functionLambda.ReturnType));
+            // : fhArgs.ReturnValue = (object)result
+            var returnValueFromResult = Expr.Assign(fhArgsReturnValue, Expr.Convert(result, typeof(object)));
             // : result = function(arg0, arg1)
             var resultFromInnerCall = Expr.Assign(result, Expr.Invoke(functionLambda, functionLambda.Parameters));
 
             // Build the Lambda wrapper, with the original parameters
             return Expr.Lambda(
-                Expr.Block(new[] { mhArgs, result },
-                     Expr.Assign(mhArgs, newMhArgs),
+                Expr.Block(new[] { fhArgs, result },
+                     Expr.Assign(fhArgs, newfhArgs),
                      Expr.Assign(result, Expr.Default(result.Type)),
                      Expr.TryCatchFinally(
                         Expr.Block( 
                             onEntry,
                             Expr.IfThenElse(
-                                Expr.Equal(mhArgsFlowBehaviour, Expr.Constant(FlowBehavior.Return)),
+                                Expr.Equal(fhArgsFlowBehaviour, Expr.Constant(FlowBehavior.Return)),
                                 resultFromReturnValue,
                                 Expr.Block(
                                     resultFromInnerCall, 
@@ -154,16 +154,16 @@ namespace ExcelDna.CustomRegistration
                         onExit, // finally
                         Expr.Catch(ex,
                             Expr.Block(
-                                Expr.Assign(mhArgsException, ex),
+                                Expr.Assign(fhArgsException, ex),
                                 onException,
                                 Expr.IfThenElse(
-                                    Expr.Equal(mhArgsFlowBehaviour, Expr.Constant(FlowBehavior.Return)),
+                                    Expr.Equal(fhArgsFlowBehaviour, Expr.Constant(FlowBehavior.Return)),
                                     Expr.Block(
-                                        Expr.Assign(mhArgsException, Expr.Constant(null, typeof(Exception))),
+                                        Expr.Assign(fhArgsException, Expr.Constant(null, typeof(Exception))),
                                         resultFromReturnValue),
                                     Expr.IfThenElse(
-                                        Expr.Equal(mhArgsFlowBehaviour, Expr.Constant(FlowBehavior.ThrowException)),
-                                        Expr.Throw(mhArgsException),
+                                        Expr.Equal(fhArgsFlowBehaviour, Expr.Constant(FlowBehavior.ThrowException)),
+                                        Expr.Throw(fhArgsException),
                                         Expr.Rethrow()))))
                         ),
                     result),
