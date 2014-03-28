@@ -4,13 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4D1E4CF3-9D43-4B71-B81F-440606A36A3D}</ProjectGuid>
+    <ProjectGuid>{D8860928-7EEC-4A01-8C83-1FC27BDB1E21}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExcelDna.CustomRegistration</RootNamespace>
-    <AssemblyName>ExcelDna.CustomRegistration</AssemblyName>
+    <RootNamespace>ExcelDna.CustomRegistration.Test</RootNamespace>
+    <AssemblyName>ExcelDna.CustomRegistration.Test</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,9 +33,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ExcelDna.Integration">
-      <HintPath>..\Libraries\ExcelDna.Integration.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="ExcelDna.Integration, Version=0.32.5174.32929, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Excel-DNA.0.32.0-rc1\lib\ExcelDna.Integration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -43,21 +51,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncRegistration.cs" />
-    <Compile Include="Attributes.cs" />
-    <Compile Include="EnumerableRegistration.cs" />
-    <Compile Include="ParameterTypeConversion.cs" />
-    <Compile Include="ParamsRegistration.cs" />
+    <Compile Include="EnumerableRegistrationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Registration.cs" />
-    <Compile Include="RegistrationEntry.cs" />
-    <Compile Include="Utils\AsyncTaskUtil.cs" />
-    <Compile Include="Utils\Disposables.cs" />
-    <Compile Include="Utils\NativeAsyncTaskUtil.cs" />
-    <Compile Include="Utils\ObservableRtdUtil.cs" />
-    <Compile Include="Utils\ReflectionExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="ExcelDna.CustomRegistration.Test-AddIn.dna">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
+      <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
+      <Name>ExcelDna.CustomRegistration</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "C:\Users\bj.KAL\Source\Repos\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.Test-AddIn.xll*" /C /Y
+"C:\Users\bj.KAL\Source\Repos\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Test-AddIn.dna" /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

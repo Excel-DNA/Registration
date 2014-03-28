@@ -22,8 +22,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
     <StartAction>Program</StartAction>
-    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
-    <StartArguments>"C:\Work\ExcelDna\CustomRegistration\Source\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
+    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office14\Excel.exe</StartProgram>
+    <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -54,6 +54,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <Compile Include="EnumerableFunctionExamples.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj">
@@ -73,8 +74,8 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
   <PropertyGroup>
     <PostBuildEvent>
-xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.xll*" /C /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.dna" /Y</PostBuildEvent>
+xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.xll*" /C /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

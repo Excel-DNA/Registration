@@ -64,8 +64,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.xll*" /C /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.xll*" /C /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

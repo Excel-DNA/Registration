@@ -10,6 +10,7 @@ type FsAsyncAddIn () =
             Registration.GetExcelFunctions ()
             |> FsAsyncRegistration.ProcessFsAsyncRegistrations
             |> AsyncRegistration.ProcessAsyncRegistrations
+            |> EnumerableRegistration.ProcessEnumerableRegistrations
             |> Registration.RegisterFunctions
         
         member this.AutoClose () = ()

@@ -10,17 +10,16 @@ namespace ExcelDna.CustomRegistration
 {
     public class RegistrationEntry
     {
-        public LambdaExpression FunctionLambda { get; set; }
-        public ExcelFunctionAttribute FunctionAttribute { get; set; }            // May not be null
+        public LambdaExpression FunctionLambda { get; set; }                     // Function which will be registered, and invoked by Excel
+        public ExcelFunctionAttribute FunctionAttribute { get; set; }            // ExcelFunctionAttribute which is registered with Excel. Must not be null
         public List<ExcelArgumentAttribute> ArgumentAttributes { get; set; }     // A list of ExcelArgumentAttributes with length equal to the number of parameters in Delegate
-
-        public RegistrationEntry()
-        {
-        }
+        public MethodInfo MethodInfo { get; private set; }                       // The method this entry was originally constructed with (may be useful for transformations).
 
         // NOTE: 16 parameter max for Expression.GetDelegateType
         public RegistrationEntry(MethodInfo methodInfo)
         {
+            MethodInfo = methodInfo;
+
             var paramExprs = methodInfo.GetParameters()
                              .Select(pi => Expression.Parameter(pi.ParameterType, pi.Name))
                              .ToArray();
