@@ -27,9 +27,9 @@ namespace ExcelDna.CustomRegistration.Example
                 // reflecting the different cell contents.
                 return string.Format("Array[{0},{1}]", ((object[,])arg).GetLength(0), ((object[,])arg).GetLength(1));
             else if (arg is ExcelMissing)
-                return "<<Missing>>"; // Would have been System.Reflection.Missing in previous versions of ExcelDna
+                return "<<Missing>>";
             else if (arg is ExcelEmpty)
-                return "<<Empty>>"; // Would have been null
+                return "<<Empty>>";
             else if (arg is ExcelReference)
                 // Calling xlfRefText here requires IsMacroType=true for this function.
                 return "Reference: " + XlCall.Excel(XlCall.xlfReftext, arg, true);

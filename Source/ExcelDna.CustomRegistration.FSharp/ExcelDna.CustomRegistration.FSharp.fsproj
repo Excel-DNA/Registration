@@ -11,6 +11,8 @@
     <AssemblyName>ExcelDna.CustomRegistration.FSharp</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>ExcelDna.CustomRegistration.FSharp</Name>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,9 +33,22 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Release\ExcelDna.CustomRegistration.FSharp.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <ItemGroup>
+    <Compile Include="FsAsyncUtil.fs" />
+    <Compile Include="AsyncRegistration.fs" />
+    <Compile Include="Registration.fs" />
+    <Compile Include="FsParameterConversions.fs" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.0.32.0-rc3\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\packages\Excel-DNA.Lib.0.32.0-rc3-1\lib\ExcelDna.Integration.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -42,24 +57,12 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="FsAsyncUtil.fs" />
-    <Compile Include="AsyncRegistration.fs" />
-    <Compile Include="Registration.fs" />
-    <Compile Include="FsParameterConversions.fs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
       <Name>ExcelDna.CustomRegistration</Name>
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <PropertyGroup>
-    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
-  </PropertyGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
