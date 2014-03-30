@@ -1,4 +1,5 @@
 ﻿Imports ExcelDna.Integration
+Imports Microsoft.Office.Interop.Excel
 
 Public Module ParamsExamples
 
@@ -13,6 +14,12 @@ Public Module ParamsExamples
                               <ExcelArgument(Description:="is the separator to put inbetween")> separator As String, 
                           <ExcelArgument(Description:="is another string to add")> ParamArray strings As String()) As String
         Return prefix + String.Join(separator, strings)
+    End Function
+
+    <ExcelFunction>
+    Function dnaVbRangeTest(input As Range) As String
+        Debug.Print("Called dnaVbRangeTest")
+        Return input.Address
     End Function
 
 End Module

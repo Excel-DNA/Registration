@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{CCAE7945-763B-417B-9A9F-9D16A6736E7E}</ProjectGuid>
+    <ProjectGuid>{B3A61274-849F-41B3-A933-9B18D81A13F1}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>ExcelDna.CustomRegistration.VBExample</RootNamespace>
-    <AssemblyName>ExcelDna.CustomRegistration.VBExample</AssemblyName>
+    <RootNamespace>ExcelDna.CustomRegistration.VisualBasic</RootNamespace>
+    <AssemblyName>ExcelDna.CustomRegistration.VisualBasic</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MyType>Windows</MyType>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
@@ -20,7 +20,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>ExcelDna.CustomRegistration.VBExample.xml</DocumentationFile>
+    <DocumentationFile>ExcelDna.CustomRegistration.VisualBasic.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -29,7 +29,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>ExcelDna.CustomRegistration.VBExample.xml</DocumentationFile>
+    <DocumentationFile>ExcelDna.CustomRegistration.VisualBasic.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
@@ -52,6 +52,7 @@
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
       <Private>True</Private>
+      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
@@ -81,7 +82,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExampleAddIn.vb" />
+    <Compile Include="RangeParameterConversion.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -97,8 +98,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="OptionalExamples.vb" />
-    <Compile Include="ParamsExamples.vb" />
+    <Compile Include="VbaCompatibleRegistration.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">
@@ -109,10 +109,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <Content Include="ExcelDna.CustomRegistration.VBExample-AddIn.dna">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -122,12 +118,9 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExcelDna.CustomRegistration.VisualBasic\ExcelDna.CustomRegistration.VisualBasic.vbproj">
-      <Project>{b3a61274-849f-41b3-a933-9b18d81a13f1}</Project>
-      <Name>ExcelDna.CustomRegistration.VisualBasic</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
       <Name>ExcelDna.CustomRegistration</Name>
@@ -135,13 +128,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.xll*" /C /Y
-xcopy "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna*" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna*" /C /Y
-xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.xll*" /C /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna" /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna" /Y</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

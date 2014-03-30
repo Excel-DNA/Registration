@@ -217,7 +217,7 @@ namespace ExcelDna.CustomRegistration
                                     ConvertFromExcelObject(inputObjectArray[row + 1, prop.Item2],
                                         prop.Item1.PropertyType)).ToArray());
                     }
-                    catch (MissingMethodException e)
+                    catch (MissingMethodException)
                     {
                         // try a different way... default constructor and then set properties
                         inputRecord = Activator.CreateInstance(inputRecordType);

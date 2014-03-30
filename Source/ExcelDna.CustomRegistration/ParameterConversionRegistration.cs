@@ -59,11 +59,18 @@ namespace ExcelDna.CustomRegistration
             {
                 // First check specific type conversions, 
                 // then also the global type conversions (that are not restricted to a specific type)
+                var conversionKeyValues = conversionConfig.ParameterConversions.Where(kv => paramType == kv.Key || paramType.IsEquivalentTo(kv.Key)).ToArray();
+
                 List<ParameterConversion> typeConversions;
-                if (conversionConfig.ParameterConversions.TryGetValue(paramType, out typeConversions))
+                if (conversionKeyValues.Any())
+                {
+                    typeConversions = conversionKeyValues.First().Value;
                     typeConversions.AddRange(globalParameterConversions);
+                }
                 else
+                {
                     typeConversions = globalParameterConversions;
+                }
 
                 var applied = false;
                 // we have conversions that might be applied to this type...

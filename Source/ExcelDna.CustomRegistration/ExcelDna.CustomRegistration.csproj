@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="AsyncRegistration.cs" />
     <Compile Include="Attributes.cs" />
+    <Compile Include="ExcelCommandRegistration.cs" />
     <Compile Include="FunctionExecutionHandler.cs" />
     <Compile Include="FunctionExecutionConfiguration.cs" />
     <Compile Include="FunctionExecutionRegistration.cs" />
