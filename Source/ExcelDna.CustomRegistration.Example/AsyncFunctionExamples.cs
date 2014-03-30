@@ -26,6 +26,7 @@ namespace ExcelDna.CustomRegistration.Example
         }
 
         // A simple function that can take a long time to complete.
+        // Will be wrapped to RunAsTask, via Task.Factory.StartNew(...)
         [ExcelAsyncFunction(Name="dnaDelayedHello")]
         public static string dnaDelayedHello(string name, int msToSleep)
         {
@@ -76,7 +77,7 @@ namespace ExcelDna.CustomRegistration.Example
                 return Delay(msDelay).ContinueWith(_ => "Hello" + name);
             }).Unwrap();
 
-            // With .NET 4.5 one could do the same a bit simpler:
+            // With .NET 4.5 one could do the same a bit simpler (or better, use async/await):
             // return Task.Run(() => Task.Delay(msDelay).ContinueWith(_ => "Hello" + name));
         }
 

@@ -36,10 +36,8 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncRegistration.cs" />
@@ -47,7 +45,6 @@
     <Compile Include="FunctionExecutionHandler.cs" />
     <Compile Include="FunctionExecutionConfiguration.cs" />
     <Compile Include="FunctionExecutionRegistration.cs" />
-    <Compile Include="FunctionExecutionHandlers.cs" />
     <Compile Include="ParameterConversionConfiguration.cs" />
     <Compile Include="ParameterConversionRegistration.cs">
       <SubType>Code</SubType>
@@ -57,8 +54,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Registration.cs" />
     <Compile Include="ExcelFunctionRegistration.cs" />
-    <Compile Include="SymbolExtensions.cs" />
-    <Compile Include="TypeConversion.cs" />
+    <Compile Include="Utils\SymbolExtensions.cs" />
+    <Compile Include="Utils\TypeConversion.cs" />
     <Compile Include="Utils\AsyncTaskUtil.cs" />
     <Compile Include="Utils\Disposables.cs" />
     <Compile Include="Utils\NativeAsyncTaskUtil.cs" />

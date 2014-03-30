@@ -26,39 +26,39 @@ namespace ExcelDna.CustomRegistration.Example
 
         static ParameterConversionConfiguration GetParameterConversionConfig()
         {
-            var conversionConfig = new ParameterConversionConfiguration();
-            // CONSIDER: This might have to change if we want to add improved tracing to the conversions.
-            // TODO: Parameter vs Return conversions...?
+            return new ParameterConversionConfiguration()
+                // CONSIDER: This might have to change if we want to add improved tracing to the conversions.
+                // TODO: Parameter vs Return conversions...?
 
             // Register the Standard Parameter Conversions
-            conversionConfig.AddParameterConversion(ParameterConversions.NullableConversion);
-            conversionConfig.AddParameterConversion(ParameterConversions.OptionalConversion);
+                .AddParameterConversion(ParameterConversions.NullableConversion)
+                .AddParameterConversion(ParameterConversions.OptionalConversion)
 
             // Some ideas ways to define and register conversions
-            // These are for a particular parameter type
-            // (Func<object, MyType> would allow MyType to be taken as parameter)
+                // These are for a particular parameter type
+                // (Func<object, MyType> would allow MyType to be taken as parameter)
 
             // Inline Lambda - one way
-            conversionConfig.AddParameterConversion((string value) => new TestType1(value));
-            conversionConfig.AddParameterConversion((TestType1 value) => new TestType2(value));
+                .AddParameterConversion((string value) => new TestType1(value))
+                .AddParameterConversion((TestType1 value) => new TestType2(value))
 
-            conversionConfig.AddReturnConversion((TestType1 value) => value.ToString());
-            //conversionConfig.AddParameterConversion((string value) => convert2(convert1(value)));
+                .AddReturnConversion((TestType1 value) => value.ToString());
+            //  .AddParameterConversion((string value) => convert2(convert1(value)));
 
             // Alternative - use method via lambda
-            // conversionConfig.AddParameterConversion((string input) => ConvertToTestType(input));
+            //  .AddParameterConversion((string input) => ConvertToTestType(input));
 
             // Pass Delegate - different name and needs the signature types, but also works...
-            // conversionConfig.AddParameterConversionFunc<string, TestType>(ConvertToTestType);
-
-            return conversionConfig;
+            //  .AddParameterConversionFunc<string, TestType>(ConvertToTestType);
         }
 
         static FunctionExecutionConfiguration GetFunctionExecutionHandlerConfig()
         {
-            var config = new FunctionExecutionConfiguration();
-            config.AddFunctionExecutionHandler(FunctionLoggingHandler.LoggingHandlerSelector);
-            return config;
+            return new FunctionExecutionConfiguration()
+                 .AddFunctionExecutionHandler(FunctionLoggingHandler.LoggingHandlerSelector)
+                .AddFunctionExecutionHandler(CacheFunctionExecutionHandler.CacheHandlerSelector)
+                .AddFunctionExecutionHandler(TimingFunctionExecutionHandler.TimingHandlerSelector)
+                .AddFunctionExecutionHandler(SuppressInDialogFunctionExecutionHandler.SuppressInDialogSelector);
         }
 
         public void AutoClose()

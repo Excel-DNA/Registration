@@ -38,6 +38,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -45,12 +46,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CacheFunctionExecutionHandler.cs" />
     <Compile Include="ExampleAddIn.cs" />
     <Compile Include="AsyncFunctionExamples.cs" />
+    <Compile Include="FunctionExecutionHandlerExamples.cs" />
     <Compile Include="FunctionLoggingHandler.cs" />
     <Compile Include="ParameterConversionExamples.cs" />
     <Compile Include="ParamsFunctionExamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SuppressInDialogHandler.cs" />
+    <Compile Include="TimingFunctionExecutionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

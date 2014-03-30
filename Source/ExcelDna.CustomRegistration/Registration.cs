@@ -16,6 +16,7 @@ namespace ExcelDna.CustomRegistration
     // * Logging and other pre / post / catch / finally handlers
     // * Cache  - PostSharp example from: http://vimeo.com/66549243 (esp. MethodExecutionTag for keeping stuff together)
     // * E.g. ExecutionDurationAspect in PostSharp user guide
+    // * Apply a Module name XlQualifiedName(true), or use Class Name.
 
 
     // A first attempt to allow chaining of the CustomRegistration rewrites.

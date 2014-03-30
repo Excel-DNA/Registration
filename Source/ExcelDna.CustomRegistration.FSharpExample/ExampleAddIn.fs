@@ -8,7 +8,7 @@ type FsAsyncAddIn () =
     interface IExcelAddIn with
         member this.AutoOpen ()  = 
             let paramConvertConfig = ParameterConversionConfiguration()
-            paramConvertConfig.AddParameterConversion(FsParameterConversions.FsOptionalParameterConversion)
+                                        .AddParameterConversion(FsParameterConversions.FsOptionalParameterConversion)
 
             Registration.GetExcelFunctions ()
             |> fun fns -> ParameterConversionRegistration.ProcessParameterConversions (fns, paramConvertConfig)
@@ -17,4 +17,3 @@ type FsAsyncAddIn () =
             |> Registration.RegisterFunctions
         
         member this.AutoClose () = ()
-    

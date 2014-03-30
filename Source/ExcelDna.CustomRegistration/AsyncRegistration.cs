@@ -129,7 +129,7 @@ namespace ExcelDna.CustomRegistration
             var nameExp = Expression.Constant(functionLambda.Name + ":" + Guid.NewGuid().ToString("N"));
 
             // Also cast params to Object and put into a fresh object[] array for the RunTask call
-            var paramsArray = functionLambda.Parameters.Select(p => Expression.TypeAs(p, typeof(object)));
+            var paramsArray = functionLambda.Parameters.Select(p => Expression.Convert(p, typeof(object)));
             var paramsArrayExp = Expression.NewArrayInit(typeof(object), paramsArray);
             var innerLambda = Expression.Lambda(Expression.Invoke(functionLambda, functionLambda.Parameters));
 
@@ -137,7 +137,8 @@ namespace ExcelDna.CustomRegistration
             var callTaskRun = Expression.Call(runMethod, nameExp, paramsArrayExp, innerLambda);
 
             // Wrap with all the parameters, and Compile to a Delegate
-            return Expression.Lambda(callTaskRun, functionLambda.Name, functionLambda.Parameters);
+            var lambda = Expression.Lambda(callTaskRun, functionLambda.Name, functionLambda.Parameters);
+            return lambda;
         }
 
         static LambdaExpression WrapMethodRunTaskWithCancellation(LambdaExpression functionLambda)
@@ -191,7 +192,7 @@ namespace ExcelDna.CustomRegistration
                             .ToArray();
             
             // Also cast params to Object and put into a fresh object[] array for the second argument to RunTask...
-            var paramsArray = paramsExp.Select(p => Expression.TypeAs(p, typeof(object)));
+            var paramsArray = paramsExp.Select(p => Expression.Convert(p, typeof(object)));
             var paramsArrayExp = Expression.NewArrayInit(typeof(object), paramsArray);
 
             // Now add the extra CancellationToken parameter
@@ -247,9 +248,9 @@ namespace ExcelDna.CustomRegistration
             // This is the call to RunTask, taking taking the (capturing) lambda and async handle
             var callTaskRun = Expression.Call(runMethod, innerLambda, asyncHandleParam);
 
-            // Wrap with all the parameters, and Compile to a Delegate
+            // Wrap with all the parameters
             var allParams = new List<ParameterExpression>(functionLambda.Parameters) { asyncHandleParam };
-            return Expression.Lambda(callTaskRun, allParams);
+            return Expression.Lambda(callTaskRun, functionLambda.Name, allParams);
         }
 
         static LambdaExpression WrapMethodNativeAsyncTaskWithCancellation(LambdaExpression functionLambda)
@@ -338,7 +339,7 @@ namespace ExcelDna.CustomRegistration
             // ... and parameters (used both in the call to Observe and captured for the inner Lambda
 
             // Cast params to Object and put into a fresh object[] array for the Observe call
-            var paramsArray = functionLambda.Parameters.Select(p => Expression.TypeAs(p, typeof(object)));
+            var paramsArray = functionLambda.Parameters.Select(p => Expression.Convert(p, typeof(object)));
             var paramsArrayExp = Expression.NewArrayInit(typeof(object), paramsArray);
             var innerLambda = Expression.Lambda(Expression.Invoke(functionLambda, functionLambda.Parameters));
 

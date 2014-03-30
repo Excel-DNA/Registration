@@ -39,7 +39,7 @@ namespace ExcelDna.CustomRegistration
         /// </summary>
         /// <param name="targetTypeOrNull"></param>
         /// <param name="parameterConversion"></param>
-        public void AddParameterConversion(Type targetTypeOrNull, ParameterConversion parameterConversion)
+        public ParameterConversionConfiguration AddParameterConversion(Type targetTypeOrNull, ParameterConversion parameterConversion)
         {
             var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
 
@@ -52,41 +52,47 @@ namespace ExcelDna.CustomRegistration
             {
                 ParameterConversions[targetTypeOrVoid] = new List<ParameterConversion> { parameterConversion };
             }
+            return this;
         }
 
-        public void AddParameterConversion(ParameterConversion parameterConversion)
+        public ParameterConversionConfiguration AddParameterConversion(ParameterConversion parameterConversion)
         {
             AddParameterConversion(null, parameterConversion);
+            return this;
         }
 
-        public void AddParameterConversion<TTo>(ParameterConversion parameterConversion)
+        public ParameterConversionConfiguration AddParameterConversion<TTo>(ParameterConversion parameterConversion)
         {
             AddParameterConversion(typeof(TTo), parameterConversion);
+            return this;
         }
 
-        public void AddParameterConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert)
+        public ParameterConversionConfiguration AddParameterConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert)
         {
             AddParameterConversion<TTo>((unusedParamType, unusedParamReg) => convert);
+            return this;
         }
 
         // This is a nice signature for registering conversions, but is worse than Expression<...> when applying
-        public void AddParameterConversionFunc<TFrom, TTo>(Func<TFrom, TTo> convert)
+        public ParameterConversionConfiguration AddParameterConversionFunc<TFrom, TTo>(Func<TFrom, TTo> convert)
         {
             AddParameterConversion<TTo>(
                 (unusedParamType, unusedParamReg) =>
                     (Expression<Func<TFrom, TTo>>)(value => convert(value)));
+            return this;
         }
 
-        public void AddParameterConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
+        public ParameterConversionConfiguration AddParameterConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
         {
             // CONSIDER: We really don't want our the CustomRegistration compilation to build out a closure object here...
             AddParameterConversion<TTo>(
                 (unusedParamType, paramReg) =>
                     (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(paramReg.CustomAttributes, value)));
+            return this;
         }
 
         // Most general case - called by the overloads below
-        public void AddReturnConversion(Type targetTypeOrNull, ReturnConversion returnConversion)
+        public ParameterConversionConfiguration AddReturnConversion(Type targetTypeOrNull, ReturnConversion returnConversion)
         {
             var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
 
@@ -99,25 +105,29 @@ namespace ExcelDna.CustomRegistration
             {
                 ReturnConversions[targetTypeOrVoid] = new List<ReturnConversion> { returnConversion };
             }
+            return this;
         }
 
-        public void AddReturnConversion<TFrom>(ReturnConversion returnConversion)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom>(ReturnConversion returnConversion)
         {
             AddReturnConversion(typeof(TFrom), returnConversion);
+            return this;
         }
 
-        public void AddReturnConversion<TFrom, TTo>(Func<TFrom, TTo> convert)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Func<TFrom, TTo> convert)
         {
             AddReturnConversion<TFrom>(
                 (unusedReturnType, unusedAttributes) =>
                     (Expression<Func<TFrom, TTo>>)(value => convert(value)));
+            return this;
         }
 
-        public void AddReturnConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
         {
             AddReturnConversion<TFrom>(
                 (unusedReturnType, returnAttributes) =>
                     (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(returnAttributes, value)));
+            return this;
         }
         #endregion
     }

@@ -5,16 +5,17 @@ namespace ExcelDna.CustomRegistration
 {
     public class FunctionExecutionConfiguration
     {
-        internal List<Func<ExcelFunctionRegistration, FunctionExecutionHandler>> FunctionHandlerSelectors { get; private set; }
+        internal List<Func<ExcelFunctionRegistration, IFunctionExecutionHandler>> FunctionHandlerSelectors { get; private set; }
 
         public FunctionExecutionConfiguration()
         {
-            FunctionHandlerSelectors = new List<Func<ExcelFunctionRegistration, FunctionExecutionHandler>>();
+            FunctionHandlerSelectors = new List<Func<ExcelFunctionRegistration, IFunctionExecutionHandler>>();
         }
 
-        public void AddFunctionExecutionHandler(Func<ExcelFunctionRegistration, FunctionExecutionHandler> functionHandlerSelector)
+        public FunctionExecutionConfiguration AddFunctionExecutionHandler(Func<ExcelFunctionRegistration, IFunctionExecutionHandler> functionHandlerSelector)
         {
             FunctionHandlerSelectors.Add(functionHandlerSelector);
+            return this;
         }
     }
 

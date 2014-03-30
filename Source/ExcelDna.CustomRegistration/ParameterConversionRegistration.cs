@@ -227,7 +227,7 @@ namespace ExcelDna.CustomRegistration
                     wrappingCall = Expr.Invoke(conversion, wrappingCall);
             }
 
-            reg.FunctionLambda = Expr.Lambda(wrappingCall, wrappingParameters);
+            reg.FunctionLambda = Expr.Lambda(wrappingCall, reg.FunctionLambda.Name, wrappingParameters);
         }
     }
 }

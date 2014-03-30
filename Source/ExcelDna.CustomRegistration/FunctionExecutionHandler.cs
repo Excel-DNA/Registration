@@ -2,6 +2,7 @@
 
 namespace ExcelDna.CustomRegistration
 {
+    // Inspired by PostSharp
     public enum FlowBehavior
     {
         /// <summary>
@@ -28,30 +29,31 @@ namespace ExcelDna.CustomRegistration
     // CONSIDER: One might make a generic typed version of this...
     public class FunctionExecutionArgs
     {
+        public string FunctionName { get; private set; }
         // Can't change arguments - Make ReadOnly collection?
         public object[] Arguments { get; private set; }
         public object ReturnValue { get; set; }
-        // Can't change exception
         public Exception Exception { get; set; }
         public FlowBehavior FlowBehavior { get; set; }
-        // public Method ...?
         public object Tag { get; set; }
 
-        public FunctionExecutionArgs(object[] arguments)
+        public FunctionExecutionArgs(string functionName, object[] arguments)
         {
+            FunctionName = functionName;
             Arguments = arguments;
         }
     }
 
     /*
-        public static int MyMethod(object arg0, int arg1)
+        // Conceptually we rewrite as 
+        public static int MyMethodWrapped(object arg0, int arg1)
         {
-          OnEntry();
+          int result;
           try
           {
-            // Original method body. 
+            OnEntry();
+            result = MyMethod(arg0, arg1);
             OnSuccess();
-            return returnValue;
           }
           catch ( Exception e )
           {
@@ -61,13 +63,26 @@ namespace ExcelDna.CustomRegistration
           {
             OnExit();
           }
+          return result;
         }
+     * 
+     *  However there are advanced options to understand too...
     */
-    public abstract class FunctionExecutionHandler
+
+    public interface IFunctionExecutionHandler
     {
-        public abstract void OnEntry(FunctionExecutionArgs args);
-        public abstract void OnSuccess(FunctionExecutionArgs args);
-        public abstract void OnException(FunctionExecutionArgs args);
-        public abstract void OnExit(FunctionExecutionArgs args);
+        void OnEntry(FunctionExecutionArgs args);
+        void OnSuccess(FunctionExecutionArgs args);
+        void OnException(FunctionExecutionArgs args);
+        void OnExit(FunctionExecutionArgs args);
+    }
+
+    // Can inherit from here or implement interface directly
+    public class FunctionExecutionHandler : IFunctionExecutionHandler
+    {
+        public virtual void OnEntry(FunctionExecutionArgs args) {}
+        public virtual void OnSuccess(FunctionExecutionArgs args) {}
+        public virtual void OnException(FunctionExecutionArgs args) {}
+        public virtual void OnExit(FunctionExecutionArgs args) {}
     }
 }
