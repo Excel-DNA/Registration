@@ -14,6 +14,7 @@ type FsAsyncAddIn () =
             |> fun fns -> ParameterConversionRegistration.ProcessParameterConversions (fns, paramConvertConfig)
             |> FsAsyncRegistration.ProcessFsAsyncRegistrations
             |> AsyncRegistration.ProcessAsyncRegistrations
+            |> MapArrayFunctionRegistration.ProcessMapArrayFunctions
             |> Registration.RegisterFunctions
         
         member this.AutoClose () = ()

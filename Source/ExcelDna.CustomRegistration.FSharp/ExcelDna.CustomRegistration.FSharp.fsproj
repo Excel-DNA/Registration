@@ -40,10 +40,10 @@
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <ItemGroup>
     <Compile Include="FsAsyncUtil.fs" />
-    <Compile Include="AsyncRegistration.fs" />
-    <Compile Include="Registration.fs" />
+    <Compile Include="FsAsyncRegistration.fs" />
     <Compile Include="FsParameterConversions.fs" />
     <None Include="packages.config" />
+    <Compile Include="FsAsyncUtil.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">

@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
     <StartAction>Program</StartAction>
     <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
-    <StartArguments>"C:\Work\ExcelDna\CustomRegistration\Source\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
+    <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -51,11 +51,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncFunctionExamples.fs" />
+    <Compile Include="OptionalExamples.fs" />
+    <Compile Include="MapArrayFunctionExamples.fs" />
     <Compile Include="ExampleAddIn.fs" />
     <Content Include="ExcelDna.CustomRegistration.FSharpExample-AddIn.dna">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="OptionalExamples.fs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -79,6 +80,10 @@
     </PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
