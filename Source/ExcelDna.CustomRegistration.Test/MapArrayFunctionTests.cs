@@ -130,7 +130,7 @@ namespace ExcelDna.CustomRegistration.Test
         };
 
         [Test, TestCaseSource("MethodsToShim")]
-        public void TestProcessEnumerableRegistrations(MethodInfo methodInfo)
+        public void TestMapArrayRegistrations(MethodInfo methodInfo)
         {
             ////////////////////////////////////////////
             // arrange

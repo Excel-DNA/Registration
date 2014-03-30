@@ -35,7 +35,7 @@
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
       <HintPath>..\packages\Excel-DNA.Lib.0.32.0-rc3-1\lib\ExcelDna.Integration.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
