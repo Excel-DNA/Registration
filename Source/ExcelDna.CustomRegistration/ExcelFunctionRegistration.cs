@@ -111,7 +111,7 @@ namespace ExcelDna.CustomRegistration
         public ExcelFunctionRegistration(LambdaExpression functionLambda, ExcelFunctionAttribute functionAttribute, IEnumerable<ExcelParameterRegistration> parameterRegistrations = null)
         {
             if (functionLambda == null) throw new ArgumentNullException("functionLambda");
-            if (functionAttribute == null) throw new ArgumentNullException("functionLambda");
+            if (functionAttribute == null) throw new ArgumentNullException("functionAttribute");
 
             FunctionLambda = functionLambda;
             FunctionAttribute = functionAttribute;
