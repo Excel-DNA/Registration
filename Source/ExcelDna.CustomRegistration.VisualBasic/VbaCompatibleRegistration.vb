@@ -16,7 +16,7 @@ Public Module VbaCompatibleRegistration
         
         conversionConfig = New ParameterConversionConfiguration() _
                                 .AddParameterConversion(AddressOf ParameterConversions.OptionalConversion) _
-                                .AddParameterConversionFunc(Of ExcelReference, Range)(AddressOf ReferenceToRange)
+                                .AddParameterConversionFunc(Of Object, Range)(AddressOf ReferenceToRange)
 
         GetAllPublicStaticFunctions() _
             .UpdateRegistrationsForRangeParameters() _
@@ -26,10 +26,11 @@ Public Module VbaCompatibleRegistration
     End Sub
 
     Private Function GetAllPublicStaticFunctions() As IEnumerable(Of ExcelFunctionRegistration)
-        Return from ass in ExcelIntegration.GetExportedAssemblies()
-               from typ in ass.GetTypes()
-               from mi in typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
-               select new ExcelFunctionRegistration(mi)
+        Return From ass in ExcelIntegration.GetExportedAssemblies()
+               From typ in ass.GetTypes()
+               Where Not typ.FullName.Contains(".My.")
+               From mi in typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
+               Select new ExcelFunctionRegistration(mi)
     End Function
 
 End Module

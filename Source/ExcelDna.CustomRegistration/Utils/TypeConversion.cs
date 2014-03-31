@@ -33,7 +33,7 @@ namespace ExcelDna.CustomRegistration
             return Expression.Convert(input, type);
         }
 
-        static double ConvertToDouble(object value)
+        public static double ConvertToDouble(object value)
         {
             object result;
             var retVal = XlCall.TryExcel(XlCall.xlCoerce, out result, value, (int)XlType.XlTypeNumber);
@@ -46,7 +46,7 @@ namespace ExcelDna.CustomRegistration
             throw new InvalidCastException("Value " + value.ToString() + " could not be converted to Int32.");
         }
 
-        static string ConvertToString(object value)
+        public static string ConvertToString(object value)
         {
             object result;
             var retVal = XlCall.TryExcel(XlCall.xlCoerce, out result, value, (int)XlType.XlTypeString);
@@ -59,7 +59,7 @@ namespace ExcelDna.CustomRegistration
             throw new InvalidCastException("Value " + value.ToString() + " could not be converted to String.");
         }
 
-        static DateTime ConvertToDateTime(object value)
+        public static DateTime ConvertToDateTime(object value)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace ExcelDna.CustomRegistration
             }
         }
 
-        static bool ConvertToBoolean(object value)
+        public static bool ConvertToBoolean(object value)
         {
             object result;
             var retVal = XlCall.TryExcel(XlCall.xlCoerce, out result, value, (int)XlType.XlTypeBoolean);
@@ -88,27 +88,27 @@ namespace ExcelDna.CustomRegistration
             throw new InvalidCastException("Value " + value.ToString() + " could not be converted to Boolean.");
         }
 
-        static int ConvertToInt32(object value)
+        public static int ConvertToInt32(object value)
         {
             return checked((int)ConvertToInt64(value));
         }
 
-        static short ConvertToInt16(object value)
+        public static short ConvertToInt16(object value)
         {
             return checked((short)ConvertToInt64(value));
         }
 
-        static ushort ConvertToUInt16(object value)
+        public static ushort ConvertToUInt16(object value)
         {
             return checked((ushort)ConvertToInt64(value));
         }
 
-        static decimal ConvertToDecimal(object value)
+        public static decimal ConvertToDecimal(object value)
         {
             return checked((decimal)ConvertToDouble(value));
         }
 
-        static long ConvertToInt64(object value)
+        public static long ConvertToInt64(object value)
         {
             return checked((long)Math.Round(ConvertToDouble(value), MidpointRounding.ToEven));
         }

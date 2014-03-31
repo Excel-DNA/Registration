@@ -99,6 +99,7 @@
     </Compile>
     <Compile Include="OptionalExamples.vb" />
     <Compile Include="ParamsExamples.vb" />
+    <Compile Include="RangeParameterExamples.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

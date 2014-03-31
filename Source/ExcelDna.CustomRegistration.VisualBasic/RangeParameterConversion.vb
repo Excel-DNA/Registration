@@ -4,8 +4,14 @@ Imports Microsoft.Office.Interop.Excel
 
 Public Module RangeParameterConversion
 
-    Function ReferenceToRange(ByVal xlRef As ExcelReference) As Range
-        Dim cntRef As Long, strText As String, strAddress As String
+    Function ReferenceToRange(ByVal xlInput As Object) As Range
+
+        Dim xlRef As ExcelReference = xlInput   ' Will throw some Exception if not valid, which will be returned as #VALUE
+
+        Dim cntRef As Long
+        Dim strText As String
+        Dim strAddress As String
+
         strAddress = XlCall.Excel(XlCall.xlfReftext, xlRef.InnerReferences(0), True)
         For cntRef = 1 To xlRef.InnerReferences.Count - 1
             strText = XlCall.Excel(XlCall.xlfReftext, xlRef.InnerReferences(cntRef), True)

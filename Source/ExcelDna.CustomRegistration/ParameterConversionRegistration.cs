@@ -59,6 +59,7 @@ namespace ExcelDna.CustomRegistration
             {
                 // First check specific type conversions, 
                 // then also the global type conversions (that are not restricted to a specific type)
+                // NOTE: Special extension of the type interpretation here, to cater for the Range COM type equivalence
                 var conversionKeyValues = conversionConfig.ParameterConversions.Where(kv => paramType == kv.Key || paramType.IsEquivalentTo(kv.Key)).ToArray();
 
                 List<ParameterConversion> typeConversions;
@@ -85,7 +86,7 @@ namespace ExcelDna.CustomRegistration
                     // We got one to apply...
                     // Some sanity checks
                     Debug.Assert(lambda.Parameters.Count == 1);
-                    Debug.Assert(lambda.ReturnType == paramType);
+                    Debug.Assert(lambda.ReturnType == paramType || lambda.ReturnType.IsEquivalentTo(paramType));
 
                     // Check if we need to make a new conversion list
                     if (paramConversions == null)
@@ -200,6 +201,9 @@ namespace ExcelDna.CustomRegistration
             Debug.Assert(reg.FunctionLambda.Parameters.Count == paramsConversions.Count);
 
             // NOTE NOTE - Don't need the Variables....
+
+            // NOTE: To cater for the Range COM type equivalance, we need to distinguish the FunctionLambda's parameter type and the paramConversion ReturnType.
+            //       These need not be the same, but the should at least be equivalent.
 
             // build up the invoke expression for each parameter
             var wrappingParameters = new List<ParameterExpression>(reg.FunctionLambda.Parameters);
