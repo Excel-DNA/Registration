@@ -51,24 +51,7 @@ namespace ExcelDna.CustomRegistration
                 // avoid manipulating reg until we're sure it can succeed
                 try
                 {
-                    LambdaExpression shimLambda;
-                    switch (reg.FunctionLambda.Parameters.Count)
-                    {
-                        case 1:
-                        {
-                            ParamsDelegate shim = reg.FunctionLambda.MakeObjectArrayShim();
-                            shimLambda = (Expression<Func<object[,], object[,]>>) (input => shim(input) as object[,]);
-                            break;
-                        }
-                        case 2:
-                        {
-                            ParamsDelegate shim = reg.FunctionLambda.MakeObjectArrayShim();
-                            shimLambda = (Expression<Func<object[,], object[,], object[,]>>)((input1, input2) => shim(input1, input2) as object[,]);
-                            break;
-                        }
-                        default:
-                            throw new ArgumentException(string.Format("Unsupported target expression with {0} parameters", reg.FunctionLambda.Parameters.Count), "reg");
-                    }
+                    var shim = reg.FunctionLambda.MakeObjectArrayShim();
 
                     // replace the Function attribute, with a description of the output fields
                     var functionDescription = "Returns an array, with header row containing:\n" + 
@@ -88,7 +71,7 @@ namespace ExcelDna.CustomRegistration
                                 parameterDescriptions.GetLength(0), reg.ParameterRegistrations.Count));
 
                     // all ok - modify the registration
-                    reg.FunctionLambda = shimLambda;
+                    reg.FunctionLambda = shim;
                     if(String.IsNullOrEmpty(reg.FunctionAttribute.Description))
                         reg.FunctionAttribute.Description = functionDescription;
                     for (int param = 0; param != reg.ParameterRegistrations.Count; ++param)
@@ -172,18 +155,18 @@ namespace ExcelDna.CustomRegistration
             return Tuple.Create(recordType, recordProperties);
         }
 
-        internal delegate object ParamsDelegate(params object[] args);
+        private delegate object ParamsDelegate(params object[] args);
 
         /// <summary>
         /// Function which creates a shim for a target method.
-        /// The target method is expected to take an enumerable of one type, and return an enumerable of another type.
-        /// The shim is a delegate, which takes a 2d array of objects, and returns a 2d array of objects.
+        /// The target method is expected to take 1 or more enumerables of various types, and return a single enumerable of another type.
+        /// The shim is a lambda expression which takes 1 or more object[,] parameters, and returns a single object[,]
         /// The first row of each array defines the field names, which are mapped to the public properties of the
         /// input and return types.
         /// </summary>
         /// <param name="targetMethod"></param>
         /// <returns></returns>
-        internal static ParamsDelegate MakeObjectArrayShim(this LambdaExpression targetMethod)
+        internal static LambdaExpression MakeObjectArrayShim(this LambdaExpression targetMethod)
         {
             var nParams = targetMethod.Parameters.Count;
 
@@ -196,7 +179,7 @@ namespace ExcelDna.CustomRegistration
             PropertyInfo[] returnRecordProperties = returnRecordInfo.Item2;
 
             // create the delegate, object[,]*n -> object[,]
-            ParamsDelegate shimMethod = inputObjectArray =>
+            ParamsDelegate shimDelegate = inputObjectArray =>
             {
                 if (inputObjectArray.GetLength(0) != nParams)
                     throw new InvalidOperationException(string.Format("Expected {0} params, received {1}", nParams,
@@ -306,7 +289,12 @@ namespace ExcelDna.CustomRegistration
 
                 return returnObjectArray;
             };
-            return shimMethod;
+
+            var args = targetMethod.Parameters.Select(param => Expression.Parameter(typeof(object[,]))).ToList();
+            var paramsParam = Expression.NewArrayInit(typeof(object), args);
+            var closure = Expression.Constant(shimDelegate.Target);
+            var call = Expression.Call(closure, shimDelegate.Method, paramsParam);
+            return Expression.Lambda(call, args);
         }
     }
 }

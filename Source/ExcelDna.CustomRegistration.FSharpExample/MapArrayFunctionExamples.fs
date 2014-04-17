@@ -36,7 +36,7 @@ module MapArrayFunctionExamples =
 
     // combines two blocks of Date Bid Ask, creating a single block ordered by Date
     [<ExcelMapArrayFunction>]
-    let dnaFsCombineByDate (input1:seq<DateBidAsk>) (input2:seq<DateBidAsk>) :seq<DateBidAsk> = 
+    let dnaFsCombine2ByDate (input1:seq<DateBidAsk>) (input2:seq<DateBidAsk>) :seq<DateBidAsk> = 
         let calculateAverage date (input:seq<DateBidAsk>) =
             let (bid,ask,count) = input |> Seq.fold (fun (bid,ask,count) item -> (bid+item.Bid,ask+item.Ask,count+1)) (0.,0.,0)
             if count > 0 then
@@ -44,4 +44,15 @@ module MapArrayFunctionExamples =
             else
                 { Date=date; Bid=0.; Ask=0. }
         input1 |> Seq.append input2 |> Seq.groupBy (fun item -> item.Date) |> Seq.map (fun (date,items) -> 
+            items |> calculateAverage date) |> Seq.sortBy (fun item -> item.Date)
+
+    [<ExcelMapArrayFunction>]
+    let dnaFsCombine3ByDate (input1:seq<DateBidAsk>) (input2:seq<DateBidAsk>) (input3:seq<DateBidAsk>) :seq<DateBidAsk> = 
+        let calculateAverage date (input:seq<DateBidAsk>) =
+            let (bid,ask,count) = input |> Seq.fold (fun (bid,ask,count) item -> (bid+item.Bid,ask+item.Ask,count+1)) (0.,0.,0)
+            if count > 0 then
+                { Date=date; Bid=bid/float(count); Ask=ask/float(count) }
+            else
+                { Date=date; Bid=0.; Ask=0. }
+        input1 |> Seq.append input2 |> Seq.append input3 |> Seq.groupBy (fun item -> item.Date) |> Seq.map (fun (date,items) -> 
             items |> calculateAverage date) |> Seq.sortBy (fun item -> item.Date)
