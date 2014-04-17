@@ -24,7 +24,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
     <StartAction>Program</StartAction>
-    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
+    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office14\Excel.exe</StartProgram>
     <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
