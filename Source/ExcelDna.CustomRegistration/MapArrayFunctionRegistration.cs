@@ -54,15 +54,15 @@ namespace ExcelDna.CustomRegistration
                     var shim = reg.FunctionLambda.MakeObjectArrayShim();
 
                     // replace the Function attribute, with a description of the output fields
-                    var functionDescription = "Returns an array, with header row containing:\n" + 
-                        GetEnumerableRecordTypeHelpString(reg.FunctionLambda.ReturnType);
+                    var functionDescription = "Returns " + new ShimParameter(reg.FunctionLambda.ReturnType).HelpString;
 
                     // replace the Argument description, with a description of the input fields
                     var parameterDescriptions = new string[reg.FunctionLambda.Parameters.Count];
                     for (int param = 0; param != reg.FunctionLambda.Parameters.Count; ++param)
                     {
-                        parameterDescriptions[param] = "Input array, with header row containing:\n" +
-                            GetEnumerableRecordTypeHelpString(reg.FunctionLambda.Parameters[param].Type);
+                        parameterDescriptions[param] = "Input " +
+                                                       new ShimParameter(reg.FunctionLambda.Parameters[param].Type)
+                                                           .HelpString;
                     }
 
                     if (parameterDescriptions.GetLength(0) != reg.ParameterRegistrations.Count)
@@ -89,72 +89,6 @@ namespace ExcelDna.CustomRegistration
             }
         }
 
-        /// <summary>
-        /// Wrapper for Convert.ChangeType which understands Excel's use of doubles as OADates.
-        /// </summary>
-        /// <param name="from">Excel object to convert into a different .NET type</param>
-        /// <param name="toType">Type to convert to</param>
-        /// <returns>Converted object</returns>
-        private static object ConvertFromExcelObject(object from, Type toType)
-        {
-            // special case when converting from Excel double to DateTime
-            // no need for special case in reverse, because Excel-DNA understands a DateTime object
-            if (toType == typeof(DateTime) && from is double)
-            {
-                return DateTime.FromOADate((double)from);
-            }
-            return Convert.ChangeType(from, toType);
-        }
-
-        /// <summary>
-        /// Returns a description string which is used in the Excel function dialog.
-        /// E.g. IEnumerable<typeparamref name="T"/> produces a string with the public properties
-        /// of type T.
-        /// This really belongs in a View class somewhere...
-        /// </summary>
-        /// <param name="enumerableType">Enumerable type for which the help string is required</param>
-        /// <returns>Formatted help string, complete with whitespace and newlines</returns>
-        private static string GetEnumerableRecordTypeHelpString(Type enumerableType)
-        {
-            PropertyInfo[] recordProperties = GetEnumerableRecordInfo(enumerableType).Item2;
-            var headerFields = new StringBuilder();
-            string delim = "";
-            foreach (var prop in recordProperties)
-            {
-                headerFields.Append(delim);
-                headerFields.Append(prop.Name);
-                delim = ",";
-            }
-            return headerFields.ToString();
-        }
-
-        /// <summary>
-        /// Returns information about the Record type which an enumerator yields.
-        /// A valid record type must have at least 1 public property.
-        /// </summary>
-        /// <param name="enumerableType">Enumerable type to reflect</param>
-        /// <returns>A tuple containing the Type of the record, and an array of its public member properties</returns>
-        private static Tuple<Type, PropertyInfo[]> GetEnumerableRecordInfo(Type enumerableType)
-        {
-            if (!enumerableType.IsGenericType || enumerableType.Name != "IEnumerable`1")
-                throw new ArgumentException(string.Format("Type {0} is not IEnumerable<>", enumerableType), "enumerableType");
-
-            var typeArgs = enumerableType.GetGenericArguments();
-            if (typeArgs.Length != 1)
-                throw new ArgumentException(string.Format("Unexpected {0} generic args for type {1}",
-                    typeArgs.Length, enumerableType.Name));
-
-            Type recordType = typeArgs[0];
-            PropertyInfo[] recordProperties =
-                recordType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).
-                    OfType<PropertyInfo>().ToArray();
-            if (recordProperties.Length == 0)
-                throw new ArgumentException(string.Format("Unsupported record type {0} with 0 public properties",
-                    recordType.Name));
-
-            return Tuple.Create(recordType, recordProperties);
-        }
-
         private delegate object ParamsDelegate(params object[] args);
 
         /// <summary>
@@ -170,131 +104,213 @@ namespace ExcelDna.CustomRegistration
         {
             var nParams = targetMethod.Parameters.Count;
 
-            // validate and extract property info for the input and return types
-            var inputRecordInfo = targetMethod.Parameters.Select(param => GetEnumerableRecordInfo(param.Type)).ToList();
-            var returnRecordInfo = GetEnumerableRecordInfo(targetMethod.ReturnType);
-            Type[] inputRecordType = inputRecordInfo.Select(info => info.Item1).ToArray();
-            Type returnRecordType = returnRecordInfo.Item1;
-            PropertyInfo[][] inputRecordProperties = inputRecordInfo.Select(info => info.Item2).ToArray();
-            PropertyInfo[] returnRecordProperties = returnRecordInfo.Item2;
+            // validate and extract info for the input and return types
+            var inputShimParameters = targetMethod.Parameters.Select(param => new ShimParameter(param.Type)).ToList();
+            var resultShimParameter = new ShimParameter(targetMethod.ReturnType);
 
-            // create the delegate, object[,]*n -> object[,]
+            var compiledTargetMethod = targetMethod.Compile();
+
+            // create a delegate, object*n -> object
+            // (simpler, but probably slower, alternative to building it all out of Expressions)
             ParamsDelegate shimDelegate = inputObjectArray =>
             {
                 if (inputObjectArray.GetLength(0) != nParams)
                     throw new InvalidOperationException(string.Format("Expected {0} params, received {1}", nParams,
                         inputObjectArray.GetLength(0)));
 
-                var inputRecordArray = new Array[nParams];
+                var targetMethodInputs = new object[nParams];
 
                 for (int i = 0; i != nParams; ++i)
+                    targetMethodInputs[i] = inputShimParameters[i].ConvertShimToTarget(inputObjectArray[i]);
+
+                var targetMethodResult = compiledTargetMethod.DynamicInvoke(targetMethodInputs);
+
+                return resultShimParameter.ConvertTargetToShim(targetMethodResult);
+            };
+
+            // convert the delegate back to a LambdaExpression
+            var args = targetMethod.Parameters.Select(param => Expression.Parameter(typeof(object))).ToList();
+            var paramsParam = Expression.NewArrayInit(typeof(object), args);
+            var closure = Expression.Constant(shimDelegate.Target);
+            var call = Expression.Call(closure, shimDelegate.Method, paramsParam);
+            return Expression.Lambda(call, args);
+        }
+
+        /// <summary>
+        /// Class which does the work of translating a parameter or return value
+        /// between the shim (e.g. object[,] or object) and the target (e.g. IEnumerable or a value type)
+        /// </summary>
+        private class ShimParameter
+        {
+            private Type Type { set; get; }
+            private bool CanMapToArray { get { return MappedRecordProperties != null && MappedRecordType != null; } }
+            private Type MappedRecordType { set; get; }
+            private PropertyInfo[] MappedRecordProperties { set; get; }
+
+            public string HelpString
+            {
+                get
                 {
-                    var inputObject = inputObjectArray[i] as object[,];
-                    if (inputObject == null)
-                    {
-                        throw new InvalidOperationException(string.Format("Parameter {0} of {1} is not an Array", i + 1,
-                            nParams));
-                    }
-                    if (inputObject.GetLength(0) == 0)
-                        throw new ArgumentException();
+                    if (CanMapToArray)
+                        return "array, with header row containing:\n" + String.Join(",", this.MappedRecordProperties as IEnumerable<PropertyInfo>);
 
-                    // extract nrows and ncols for each input array
-                    int nInputRows = inputObject.GetLength(0) - 1;
-                    int nInputCols = inputObject.GetLength(1);
+                    return "value, of type " + Type.Name;
+                }
+            }
 
-                    // Decorate the input record properties with the matching
-                    // column indices from the input array. We have to do this each time
-                    // the shim is invoked to map column headers dynamically.
-                    // Would this be better as a SelectMany?
-                    var inputPropertyCols = inputRecordProperties[i].Select(propInfo =>
-                    {
-                        int colIndex = -1;
+            public ShimParameter(Type type)
+            {
+                Type = type;
+                if (!type.IsGenericType || type.Name != typeof(IEnumerable<>).Name)
+                    return;
 
-                        for (int inputCol = 0; inputCol != nInputCols; ++inputCol)
-                        {
-                            var colName = inputObject[0, inputCol] as string;
-                            if (colName == null)
-                                continue;
+                var typeArgs = type.GetGenericArguments();
+                if (typeArgs.Length != 1)
+                    return;
 
-                            if (propInfo.Name.Equals(colName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                colIndex = inputCol;
-                                break;
-                            }
-                        }
-                        return Tuple.Create(propInfo, colIndex);
-                    }).ToArray();
+                Type recordType = typeArgs[0];
+                PropertyInfo[] recordProperties =
+                    recordType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).
+                        OfType<PropertyInfo>().ToArray();
+                if (recordProperties.Length == 0)
+                    return;
 
-                    // create a sequence of InputRecords
-                    inputRecordArray[i] = Array.CreateInstance(inputRecordType[i], nInputRows);
+                MappedRecordType = recordType;
+                MappedRecordProperties = recordProperties;
+            }
 
-                    // populate it
-                    for (int row = 0; row != nInputRows; ++row)
-                    {
-                        object inputRecord;
-                        try
-                        {
-                            // try using constructor which takes parameters in their declared order
-                            inputRecord = Activator.CreateInstance(inputRecordType[i],
-                                inputPropertyCols.Select(
-                                    prop =>
-                                        ConvertFromExcelObject(inputObject[row + 1, prop.Item2],
-                                            prop.Item1.PropertyType)).ToArray());
-                        }
-                        catch (MissingMethodException)
-                        {
-                            // try a different way... default constructor and then set properties
-                            inputRecord = Activator.CreateInstance(inputRecordType[i]);
-
-                            // populate the record
-                            foreach (var prop in inputPropertyCols)
-                                prop.Item1.SetValue(inputRecord,
-                                    ConvertFromExcelObject(inputObject[row + 1, prop.Item2],
-                                        prop.Item1.PropertyType), null);
-                        }
-
-                        inputRecordArray[i].SetValue(inputRecord, row);
-                    }
+            /// <summary>
+            /// Converts a parameter from the shim (e.g. object[,]) to the target (e.g. IEnumerable)
+            /// </summary>
+            /// <param name="inputObject"></param>
+            /// <returns></returns>
+            public object ConvertShimToTarget(object inputObject)
+            {
+                var objectArray = inputObject as object[,];
+                if (!this.CanMapToArray || objectArray == null)
+                {
+                    // can't map target to array, so just convert raw value
+                    return ConvertFromExcelObject(inputObject, this.Type);
                 }
 
-                // invoke the method
-                var returnRecordSequence = targetMethod.Compile().DynamicInvoke(inputRecordArray);
+                if (objectArray.GetLength(0) == 0)
+                    throw new ArgumentException("objectArray");
 
-                // turn it ito an Array<OutputRecordType>
+                // extract nrows and ncols for each input array
+                int nInputRows = objectArray.GetLength(0) - 1;
+                int nInputCols = objectArray.GetLength(1);
+
+                // Decorate the input record properties with the matching
+                // column indices from the input array. We have to do this each time
+                // the shim is invoked to map column headers dynamically.
+                // Would this be better as a SelectMany?
+                var inputPropertyCols = this.MappedRecordProperties.Select(propInfo =>
+                {
+                    int colIndex = -1;
+
+                    for (int inputCol = 0; inputCol != nInputCols; ++inputCol)
+                    {
+                        var colName = objectArray[0, inputCol] as string;
+                        if (colName == null)
+                            continue;
+
+                        if (propInfo.Name.Equals(colName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            colIndex = inputCol;
+                            break;
+                        }
+                    }
+                    return Tuple.Create(propInfo, colIndex);
+                }).ToArray();
+
+                // create a sequence of InputRecords
+                Array records = Array.CreateInstance(this.MappedRecordType, nInputRows);
+
+                // populate it
+                for (int row = 0; row != nInputRows; ++row)
+                {
+                    object inputRecord;
+                    try
+                    {
+                        // try using constructor which takes parameters in their declared order
+                        inputRecord = Activator.CreateInstance(this.MappedRecordType,
+                            inputPropertyCols.Select(
+                                prop =>
+                                    ConvertFromExcelObject(objectArray[row + 1, prop.Item2],
+                                        prop.Item1.PropertyType)).ToArray());
+                    }
+                    catch (MissingMethodException)
+                    {
+                        // try a different way... default constructor and then set properties
+                        inputRecord = Activator.CreateInstance(this.MappedRecordType);
+
+                        // populate the record
+                        foreach (var prop in inputPropertyCols)
+                            prop.Item1.SetValue(inputRecord,
+                                ConvertFromExcelObject(objectArray[row + 1, prop.Item2],
+                                    prop.Item1.PropertyType), null);
+                    }
+
+                    records.SetValue(inputRecord, row);
+                }
+                return records;
+            }
+
+            /// <summary>
+            /// Converts a parameter from the target (e.g. IEnumerable) to the shim (e.g. object[,])
+            /// </summary>
+            /// <param name="outputObject"></param>
+            /// <returns></returns>
+            public object ConvertTargetToShim(object outputObject)
+            {
+                if (!this.CanMapToArray)
+                    return outputObject;
+
                 var genericToArray =
                     typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
                         .First(mi => mi.Name == "ToArray");
                 if (genericToArray == null)
                     throw new InvalidOperationException("Internal error. Failed to find Enumerable.ToArray");
-                var toArray = genericToArray.MakeGenericMethod(returnRecordType);
-                var returnRecordArray = toArray.Invoke(null, new object[] { returnRecordSequence }) as Array;
+                var toArray = genericToArray.MakeGenericMethod(this.MappedRecordType);
+                var returnRecordArray = toArray.Invoke(null, new object[] { outputObject }) as Array;
                 if (returnRecordArray == null)
                     throw new InvalidOperationException("Internal error. Failed to convert return record to Array");
 
                 // create a return object array and populate the first row
                 var nReturnRows = returnRecordArray.Length;
-                var returnObjectArray = new object[nReturnRows + 1, returnRecordProperties.Length];
-                for (int outputCol = 0; outputCol != returnRecordProperties.Length; ++outputCol)
-                    returnObjectArray[0, outputCol] = returnRecordProperties[outputCol].Name;
+                var returnObjectArray = new object[nReturnRows + 1, this.MappedRecordProperties.Length];
+                for (int outputCol = 0; outputCol != this.MappedRecordProperties.Length; ++outputCol)
+                    returnObjectArray[0, outputCol] = this.MappedRecordProperties[outputCol].Name;
 
                 // iterate through the entire array and populate the output
                 for (int returnRow = 0; returnRow != nReturnRows; ++returnRow)
                 {
-                    for (int returnCol = 0; returnCol != returnRecordProperties.Length; ++returnCol)
+                    for (int returnCol = 0; returnCol != this.MappedRecordProperties.Length; ++returnCol)
                     {
-                        returnObjectArray[returnRow + 1, returnCol] = returnRecordProperties[returnCol].
+                        returnObjectArray[returnRow + 1, returnCol] = this.MappedRecordProperties[returnCol].
                             GetValue(returnRecordArray.GetValue(returnRow), null);
                     }
                 }
 
                 return returnObjectArray;
-            };
+            }
 
-            var args = targetMethod.Parameters.Select(param => Expression.Parameter(typeof(object[,]))).ToList();
-            var paramsParam = Expression.NewArrayInit(typeof(object), args);
-            var closure = Expression.Constant(shimDelegate.Target);
-            var call = Expression.Call(closure, shimDelegate.Method, paramsParam);
-            return Expression.Lambda(call, args);
+            /// <summary>
+            /// Wrapper for Convert.ChangeType which understands Excel's use of doubles as OADates.
+            /// </summary>
+            /// <param name="from">Excel object to convert into a different .NET type</param>
+            /// <param name="toType">Type to convert to</param>
+            /// <returns>Converted object</returns>
+            private static object ConvertFromExcelObject(object from, Type toType)
+            {
+                // special case when converting from Excel double to DateTime
+                // no need for special case in reverse, because Excel-DNA understands a DateTime object
+                if (toType == typeof(DateTime) && @from is double)
+                {
+                    return DateTime.FromOADate((double)@from);
+                }
+                return Convert.ChangeType(@from, toType);
+            }
         }
     }
 }
