@@ -20,11 +20,10 @@ namespace ExcelDna.CustomRegistration
     public static class MapArrayFunctionRegistration
     {
         /// <summary>
-        /// Modifies RegistrationEntries which have methods with IEnumerable signatures,
-        /// allowing them to be converted to and from Excel Ranges (i.e. object[,]).
+        /// Modifies RegistrationEntries which have [ExcelMapArrayFunctionAttribute],
+        /// converting parameters of type IEnumerable to and from Excel Ranges (i.e. object[,]).
         /// The first row in each Range contains column headers, which are mapped to and from
         /// the public properties of the enumerated types.
-        /// Currently just supports methods with signature IEnumerable<typeparamref name="T"/> -> IEnumerable<typeparamref name="U"/>
         /// E.g.
         ///     struct Output { int Out; }
         ///     struct Input  { int In1; int In2; }
@@ -152,7 +151,8 @@ namespace ExcelDna.CustomRegistration
                 get
                 {
                     if (CanMapToArray)
-                        return "array, with header row containing:\n" + String.Join(",", this.MappedRecordProperties as IEnumerable<PropertyInfo>);
+                        return "array, with header row containing:\n" + String.Join(
+                            ",", this.MappedRecordProperties.Select(prop => prop.Name));
 
                     return "value, of type " + Type.Name;
                 }
