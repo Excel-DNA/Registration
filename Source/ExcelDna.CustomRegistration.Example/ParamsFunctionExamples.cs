@@ -1,4 +1,5 @@
-﻿using ExcelDna.Integration;
+﻿using System;
+using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration.Example
 {
@@ -13,7 +14,8 @@ namespace ExcelDna.CustomRegistration.Example
         // this function would normally be registed automatically by Excel-DNA.
         // (without the params processing) before being registered again here with the params expansion.
         //
-        // We prevent that by adding the ExplicitRegistration=true falg.
+        // We would prevent that by adding the ExplicitRegistration=true flag.
+        // (But in this example it's redundant, since the .dna file already protects this.)
         // 
         // Check how the parameters and their descriptions appear in the Function Arguments dialog...
         [ExcelFunction(ExplicitRegistration = true)]
@@ -40,6 +42,13 @@ namespace ExcelDna.CustomRegistration.Example
             params object[] args)
         {
             return input + "," + QtherInpEt + ", : " + args.Length;
+        }
+
+
+        [ExcelFunction]
+        public static string dnaJoinStringParams(string separator, params string[] values)
+        {
+            return String.Join(separator, values);
         }
     }
 }

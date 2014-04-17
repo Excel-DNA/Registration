@@ -1,4 +1,5 @@
-﻿using ExcelDna.Integration;
+﻿using System.Linq;
+using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration.Example
 {
@@ -42,11 +43,12 @@ namespace ExcelDna.CustomRegistration.Example
                 .AddParameterConversion((string value) => new TestType1(value))
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
 
-                .AddReturnConversion((TestType1 value) => value.ToString());
+                .AddReturnConversion((TestType1 value) => value.ToString())
             //  .AddParameterConversion((string value) => convert2(convert1(value)));
 
             // Alternative - use method via lambda
-            //  .AddParameterConversion((string input) => ConvertToTestType(input));
+                // This adds a conversion to allow string[] parameters (by accepting object[] instead).
+                .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray());
 
             // Pass Delegate - different name and needs the signature types, but also works...
             //  .AddParameterConversionFunc<string, TestType>(ConvertToTestType);

@@ -2,7 +2,7 @@
 
 Public Module OptionalExamples
 
-    <ExcelFunction>
+     <ExcelFunction>
     Function dnaOptionalAnswer(Optional num As Double = 42) As String
         Return "The answer is " & num
     End Function

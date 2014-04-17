@@ -237,5 +237,11 @@ namespace ExcelDna.CustomRegistration.Example
         {
             return new TestType1("The Test (2) value is " + tt._value.Value);
         }
+
+        [ExcelFunction]
+        public static string dnaJoinStrings(string separator, string[] values)
+        {
+            return string.Join(separator, values);
+        }
     }
 }
