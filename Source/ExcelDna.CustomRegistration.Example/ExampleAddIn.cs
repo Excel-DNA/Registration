@@ -31,9 +31,9 @@ namespace ExcelDna.CustomRegistration.Example
                 // CONSIDER: This might have to change if we want to add improved tracing to the conversions.
                 // TODO: Parameter vs Return conversions...?
 
-            // Register the Standard Parameter Conversions
-                .AddParameterConversion(ParameterConversions.NullableConversion)
-                .AddParameterConversion(ParameterConversions.OptionalConversion)
+            // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
+                .AddParameterConversion(ParameterConversions.GetNullableConversion(treatEmptyAsMissing: false))
+                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: false))
 
             // Some ideas ways to define and register conversions
                 // These are for a particular parameter type
@@ -57,7 +57,7 @@ namespace ExcelDna.CustomRegistration.Example
         static FunctionExecutionConfiguration GetFunctionExecutionHandlerConfig()
         {
             return new FunctionExecutionConfiguration()
-                 .AddFunctionExecutionHandler(FunctionLoggingHandler.LoggingHandlerSelector)
+                .AddFunctionExecutionHandler(FunctionLoggingHandler.LoggingHandlerSelector)
                 .AddFunctionExecutionHandler(CacheFunctionExecutionHandler.CacheHandlerSelector)
                 .AddFunctionExecutionHandler(TimingFunctionExecutionHandler.TimingHandlerSelector)
                 .AddFunctionExecutionHandler(SuppressInDialogFunctionExecutionHandler.SuppressInDialogSelector);
