@@ -15,7 +15,7 @@ Public Module VbaCompatibleRegistration
 
         Dim conversionConfig As ParameterConversionConfiguration
         conversionConfig = New ParameterConversionConfiguration() _
-                                .AddParameterConversion(AddressOf ParameterConversions.OptionalConversion) _
+                                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing := False)) _
                                 .AddParameterConversionFunc(Of Object, Range)(AddressOf ReferenceToRange)
 
         GetAllPublicSharedFunctions() _

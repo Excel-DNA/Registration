@@ -42,12 +42,12 @@
     <Compile Include="FsAsyncUtil.fs" />
     <Compile Include="FsAsyncRegistration.fs" />
     <Compile Include="FsParameterConversions.fs" />
-    <None Include="packages.config" />
     <Compile Include="FsAsyncUtil.fs" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.Lib.0.32.0-rc3-1\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib" />

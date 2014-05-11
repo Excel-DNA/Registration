@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.Lib.0.32.0-rc3-1\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -76,11 +76,11 @@ xcopy "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna*" "$(TargetDir)
 xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.xll*" /C /Y
 "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y
 "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna" /Y</PostBuildEvent>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.xll*" /C /Y
+    <PostBuildEvent>xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.xll*" /C /Y
 xcopy "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna*" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna*" /C /Y
-xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.xll*" /C /Y
-"$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y
-"$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna" /Y</PostBuildEvent>
+xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.xll*" /C /Y
+"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y
+"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

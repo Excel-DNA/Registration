@@ -98,8 +98,7 @@ namespace ExcelDna.CustomRegistration
                 {
                     var del = entry.CommandLambda.Compile();
                     var att = entry.CommandAttribute;
-                    List<object> argAtt = null;
-
+                    
                     delList.Add(del);
                     attList.Add(att);
                 }
