@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -25,7 +25,7 @@
     <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
     <StartAction>Program</StartAction>
     <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
-    <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll"</StartArguments>
+    <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll" "$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\FSharpExample.xlsx"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -58,6 +58,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <None Include="FSharpExample.xlsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj">

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,29 +12,46 @@ using ExcelDna.Integration;
 namespace ExcelDna.CustomRegistration
 {
     /// <summary>
-    /// Defines an attribute to identify functions that define a mapping array function using enumerables and property reflection.
+    /// Attribute for functions that will be mapped to an Excel UDF,
+    /// using property reflection to convert Excel arrays to/from .NET enumerables.
     /// </summary>
     public class ExcelMapArrayFunctionAttribute : ExcelFunctionAttribute
+    {
+    }
+
+    /// <summary>
+    /// Optional attribute for parameters and return values of an [ExcelMapArrayFunction] function.
+    /// An enumerable of records is mapped to an Excel array, where the first row of the array contains
+    /// column headers which correspond to the public properties of the record type.
+    ///
+    /// E.g.
+    ///     struct Output { int Out; }
+    ///     struct Input  { int In1; int In2; }
+    ///     IEnumerable<typeparamref name="Output"/> MyFunc(IEnumerable<typeparamref name="Input"/>) { ... }
+    /// In Excel, use an Array Formula, e.g.
+    ///       | A       B       C       
+    ///     --+-------------------------
+    ///     1 | In1     In2     {=MyFunc(A1:B3)} -> Out
+    ///     2 | 1.0     2.0     {=MyFunc(A1:B3)} -> 1.5
+    ///     3 | 2.0     3.0     {=MyFunc(A1:B3)} -> 2.5
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.ReturnValue)]
+    public class ExcelMapPropertiesToColumnHeadersAttribute : Attribute
     {
     }
 
     public static class MapArrayFunctionRegistration
     {
         /// <summary>
-        /// Modifies RegistrationEntries which have [ExcelMapArrayFunctionAttribute],
-        /// converting parameters of type IEnumerable to and from Excel Ranges (i.e. object[,]).
-        /// The first row in each Range contains column headers, which are mapped to and from
-        /// the public properties of the enumerated types.
-        /// E.g.
-        ///     struct Output { int Out; }
-        ///     struct Input  { int In1; int In2; }
-        ///     IEnumerable<typeparamref name="Output"/> MyFunc(IEnumerable<typeparamref name="Input"/>) { ... }
-        /// In Excel, use an Array Formula, e.g.
-        ///       | A       B       C       
-        ///     --+-------------------------
-        ///     1 | In1     In2     {=MyFunc(A1:B3)} -> Out
-        ///     2 | 1.0     2.0     {=MyFunc(A1:B3)} -> 1.5
-        ///     3 | 2.0     3.0     {=MyFunc(A1:B3)} -> 2.5
+        /// Modifies RegistrationEntries which have [ExcelMapArrayFunction],
+        /// converting IEnumerable parameters to and from Excel Ranges (i.e. object[,]).
+        /// This allows idiomatic .NET functions (which use sequences and lists) to be used as UDFs.
+        /// 
+        /// Supports the use of Excel Array formulae where a UDF returns an enumerable.
+        /// 
+        /// 1-dimensional Excel arrays are mapped automatically to/from IEnumerable.
+        /// 2-dimensional Excel arrays can be mapped to a single function parameter with
+        /// [ExcelMapPropertiesToColumnHeaders].
         /// </summary>
         public static IEnumerable<ExcelFunctionRegistration> ProcessMapArrayFunctions(
             this IEnumerable<ExcelFunctionRegistration> registrations)
@@ -47,29 +65,26 @@ namespace ExcelDna.CustomRegistration
                     continue;
                 }
 
-                // avoid manipulating reg until we're sure it can succeed
                 try
                 {
-                    var shim = reg.FunctionLambda.MakeObjectArrayShim();
+                    var inputShimParameters = reg.FunctionLambda.Parameters.ZipSameLengths(reg.ParameterRegistrations, 
+                                        (p, r) => new ShimParameter(p.Type, r.CustomAttributes)).ToList();
+                    var resultShimParameter = new ShimParameter(reg.FunctionLambda.ReturnType, reg.ReturnCustomAttributes);
 
-                    // replace the Function attribute, with a description of the output fields
-                    var functionDescription = "Returns " + new ShimParameter(reg.FunctionLambda.ReturnType).HelpString;
+                    // create the shim function as a lambda, using reflection
+                    LambdaExpression shim = MakeObjectArrayShim(
+                        reg.FunctionLambda,
+                        inputShimParameters,
+                        resultShimParameter);
 
-                    // replace the Argument description, with a description of the input fields
-                    var parameterDescriptions = new string[reg.FunctionLambda.Parameters.Count];
-                    for (int param = 0; param != reg.FunctionLambda.Parameters.Count; ++param)
-                    {
-                        parameterDescriptions[param] = "Input " +
-                                                       new ShimParameter(reg.FunctionLambda.Parameters[param].Type)
-                                                           .HelpString;
-                    }
+                    // create a description of the function, with a list of the output fields
+                    string functionDescription = "Returns " + resultShimParameter.HelpString;
 
-                    if (parameterDescriptions.GetLength(0) != reg.ParameterRegistrations.Count)
-                        throw new InvalidOperationException(
-                            string.Format("Unexpected number of parameter registrations {0} vs {1}",
-                                parameterDescriptions.GetLength(0), reg.ParameterRegistrations.Count));
+                    // create a description of each parameter, with a list of the input fields
+                    var parameterDescriptions = inputShimParameters.Select(shimParameter => "Input " +
+                                                       shimParameter.HelpString).ToArray();
 
-                    // all ok - modify the registration
+                    // all ok so far - modify the registration
                     reg.FunctionLambda = shim;
                     if(String.IsNullOrEmpty(reg.FunctionAttribute.Description))
                         reg.FunctionAttribute.Description = functionDescription;
@@ -97,15 +112,13 @@ namespace ExcelDna.CustomRegistration
         /// The first row of each array defines the field names, which are mapped to the public properties of the
         /// input and return types.
         /// </summary>
-        /// <param name="targetMethod"></param>
         /// <returns></returns>
-        internal static LambdaExpression MakeObjectArrayShim(this LambdaExpression targetMethod)
+        private static LambdaExpression MakeObjectArrayShim(
+            LambdaExpression targetMethod,
+            IList<ShimParameter> inputShimParameters,
+            ShimParameter resultShimParameter)
         {
             var nParams = targetMethod.Parameters.Count;
-
-            // validate and extract info for the input and return types
-            var inputShimParameters = targetMethod.Parameters.Select(param => new ShimParameter(param.Type)).ToList();
-            var resultShimParameter = new ShimParameter(targetMethod.ReturnType);
 
             var compiledTargetMethod = targetMethod.Compile();
 
@@ -113,18 +126,35 @@ namespace ExcelDna.CustomRegistration
             // (simpler, but probably slower, alternative to building it all out of Expressions)
             ParamsDelegate shimDelegate = inputObjectArray =>
             {
-                if (inputObjectArray.GetLength(0) != nParams)
-                    throw new InvalidOperationException(string.Format("Expected {0} params, received {1}", nParams,
-                        inputObjectArray.GetLength(0)));
+                try
+                {
+                    if (inputObjectArray.GetLength(0) != nParams)
+                        throw new InvalidOperationException(string.Format("Expected {0} params, received {1}", nParams,
+                            inputObjectArray.GetLength(0)));
 
-                var targetMethodInputs = new object[nParams];
+                    var targetMethodInputs = new object[nParams];
 
-                for (int i = 0; i != nParams; ++i)
-                    targetMethodInputs[i] = inputShimParameters[i].ConvertShimToTarget(inputObjectArray[i]);
+                    for (int i = 0; i != nParams; ++i)
+                    {
+                        try
+                        {
+                            targetMethodInputs[i] = inputShimParameters[i].ConvertShimToTarget(inputObjectArray[i]);
+                        }
+                        catch(Exception e)
+                        {
+                            throw new InvalidOperationException(string.Format("Failed to convert parameter {0}: {1}", i + 1, e.Message));
+                        }
+                    }
 
-                var targetMethodResult = compiledTargetMethod.DynamicInvoke(targetMethodInputs);
+                    var targetMethodResult = compiledTargetMethod.DynamicInvoke(targetMethodInputs);
 
-                return resultShimParameter.ConvertTargetToShim(targetMethodResult);
+                    return resultShimParameter.ConvertTargetToShim(targetMethodResult);
+                }
+                catch(Exception e)
+                {
+                    return new object[,]
+                    {{ExcelError.ExcelErrorValue, e.Message}, {e.Message, ExcelError.ExcelErrorValue}};
+                }
             };
 
             // convert the delegate back to a LambdaExpression
@@ -137,162 +167,258 @@ namespace ExcelDna.CustomRegistration
 
         /// <summary>
         /// Class which does the work of translating a parameter or return value
-        /// between the shim (e.g. object[,] or object) and the target (e.g. IEnumerable or a value type)
+        /// between the shim (e.g. object[,]) and the target (e.g. IEnumerable<typeparamref name="T"/>)
         /// </summary>
         private class ShimParameter
         {
+            /// <summary>
+            /// The type of the target function's parameter or return value
+            /// </summary>
             private Type Type { set; get; }
-            private bool CanMapToArray { get { return MappedRecordProperties != null && MappedRecordType != null; } }
-            private Type MappedRecordType { set; get; }
-            private PropertyInfo[] MappedRecordProperties { set; get; }
 
+            /// <summary>
+            /// If the target function's parameter or return type is an IEnumerable, the enumerated type.
+            /// Else null
+            /// </summary>
+            private Type EnumeratedType { set; get; }
+
+            /// <summary>
+            /// If the target function's parameter or return type is marked with [ExcelMapPropertiesToColumnHeaders]
+            /// and mapping was successful, then this is a list of the properties to map.
+            /// Else null.
+            /// </summary>
+            private PropertyInfo[] MappedProperties { set; get; }
+
+            /// <summary>
+            /// Construct a ShimParameter for a single parameter, or the return value, of the target function.
+            /// Regular types are passed straight through with no conversion.
+            /// Enumerables are converted to/from object[,] arrays.
+            /// </summary>
+            /// <param name="type">The type of the target function's parameter or return value</param>
+            /// <param name="customAttributes">List of custom attributes defined on the
+            /// target function's parameter or return value</param>
+            public ShimParameter(Type type, IEnumerable<object> customAttributes)
+            {
+                Type = type;
+
+                // special case - don't treat strings as enumerables
+                if (type == typeof(string))
+                    return;
+
+                Type enumerable = type == typeof(IEnumerable)
+                    ? type
+                    : type.GetInterface(typeof (IEnumerable).Name);
+                Type genericEnumerable = type.Name == typeof(IEnumerable<>).Name
+                    ? type
+                    : type.GetInterface(typeof(IEnumerable<>).Name);
+                if (enumerable == null && genericEnumerable == null)
+                    return;
+
+                // support non-generic IEnumerables
+                if (genericEnumerable == null)
+                {
+                    EnumeratedType = typeof (object);
+                    return;
+                }
+
+                var typeArgs = genericEnumerable.GetGenericArguments();
+                if (typeArgs.Length != 1)
+                    return;
+
+                EnumeratedType = typeArgs[0];
+
+                if (!customAttributes.OfType<ExcelMapPropertiesToColumnHeadersAttribute>().Any())
+                    return;
+
+                PropertyInfo[] recordProperties =
+                    EnumeratedType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).
+                        OfType<PropertyInfo>().ToArray();
+                if (recordProperties.Length == 0)
+                    return;
+
+                MappedProperties = recordProperties;
+            }
+
+            /// <summary>
+            /// Returns a help string for the parameter or return type, containing
+            /// a list of the fields in the header row (if appropriate).
+            /// </summary>
             public string HelpString
             {
                 get
                 {
-                    if (CanMapToArray)
+                    if (MappedProperties != null)
                         return "array, with header row containing:\n" + String.Join(
-                            ",", this.MappedRecordProperties.Select(prop => prop.Name));
+                            ",", this.MappedProperties.Select(prop => prop.Name));
+                    
+                    if (EnumeratedType != null)
+                        return "single-row or single-column array of " + EnumeratedType.Name;
 
                     return "value, of type " + Type.Name;
                 }
             }
 
-            public ShimParameter(Type type)
-            {
-                Type = type;
-                if (!type.IsGenericType || type.Name != typeof(IEnumerable<>).Name)
-                    return;
-
-                var typeArgs = type.GetGenericArguments();
-                if (typeArgs.Length != 1)
-                    return;
-
-                Type recordType = typeArgs[0];
-                PropertyInfo[] recordProperties =
-                    recordType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).
-                        OfType<PropertyInfo>().ToArray();
-                if (recordProperties.Length == 0)
-                    return;
-
-                MappedRecordType = recordType;
-                MappedRecordProperties = recordProperties;
-            }
-
             /// <summary>
-            /// Converts a parameter from the shim (e.g. object[,]) to the target (e.g. IEnumerable)
+            /// Converts a value from the shim (e.g. object[,]) to the target (e.g. IEnumerable)
             /// </summary>
             /// <param name="inputObject"></param>
             /// <returns></returns>
             public object ConvertShimToTarget(object inputObject)
             {
-                var objectArray = inputObject as object[,];
-                if (!this.CanMapToArray || objectArray == null)
+                if (MappedProperties != null)
                 {
-                    // can't map target to array, so just convert raw value
-                    return ConvertFromExcelObject(inputObject, this.Type);
-                }
+                    var objectArray2D = inputObject as object[,];
+                    if (objectArray2D == null || objectArray2D.GetLength(0) == 0)
+                        throw new ArgumentException("objectArray");
 
-                if (objectArray.GetLength(0) == 0)
-                    throw new ArgumentException("objectArray");
+                    // extract nrows and ncols for each input array
+                    int nInputRows = objectArray2D.GetLength(0) - 1;
+                    int nInputCols = objectArray2D.GetLength(1);
 
-                // extract nrows and ncols for each input array
-                int nInputRows = objectArray.GetLength(0) - 1;
-                int nInputCols = objectArray.GetLength(1);
-
-                // Decorate the input record properties with the matching
-                // column indices from the input array. We have to do this each time
-                // the shim is invoked to map column headers dynamically.
-                // Would this be better as a SelectMany?
-                var inputPropertyCols = this.MappedRecordProperties.Select(propInfo =>
-                {
-                    int colIndex = -1;
-
-                    for (int inputCol = 0; inputCol != nInputCols; ++inputCol)
+                    // Decorate the input record properties with the matching
+                    // column indices from the input array. We have to do this each time
+                    // the shim is invoked to map column headers dynamically.
+                    // Would this be better as a SelectMany?
+                    var inputPropertyCols = this.MappedProperties.Select(propInfo =>
                     {
-                        var colName = objectArray[0, inputCol] as string;
-                        if (colName == null)
-                            continue;
+                        int colIndex = -1;
 
-                        if (propInfo.Name.Equals(colName, StringComparison.OrdinalIgnoreCase))
+                        for (int inputCol = 0; inputCol != nInputCols; ++inputCol)
                         {
-                            colIndex = inputCol;
-                            break;
+                            var colName = objectArray2D[0, inputCol] as string;
+                            if (colName == null)
+                                continue;
+
+                            if (propInfo.Name.Equals(colName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                colIndex = inputCol;
+                                break;
+                            }
                         }
-                    }
-                    return Tuple.Create(propInfo, colIndex);
-                }).ToArray();
+                        if (colIndex == -1)
+                            throw new InvalidOperationException(string.Format("No column found for property {0}", propInfo.Name));
+                        return Tuple.Create(propInfo, colIndex);
+                    }).ToArray();
 
-                // create a sequence of InputRecords
-                Array records = Array.CreateInstance(this.MappedRecordType, nInputRows);
+                    // create a sequence of InputRecords
+                    Array records = Array.CreateInstance(this.EnumeratedType, nInputRows);
 
-                // populate it
-                for (int row = 0; row != nInputRows; ++row)
-                {
-                    object inputRecord;
-                    try
+                    // populate it
+                    for (int row = 0; row != nInputRows; ++row)
                     {
-                        // try using constructor which takes parameters in their declared order
-                        inputRecord = Activator.CreateInstance(this.MappedRecordType,
-                            inputPropertyCols.Select(
-                                prop =>
-                                    ConvertFromExcelObject(objectArray[row + 1, prop.Item2],
-                                        prop.Item1.PropertyType)).ToArray());
-                    }
-                    catch (MissingMethodException)
-                    {
-                        // try a different way... default constructor and then set properties
-                        inputRecord = Activator.CreateInstance(this.MappedRecordType);
+                        object inputRecord;
+                        try
+                        {
+                            // try using constructor which takes parameters in their declared order
+                            inputRecord = Activator.CreateInstance(this.EnumeratedType,
+                                inputPropertyCols.Select(
+                                    prop =>
+                                        ConvertFromExcelObject(objectArray2D[row + 1, prop.Item2],
+                                            prop.Item1.PropertyType)).ToArray());
+                        }
+                        catch (MissingMethodException)
+                        {
+                            // try a different way... default constructor and then set properties
+                            inputRecord = Activator.CreateInstance(this.EnumeratedType);
 
-                        // populate the record
-                        foreach (var prop in inputPropertyCols)
-                            prop.Item1.SetValue(inputRecord,
-                                ConvertFromExcelObject(objectArray[row + 1, prop.Item2],
-                                    prop.Item1.PropertyType), null);
-                    }
+                            // populate the record
+                            foreach (var prop in inputPropertyCols)
+                                prop.Item1.SetValue(inputRecord,
+                                    ConvertFromExcelObject(objectArray2D[row + 1, prop.Item2],
+                                        prop.Item1.PropertyType), null);
+                        }
 
-                    records.SetValue(inputRecord, row);
+                        records.SetValue(inputRecord, row);
+                    }
+                    return records;
                 }
-                return records;
+
+                if (EnumeratedType != null)
+                {
+                    // the target needs a 1 dimensional sequence of EnumeratedType, in either orientation
+                    var objectArray = inputObject as object[,];
+                    Array result;
+                    if (objectArray == null)
+                    {
+                        // attempt to convert single item directly
+                        result = Array.CreateInstance(EnumeratedType, 1);
+                        result.SetValue(ConvertFromExcelObject(inputObject, EnumeratedType), 0);
+                    }
+                    else
+                    {
+                        // cast each input object to the required type
+                        int nRows = objectArray.GetLength(0);
+                        int nCols = objectArray.GetLength(1);
+                        if (nRows != 1 && nCols != 1)
+                            throw new InvalidOperationException("A 1 dimensional array is required");
+
+                        // create the required concrete array type
+                        int nItems = nRows == 1 ? nCols : nRows;
+                        result = Array.CreateInstance(EnumeratedType, nItems);
+                        for (int i = 0; i != nItems; ++i)
+                            result.SetValue(ConvertFromExcelObject(objectArray[nRows==1? 0: i, nRows == 1? i: 0], EnumeratedType), i);
+                    }
+                    return result;
+                }
+
+                // it's a simple value type
+                return ConvertFromExcelObject(inputObject, this.Type);
             }
 
             /// <summary>
-            /// Converts a parameter from the target (e.g. IEnumerable) to the shim (e.g. object[,])
+            /// Converts a value from the target (e.g. IEnumerable) to the shim (e.g. object[,])
             /// </summary>
             /// <param name="outputObject"></param>
             /// <returns></returns>
             public object ConvertTargetToShim(object outputObject)
             {
-                if (!this.CanMapToArray)
-                    return outputObject;
-
-                var genericToArray =
-                    typeof(Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
-                        .First(mi => mi.Name == "ToArray");
-                if (genericToArray == null)
-                    throw new InvalidOperationException("Internal error. Failed to find Enumerable.ToArray");
-                var toArray = genericToArray.MakeGenericMethod(this.MappedRecordType);
-                var returnRecordArray = toArray.Invoke(null, new object[] { outputObject }) as Array;
-                if (returnRecordArray == null)
-                    throw new InvalidOperationException("Internal error. Failed to convert return record to Array");
-
-                // create a return object array and populate the first row
-                var nReturnRows = returnRecordArray.Length;
-                var returnObjectArray = new object[nReturnRows + 1, this.MappedRecordProperties.Length];
-                for (int outputCol = 0; outputCol != this.MappedRecordProperties.Length; ++outputCol)
-                    returnObjectArray[0, outputCol] = this.MappedRecordProperties[outputCol].Name;
-
-                // iterate through the entire array and populate the output
-                for (int returnRow = 0; returnRow != nReturnRows; ++returnRow)
+                if (MappedProperties != null)
                 {
-                    for (int returnCol = 0; returnCol != this.MappedRecordProperties.Length; ++returnCol)
+                    var genericToArray =
+                        typeof (Enumerable).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                            .First(mi => mi.Name == "ToArray");
+                    if (genericToArray == null)
+                        throw new InvalidOperationException("Internal error. Failed to find Enumerable.ToArray");
+                    var toArray = genericToArray.MakeGenericMethod(this.EnumeratedType);
+                    var returnRecordArray = toArray.Invoke(null, new object[] {outputObject}) as Array;
+                    if (returnRecordArray == null)
+                        throw new InvalidOperationException("Internal error. Failed to convert return record to Array");
+
+                    // create a return object array and populate the first row
+                    var nReturnRows = returnRecordArray.Length;
+                    var returnObjectArray = new object[nReturnRows + 1, this.MappedProperties.Length];
+                    for (int outputCol = 0; outputCol != this.MappedProperties.Length; ++outputCol)
+                        returnObjectArray[0, outputCol] = this.MappedProperties[outputCol].Name;
+
+                    // iterate through the entire array and populate the output
+                    for (int returnRow = 0; returnRow != nReturnRows; ++returnRow)
                     {
-                        returnObjectArray[returnRow + 1, returnCol] = this.MappedRecordProperties[returnCol].
-                            GetValue(returnRecordArray.GetValue(returnRow), null);
+                        for (int returnCol = 0; returnCol != this.MappedProperties.Length; ++returnCol)
+                        {
+                            returnObjectArray[returnRow + 1, returnCol] = this.MappedProperties[returnCol].
+                                GetValue(returnRecordArray.GetValue(returnRow), null);
+                        }
                     }
+
+                    return returnObjectArray;
                 }
 
-                return returnObjectArray;
+                if (EnumeratedType != null)
+                {
+                    var genericToArray2D =
+                        typeof(MapArrayFunctionRegistration).GetMethods(BindingFlags.Static | BindingFlags.Public)
+                            .First(mi => mi.Name == "ToArray2D");
+                    if (genericToArray2D == null)
+                        throw new InvalidOperationException("Internal error. Failed to find Enumerable.ToArray2D extension method");
+                    var toArray2D = genericToArray2D.MakeGenericMethod(this.EnumeratedType);
+                    var returnRecordArray = toArray2D.Invoke(null, new object[] { outputObject, Orientation.Vertical }) as object[,];
+                    if (returnRecordArray == null)
+                        throw new InvalidOperationException("Internal error. Failed to convert return record to 2D Array");
+
+                    return returnRecordArray;
+                }
+
+                return outputObject;
             }
 
             /// <summary>
@@ -305,12 +431,79 @@ namespace ExcelDna.CustomRegistration
             {
                 // special case when converting from Excel double to DateTime
                 // no need for special case in reverse, because Excel-DNA understands a DateTime object
-                if (toType == typeof(DateTime) && @from is double)
+                if (toType == typeof(DateTime) && (from is double))
                 {
-                    return DateTime.FromOADate((double)@from);
+                    return DateTime.FromOADate((double)from);
                 }
-                return Convert.ChangeType(@from, toType);
+                if (toType == typeof(DateTime) && (from is int))
+                {
+                    return DateTime.FromOADate((int)from);
+                }
+                if (from is ExcelEmpty)
+                {
+                    // use default ctor if it exists exist
+                    if (toType.IsValueType)
+                        return Activator.CreateInstance(toType);
+                    if (toType == typeof(string))
+                        return String.Empty;
+                    if (toType.GetConstructor(Type.EmptyTypes) != null)
+                        return Activator.CreateInstance(toType);
+                    return null;
+                }
+                return Convert.ChangeType(from, toType);
             }
         }
+
+        /// <summary>
+        /// Same as Zip except throws an exception if not same length
+        /// </summary>
+        public static IEnumerable<TResult> ZipSameLengths<TFirst, TSecond, TResult>(
+            this IEnumerable<TFirst> first,
+            IEnumerable<TSecond> second,
+            Func<TFirst, TSecond, TResult> resultSelector)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (second == null) throw new ArgumentNullException("second");
+            if (resultSelector == null) throw new ArgumentNullException("resultSelector");
+
+            using (var enum1 = first.GetEnumerator())
+            using (var enum2 = second.GetEnumerator())
+            {
+                while (enum1.MoveNext())
+                {
+                    if (enum2.MoveNext())
+                        yield return resultSelector(enum1.Current, enum2.Current);
+                    else
+                        throw new InvalidOperationException("First sequence had more elements than second");
+                }
+                if (enum2.MoveNext())
+                    throw new InvalidOperationException("Second sequence had more elements than first");
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        #region Helper Methods
+
+        public enum Orientation
+        {
+            Horizontal,
+            Vertical
+        }
+
+        public static object[,] ToArray2D<T>(this IEnumerable<T> input, Orientation orient)
+        {
+            var list = input.ToList();
+            var result =
+                new object[orient == Orientation.Horizontal ? 1 : list.Count,
+                    orient == Orientation.Horizontal ? list.Count : 1];
+            for (int i = 0; i != list.Count; ++i)
+            {
+                result[orient == Orientation.Horizontal ? 0 : i,
+                    orient == Orientation.Horizontal ? i : 0] = list[i];
+            }
+            return result;
+        }
+
+        #endregion
     }
 }
