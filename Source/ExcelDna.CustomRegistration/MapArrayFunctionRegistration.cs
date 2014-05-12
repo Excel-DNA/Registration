@@ -152,8 +152,7 @@ namespace ExcelDna.CustomRegistration
                 }
                 catch(Exception e)
                 {
-                    return new object[,]
-                    {{ExcelError.ExcelErrorValue, e.Message}, {e.Message, ExcelError.ExcelErrorValue}};
+                    return new object[,] {{ExcelError.ExcelErrorValue}, {e.Message}};
                 }
             };
 
@@ -454,6 +453,9 @@ namespace ExcelDna.CustomRegistration
             }
         }
 
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        #region Helper Methods
+
         /// <summary>
         /// Same as Zip except throws an exception if not same length
         /// </summary>
@@ -480,9 +482,6 @@ namespace ExcelDna.CustomRegistration
                     throw new InvalidOperationException("Second sequence had more elements than first");
             }
         }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        #region Helper Methods
 
         public enum Orientation
         {

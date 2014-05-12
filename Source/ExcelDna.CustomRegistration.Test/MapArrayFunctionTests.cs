@@ -369,6 +369,12 @@ namespace ExcelDna.CustomRegistration.Test
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("AppendOne").MakeGenericMethod(typeof(TestClassDefaultCtor)),
                 new object[] { _recordsInputData, false, _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt },
                 _expectedOutputDataMixedNoAppend),
+
+            // Failure to execute shim
+            new TestCase(((Func<bool, bool, bool>)((x,y) => x && y)).Method, 
+                new object[] { true, "this is not a bool" }, 
+                new object[,] { {ExcelError.ExcelErrorValue}, {"Failed to convert parameter 2: String was not recognized as a valid Boolean."} },
+                "Execute failure"),
         };
 
         #endregion
