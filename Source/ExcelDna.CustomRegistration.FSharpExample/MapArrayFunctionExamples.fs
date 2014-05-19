@@ -1,6 +1,7 @@
 ﻿namespace ExcelDna.CustomRegistration.FSharpExample
 
 open System
+open System.Collections.Generic
 open System.Threading
 open System.Net
 open Microsoft.FSharp.Control.WebExtensions
@@ -10,27 +11,32 @@ open ExcelDna.CustomRegistration.FSharp
 
 module MapArrayFunctionExamples =
 
-    /// In Excel, use an Array Formula, e.g.
-    ///       | A                 B       C         D                                    E       
-    ///     --+---------------------------------------------------------------------------- 
-    ///     1 | Date             Bid     Ask        {=MyFunc(A1:B3)} -> Date            Mid 
-    ///     2 | 31 March 2014    1.99     2.01      {=MyFunc(A1:B3)} -> 31 March 2014    2.0
-    ///     3 | 1 April 2014     2.01     2.05      {=MyFunc(A1:B3)} -> 1 April 2014     2.03
+    /// Example demonstrating the use of a simple sequence as input and output.
+    /// Use an array formula in Excel to capture the output.
+    [<ExcelMapArrayFunction>]
+    let dnaFsRemoveDuplicates (input:seq<obj>) :seq<obj> =
+        Seq.distinctBy id input
 
-    type Input = {
+    /// A record type to use as an input parameter
+    type DateBidAsk = {
         Date : System.DateTime;
         Bid : double;
         Ask : double;
     }
 
-    type Output = {
+    /// A record type to use as an output parameter
+    type DateMid = {
         Date : System.DateTime;
         Mid : double;
     }
 
+    /// Example demonstrating an F# function which uses sequences of record types for input and output.
+    /// Column headers inside the worksheet are mapped to/from record property names.
     [<ExcelMapArrayFunction>]
-    let dnaFsCalculateMids (input:seq<Input>) :seq<Output> = 
-        let CalculateMid (input:Input) :Output = 
+    let dnaFsCalculateMids ([<ExcelMapPropertiesToColumnHeaders>] input:seq<DateBidAsk>) : 
+        [<ExcelMapPropertiesToColumnHeaders>] seq<DateMid> = 
+
+        let CalculateMid (input:DateBidAsk) :DateMid = 
             { Date = input.Date; Mid = (input.Bid + input.Ask)/2.}
         Seq.map CalculateMid input
 

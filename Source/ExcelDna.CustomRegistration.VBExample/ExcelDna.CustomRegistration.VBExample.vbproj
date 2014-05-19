@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -138,11 +138,11 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.xll*" /C /Y
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.xll*" /C /Y
 xcopy "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna*" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna*" /C /Y
-xcopy "C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.xll*" /C /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna" /Y
-"C:\Work\ExcelDna\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna" /Y</PostBuildEvent>
+xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.xll*" /C /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna" /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
