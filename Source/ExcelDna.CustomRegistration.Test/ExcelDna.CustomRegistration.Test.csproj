@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="MapArrayFunctionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ParameterConversionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">

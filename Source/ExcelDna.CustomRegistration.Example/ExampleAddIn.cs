@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration.Example
@@ -12,17 +15,27 @@ namespace ExcelDna.CustomRegistration.Example
             // Set the Parameter Conversions before they are applied by the ProcessParameterConversions call below.
             // CONSIDER: We might change the registration to be an object...?
             var conversionConfig = GetParameterConversionConfig();
+            var postAsyncReturnConfig = GetPostAsyncReturnConversionConfig();
 
             var functionHandlerConfig = GetFunctionExecutionHandlerConfig();
 
             // Get all the ExcelFunction functions, process and register
-            // Since the .dna file has ExplicitExports="true", these explicit regisrations are the only ones - there is no default processing
+            // Since the .dna file has ExplicitExports="true", these explicit registrations are the only ones - there is no default processing
             Registration.GetExcelFunctions()
                         .ProcessParameterConversions(conversionConfig)
                         .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
+               // DOES NOT WORK YET:         .ProcessParameterConversions(postAsyncReturnConfig)
                         .ProcessParamsRegistrations()
                         .ProcessFunctionExecutionHandlers(functionHandlerConfig)
                         .RegisterFunctions();
+        }
+
+        static ParameterConversionConfiguration GetPostAsyncReturnConversionConfig()
+        {
+            return new ParameterConversionConfiguration()
+                .AddReturnConversion(null, 
+                (type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
+                                                ((object returnValue) => returnValue.Equals(ExcelError.ExcelErrorNA) ? (object)"### WAIT ###" : returnValue)));
         }
 
         static ParameterConversionConfiguration GetParameterConversionConfig()
@@ -44,6 +57,7 @@ namespace ExcelDna.CustomRegistration.Example
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
 
                 .AddReturnConversion((TestType1 value) => value.ToString())
+
             //  .AddParameterConversion((string value) => convert2(convert1(value)));
 
             // Alternative - use method via lambda

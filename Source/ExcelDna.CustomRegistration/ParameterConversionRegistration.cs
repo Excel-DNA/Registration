@@ -50,6 +50,9 @@ namespace ExcelDna.CustomRegistration
             // Get hold of the global conversions list (which we assume is always present)
             var globalParameterConversions = conversionConfig.ParameterConversions[typeof(void)];
 
+            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied only once.
+            var conversionsApplied = new List<ParameterConversion>();
+
             // Try to repeatedly apply conversions until none are applicable.
             // We add a simple guard to covers for cycles and ill-behaved conversions functions
             // TODO: Improve tracing and log better error
@@ -77,7 +80,7 @@ namespace ExcelDna.CustomRegistration
                 // we have conversions that might be applied to this type...
                 // see if we can find one to be applied
                 // Note that convert might also make modifications to the paramReg object...
-                foreach (var convert in typeConversions)
+                foreach (var convert in typeConversions.Except(conversionsApplied))
                 {
                     var lambda = convert(paramType, paramReg);
                     if (lambda == null)
@@ -96,6 +99,7 @@ namespace ExcelDna.CustomRegistration
                     // Change the Parameter Type to be whatever the conversion function takes us to
                     // for the next round of processing
                     paramType = lambda.Parameters[0].Type;
+                    conversionsApplied.Add(convert);
                     applied = true;
                     break;
                 }
@@ -119,6 +123,9 @@ namespace ExcelDna.CustomRegistration
             // Get hold of the global conversions list (which we assume is always present)
             var globalReturnConversions = conversionConfig.ReturnConversions[typeof(void)];
 
+            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied only once.
+            var conversionsApplied = new List<ReturnConversion>();
+
             // Try to repeatedly apply conversions until none are applicable.
             // We add a simple guard to covers for cycles and ill-behaved conversions functions
             // TODO: Improve tracing and log better error
@@ -138,7 +145,7 @@ namespace ExcelDna.CustomRegistration
                 // we have conversions that might be applied to this type...
                 // see if we can find one to be applied
                 // Note that convert might also make modifications to the return attributes list...
-                foreach (var convert in typeConversions)
+                foreach (var convert in typeConversions.Except(conversionsApplied))
                 {
                     var lambda = convert(returnType, returnCustomAttributes);
                     if (lambda == null)
@@ -157,6 +164,7 @@ namespace ExcelDna.CustomRegistration
                     // Change the Return Type to be whatever the conversion function returns
                     // for the next round of processing
                     returnType = lambda.ReturnType;
+                    conversionsApplied.Add(convert);
                     applied = true;
                     break;
                 }
@@ -196,11 +204,8 @@ namespace ExcelDna.CustomRegistration
             //                          paramConvert1(paramConvert2(optTest))
             //                            )));
             //      };
-            
 
             Debug.Assert(reg.FunctionLambda.Parameters.Count == paramsConversions.Count);
-
-            // NOTE NOTE - Don't need the Variables....
 
             // NOTE: To cater for the Range COM type equivalance, we need to distinguish the FunctionLambda's parameter type and the paramConversion ReturnType.
             //       These need not be the same, but the should at least be equivalent.
@@ -228,8 +233,8 @@ namespace ExcelDna.CustomRegistration
                         }
                     }
 
-                    return (Expression)wrappedExpr;
-                });
+                    return wrappedExpr;
+                }).ToArray();
 
             var wrappingCall = Expr.Invoke(reg.FunctionLambda, paramExprs);
             if (returnConversions != null)
