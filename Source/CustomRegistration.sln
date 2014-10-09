@@ -1,6 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30602.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{85C93520-F21A-4378-B19E-339C7E47BA04}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDna.CustomRegistration", "ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj", "{4D1E4CF3-9D43-4B71-B81F-440606A36A3D}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ExcelDna.CustomRegistration.FSharp", "ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj", "{EE39A060-0120-4CA3-BD3F-AAF80A4E857F}"
@@ -8,13 +17,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDna.CustomRegistration.Example", "ExcelDna.CustomRegistration.Example\ExcelDna.CustomRegistration.Example.csproj", "{AD73A461-EA24-4F6B-8487-FCD32F4D1F06}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ExcelDna.CustomRegistration.FSharpExample", "ExcelDna.CustomRegistration.FSharpExample\ExcelDna.CustomRegistration.FSharpExample.fsproj", "{B0F06B76-0A7B-48B9-B4A7-AC437A00DBF7}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{85C93520-F21A-4378-B19E-339C7E47BA04}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
-	EndProjectSection
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ExcelDna.CustomRegistration.VBExample", "ExcelDna.CustomRegistration.VBExample\ExcelDna.CustomRegistration.VBExample.vbproj", "{CCAE7945-763B-417B-9A9F-9D16A6736E7E}"
 EndProject

@@ -138,6 +138,12 @@ namespace ExcelDna.CustomRegistration.Example
         }
 
         [ExcelFunction]
+        public static string dnaDoubleNullableOptional(double? arg = double.NaN)
+        {
+            return arg.ToString();
+        }
+
+        [ExcelFunction]
         public static string dnaParameterConvertOptionalTest(double optOptTest = 42.0)
         {
             return "VALUE: " + optOptTest.ToString("F1");
