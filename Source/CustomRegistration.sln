@@ -3,13 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30602.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{85C93520-F21A-4378-B19E-339C7E47BA04}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExcelDna.CustomRegistration", "ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj", "{4D1E4CF3-9D43-4B71-B81F-440606A36A3D}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ExcelDna.CustomRegistration.FSharp", "ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj", "{EE39A060-0120-4CA3-BD3F-AAF80A4E857F}"
