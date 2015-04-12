@@ -24,7 +24,7 @@ namespace ExcelDna.CustomRegistration.Example
             Registration.GetExcelFunctions()
                         .ProcessParameterConversions(conversionConfig)
                         .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
-               // DOES NOT WORK YET:         .ProcessParameterConversions(postAsyncReturnConfig)
+                        .ProcessParameterConversions(postAsyncReturnConfig)
                         .ProcessParamsRegistrations()
                         .ProcessFunctionExecutionHandlers(functionHandlerConfig)
                         .RegisterFunctions();

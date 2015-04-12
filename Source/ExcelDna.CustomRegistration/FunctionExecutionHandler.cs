@@ -11,7 +11,7 @@ namespace ExcelDna.CustomRegistration
         Default = 0,
         // Makes no sense to me yet.
         ///// <summary>
-        ///// Continue normally - For an OnException handler would suppress the exception and continue as if the method ware successful
+        ///// Continue normally - For an OnException handler would suppress the exception and continue as if the method were successful
         ///// </summary>
         //Continue = 1,
         /// <summary>

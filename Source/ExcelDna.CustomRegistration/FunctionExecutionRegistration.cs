@@ -30,7 +30,7 @@ namespace ExcelDna.CustomRegistration
         static void ApplyMethodHandlers(ExcelFunctionRegistration reg, IEnumerable<IFunctionExecutionHandler> handlers)
         {
             // The order of method handlers is important - we follow PostSharp's convention for MethodExecutionHandlers.
-            // The are passed from high priority (most inside) to low priority (most outside)
+            // They are passed from high priority (most inside) to low priority (most outside)
             // Imagine 2 FunctionHandlers, fh1 then fh2
             // So fh1 (highest priority)  will be 'inside' and fh2 will be outside (lower priority)
             foreach (var handler in handlers)
@@ -104,6 +104,8 @@ namespace ExcelDna.CustomRegistration
             //    return result;
             //  }
             // }
+
+            // CONSIDER: There are some helpers in .NET to capture the exception context, which would allow us to preserve the stack trace in a fresh throw.
 
             // Ensure the handler object is captured.
             var mh = Expression.Constant(handler);

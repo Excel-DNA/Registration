@@ -211,30 +211,31 @@ namespace ExcelDna.CustomRegistration
             //       These need not be the same, but the should at least be equivalent.
 
             // build up the invoke expression for each parameter
-            var wrappingParameters = new List<ParameterExpression>(reg.FunctionLambda.Parameters);
-            var paramExprs = reg.FunctionLambda.Parameters.Select((param, i) =>
+            var wrappingParameters = reg.FunctionLambda.Parameters.Select(p => Expression.Parameter(p.Type, p.Name)).ToList();
+
+            // Build the nested parameter convertion expression.
+            // Start with the wrapping parameters as they are. Then replace with the nesting of conversions as needed.
+            var paramExprs = new List<Expression>(wrappingParameters);
+            for (int i = 0; i < paramsConversions.Count; i++)
+            {
+                var paramConversions = paramsConversions[i];
+                if (paramConversions == null)
+                    continue;
+
+                // If we have a list, there should be at least one conversion in it.
+                Debug.Assert(paramConversions.Count > 0);
+                // Update the calling parameter type to be the outer one in the conversion chain.
+                wrappingParameters[i] = Expr.Parameter(paramConversions.Last().Parameters[0].Type, wrappingParameters[i].Name);
+                // Start with just the (now updated) outer param which will be the inner-most value in the conversion chain
+                Expression wrappedExpr = wrappingParameters[i];
+                // Need to go in reverse for the parameter wrapping
+                // Need to now build from the inside out
+                foreach (var conversion in Enumerable.Reverse(paramConversions))
                 {
-                    var paramConversions = paramsConversions[i];
-
-                    // Starting point is just the parameter expression
-                    Expression wrappedExpr = param;
-                    if (paramConversions != null)
-                    {
-                        // If we have a list, there should be at least one conversion in it.
-                        Debug.Assert(paramConversions.Count > 0);
-                        // Need to go in reverse for the parameter wrapping
-                        // Need to now build from the inside out
-                        wrappingParameters[i] = Expr.Parameter(paramConversions.Last().Parameters[0].Type, param.Name);
-                        // Start with just the final outer param
-                        wrappedExpr = wrappingParameters[i];
-                        foreach (var conversion in Enumerable.Reverse(paramConversions))
-                        {
-                            wrappedExpr = Expr.Invoke(conversion, wrappedExpr);
-                        }
-                    }
-
-                    return wrappedExpr;
-                }).ToArray();
+                    wrappedExpr = Expr.Invoke(conversion, wrappedExpr);
+                }
+                paramExprs[i] = wrappedExpr;
+            }
 
             var wrappingCall = Expr.Invoke(reg.FunctionLambda, paramExprs);
             if (returnConversions != null)

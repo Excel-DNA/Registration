@@ -250,4 +250,19 @@ namespace ExcelDna.CustomRegistration.Example
             return string.Join(separator, values);
         }
     }
+
+    public class ReturnTests
+    {
+        //[ExcelFunction]
+        //public static object GetErrorNA()
+        //{
+        //    return ExcelError.ExcelErrorNA;
+        //}
+
+        [ExcelFunction]
+        public static System.Threading.Tasks.Task<string> GetErrorNA(string s1)
+        {
+            return System.Threading.Tasks.Task.FromResult(s1);
+        }
+    }
 }

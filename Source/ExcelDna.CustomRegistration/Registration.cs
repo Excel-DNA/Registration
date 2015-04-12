@@ -8,16 +8,10 @@ using ExcelDna.Integration;
 namespace ExcelDna.CustomRegistration
 {
     // Ideas:
-    // * Parameter and Return Type conversions, including Range, Optional etc.
-    // * Disable in wizard
-    // * General function wrapper - with OnEnter OnSucceed OnException OnExit etc.
     // * Object Instances - Methods and Properties (with INotifyPropertyChanged support, and Disposable from Observable handles)
     // * Struct semantics, like built-in COMPLEX data
-    // * Logging and other pre / post / catch / finally handlers
     // * Cache  - PostSharp example from: http://vimeo.com/66549243 (esp. MethodExecutionTag for keeping stuff together)
-    // * E.g. ExecutionDurationAspect in PostSharp user guide
     // * Apply a Module name XlQualifiedName(true), or use Class Name.
-
 
     // A first attempt to allow chaining of the CustomRegistration rewrites.
     public static class Registration
