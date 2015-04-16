@@ -1,6 +1,0 @@
-<DnaLibrary Name="ExcelDna.CustomRegistration.FSharpExample Add-In" RuntimeVersion="v4.0">
-  <ExternalLibrary Path="ExcelDna.CustomRegistration.FSharpExample.dll" LoadFromBytes="true" Pack="true" />
-
-  <Reference Path="ExcelDna.CustomRegistration.dll" Pack="true" />
-  <Reference Path="ExcelDna.CustomRegistration.FSharp.dll" Pack="true" />
-</DnaLibrary>
