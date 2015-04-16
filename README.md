@@ -1,4 +1,4 @@
-Excel-DNA Custom Registration
+Excel-DNA Registration Helper
 =============================
 
 This library implements helper functions to assist and modify the Excel-DNA function registration, by applying various transformations before the functions are registered.

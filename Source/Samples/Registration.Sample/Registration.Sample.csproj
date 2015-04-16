@@ -78,11 +78,11 @@ xcopy "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna*" "$(TargetDir)
 xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.xll*" /C /Y
 "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y
 "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna" /Y</PostBuildEvent>
-    <PostBuildEvent>xcopy "C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample-AddIn.xll*" /C /Y
+    <PostBuildEvent>xcopy "C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample-AddIn.xll*" /C /Y
 xcopy "$(TargetDir)Registration.Sample-AddIn.dna*" "$(TargetDir)Registration.Sample-AddIn64.dna*" /C /Y
-xcopy "C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample-AddIn64.xll*" /C /Y
-"C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn.dna" /Y
-"C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn64.dna" /Y</PostBuildEvent>
+xcopy "C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample-AddIn64.xll*" /C /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn.dna" /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn64.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
