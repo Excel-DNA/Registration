@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace ExcelDna.CustomRegistration.Utils
+namespace ExcelDna.Registration.Utils
 {
     sealed class DefaultDisposable : IDisposable
     {

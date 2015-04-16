@@ -1,4 +1,4 @@
-﻿namespace ExcelDna.CustomRegistration.FSharp
+﻿namespace ExcelDna.Registration.FSharp
 open System
 open System.Threading
 open ExcelDna.Integration

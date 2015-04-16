@@ -1,10 +1,10 @@
-﻿namespace ExcelDna.CustomRegistration.FSharp
+﻿namespace ExcelDna.Registration.FSharp
 
 open System
 open System.Collections.Generic
 open System.Linq.Expressions
 open System.Reflection
-open ExcelDna.CustomRegistration
+open ExcelDna.Registration
 
 module FsAsyncRegistration =
 

@@ -8,8 +8,8 @@ using System.Linq.Expressions;
 using System.Text;
 using ExcelDna.Integration;
 
-[assembly: InternalsVisibleTo("ExcelDna.CustomRegistration.Test")]
-namespace ExcelDna.CustomRegistration
+[assembly: InternalsVisibleTo("Registration.Test")]
+namespace ExcelDna.Registration
 {
     /// <summary>
     /// Attribute for functions that will be mapped to an Excel UDF,

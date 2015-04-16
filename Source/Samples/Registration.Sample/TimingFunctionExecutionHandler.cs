@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using ExcelDna.Registration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class TimingAttribute : Attribute

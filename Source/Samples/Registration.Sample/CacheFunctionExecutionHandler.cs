@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
+using ExcelDna.Registration;
 
-namespace ExcelDna.CustomRegistration
+namespace Registration.Sample
 {
     // Instead of the Timeout as part of each Cache attribute, we could also have it as a global setting...
     [AttributeUsage(AttributeTargets.Method)]

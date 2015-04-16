@@ -1,4 +1,4 @@
-﻿namespace ExcelDna.CustomRegistration.FSharpExample
+﻿namespace Registration.Samples.FSharp
 
 open System
 open System.Collections.Generic
@@ -6,8 +6,8 @@ open System.Threading
 open System.Net
 open Microsoft.FSharp.Control.WebExtensions
 open ExcelDna.Integration
-open ExcelDna.CustomRegistration
-open ExcelDna.CustomRegistration.FSharp
+open ExcelDna.Registration
+open ExcelDna.Registration.FSharp
 
 module MapArrayFunctionExamples =
 

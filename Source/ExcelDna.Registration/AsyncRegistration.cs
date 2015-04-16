@@ -5,10 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ExcelDna.CustomRegistration.Utils;
+using ExcelDna.Registration.Utils;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public static class AsyncRegistration
     {

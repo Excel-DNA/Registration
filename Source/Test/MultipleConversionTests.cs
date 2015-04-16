@@ -10,7 +10,7 @@ using ExcelDna.Integration;
 using NUnit.Framework;
 using Expr = System.Linq.Expressions.Expression;
 
-namespace ExcelDna.CustomRegistration.Test
+namespace ExcelDna.Registration.Test
 {
     [TestFixture]
     public static class MultipleConversionTests

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Expr = System.Linq.Expressions.Expression;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public static class FunctionExecutionRegistration
     {

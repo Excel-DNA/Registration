@@ -6,9 +6,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using ExcelDna.Integration;
 using NUnit.Framework;
-using Orientation = ExcelDna.CustomRegistration.MapArrayFunctionRegistration.Orientation;
+using Orientation = ExcelDna.Registration.MapArrayFunctionRegistration.Orientation;
 
-namespace ExcelDna.CustomRegistration.Test
+namespace ExcelDna.Registration.Test
 {
     [TestFixture]
     public static class MapArrayFunctionTests

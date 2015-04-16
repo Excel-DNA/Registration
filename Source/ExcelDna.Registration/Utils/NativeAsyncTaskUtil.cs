@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration.Utils
+namespace ExcelDna.Registration.Utils
 {
     // Helpers for creating and using Task-based functions with Excel 2010+ native async support
     public static class NativeAsyncTaskUtil

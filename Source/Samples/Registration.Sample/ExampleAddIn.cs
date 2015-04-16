@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ExcelDna.Integration;
+using ExcelDna.Registration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     public class ExampleAddIn : IExcelAddIn
     {
@@ -21,13 +22,13 @@ namespace ExcelDna.CustomRegistration.Example
 
             // Get all the ExcelFunction functions, process and register
             // Since the .dna file has ExplicitExports="true", these explicit registrations are the only ones - there is no default processing
-            Registration.GetExcelFunctions()
-                        .ProcessParameterConversions(conversionConfig)
-                        .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
-                        .ProcessParameterConversions(postAsyncReturnConfig)
-                        .ProcessParamsRegistrations()
-                        .ProcessFunctionExecutionHandlers(functionHandlerConfig)
-                        .RegisterFunctions();
+            ExcelRegistration.GetExcelFunctions()
+                             .ProcessParameterConversions(conversionConfig)
+                             .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
+                             .ProcessParameterConversions(postAsyncReturnConfig)
+                             .ProcessParamsRegistrations()
+                             .ProcessFunctionExecutionHandlers(functionHandlerConfig)
+                             .RegisterFunctions();
         }
 
         static ParameterConversionConfiguration GetPostAsyncReturnConversionConfig()

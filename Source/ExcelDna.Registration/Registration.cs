@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ExcelDna.CustomRegistration.Utils;
+using ExcelDna.Registration.Utils;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // Ideas:
     // * Object Instances - Methods and Properties (with INotifyPropertyChanged support, and Disposable from Observable handles)
@@ -13,8 +13,8 @@ namespace ExcelDna.CustomRegistration
     // * Cache  - PostSharp example from: http://vimeo.com/66549243 (esp. MethodExecutionTag for keeping stuff together)
     // * Apply a Module name XlQualifiedName(true), or use Class Name.
 
-    // A first attempt to allow chaining of the CustomRegistration rewrites.
-    public static class Registration
+    // A first attempt to allow chaining of the Registration rewrites.
+    public static class ExcelRegistration
     {
         /// <summary>
         /// Retrieve registration wrappers for all (public, static) functions marked with [ExcelFunction] attributes, 

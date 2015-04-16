@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public static class SymbolExtensions
     {

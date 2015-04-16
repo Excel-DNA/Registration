@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
 
     // TODO: Maybe need to turn these into objects with type and name so that we can trace and debug....
@@ -84,7 +84,7 @@ namespace ExcelDna.CustomRegistration
 
         public ParameterConversionConfiguration AddParameterConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
         {
-            // CONSIDER: We really don't want our the CustomRegistration compilation to build out a closure object here...
+            // CONSIDER: We really don't want our Registration processing to build out a closure object here...
             AddParameterConversion<TTo>(
                 (unusedParamType, paramReg) =>
                     (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(paramReg.CustomAttributes, value)));

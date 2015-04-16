@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Runtime.InteropServices;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     /// <summary>
     /// Defines some standard Parameter Conversions.

@@ -1,7 +1,7 @@
 ﻿Imports System.Runtime.CompilerServices
 Imports Microsoft.Office.Interop.Excel
 Imports ExcelDna.Integration
-Imports ExcelDna.CustomRegistration
+Imports ExcelDna.Registration
 
 Public Module RangeParameterConversion
 

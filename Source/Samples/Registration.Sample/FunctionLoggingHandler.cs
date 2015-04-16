@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Linq;
+using ExcelDna.Registration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     public class FunctionLoggingHandler : FunctionExecutionHandler
     {

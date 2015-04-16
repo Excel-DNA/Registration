@@ -7,14 +7,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public class ExcelParameterRegistration
     {
         // Used for the final Excel-DNA registration
         public ExcelArgumentAttribute ArgumentAttribute { get; set; }
 
-        // Used only for the CustomRegistration processing
+        // Used only for the Registration processing
         public List<object> CustomAttributes { get; set; } // Should not be null, and elements should not be null
 
         public ExcelParameterRegistration(ExcelArgumentAttribute argumentAttribute)
@@ -81,7 +81,7 @@ namespace ExcelDna.CustomRegistration
         public ExcelFunctionAttribute FunctionAttribute { get; set; }                   // May not be null
         public List<ExcelParameterRegistration> ParameterRegistrations { get; set; }    // A list of ExcelParameterRegistrations with length equal to the number of parameters in Delegate
 
-        // These are used only for the CustomRegistration processing
+        // These are used only for the Registration processing
         public List<object> CustomAttributes { get; set; }                 // List may not be null
         public List<object> ReturnCustomAttributes { get; set; }                 // List may not be null
 

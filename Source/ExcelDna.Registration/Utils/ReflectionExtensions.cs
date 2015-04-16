@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace ExcelDna.CustomRegistration.Utils
+namespace ExcelDna.Registration.Utils
 {
     static class ReflectionExtensions
     {

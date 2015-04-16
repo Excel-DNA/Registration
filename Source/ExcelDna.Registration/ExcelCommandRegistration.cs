@@ -5,10 +5,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // Explicit support here for ExcelCommands is to encourage ExplicitRegistration=true
-    // for all add-ins that use CustomRegistration.
+    // for all add-ins that use the Registration processing.
     // But to support this we need to take care of ExcelCommands explicitly too.
 
     // Maybe one day we'll do Command/Function unification
@@ -22,7 +22,7 @@ namespace ExcelDna.CustomRegistration
         public LambdaExpression CommandLambda { get; set; }
         public ExcelCommandAttribute CommandAttribute { get; set; }        // May not be null
 
-        // These are used only for the CustomRegistration processing
+        // These are used only for the Registration processing
         public List<object> CustomAttributes { get; set; }                 // List may not be null
 
         public ExcelCommandRegistration(LambdaExpression commandLambda, ExcelCommandAttribute commandAttribute)

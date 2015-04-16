@@ -1,7 +1,7 @@
 ﻿using System;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     // TODO: Fix double->int and similar conversions when objects are received
     //       Test multi-hop return type conversions

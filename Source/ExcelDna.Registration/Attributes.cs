@@ -1,6 +1,6 @@
 ﻿using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // An extension of the ExcelFunction attribute to identify functions that should be registered as async
     // By default functions are set as ExplicitRegistration=true, so marked functions will not be automatically registered

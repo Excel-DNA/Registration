@@ -1,7 +1,7 @@
 ﻿using System;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration.Utils
+namespace ExcelDna.Registration.Utils
 {
     public static class ObservableRtdUtil
     {

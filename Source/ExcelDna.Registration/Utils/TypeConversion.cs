@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public static class TypeConversion
     {

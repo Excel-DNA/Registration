@@ -1,4 +1,4 @@
-﻿namespace ExcelDna.CustomRegistration.FSharp
+﻿namespace ExcelDna.Registration.FSharp
 
 open System
 open System.Collections.Generic
@@ -6,7 +6,7 @@ open System.Linq.Expressions
 open System.Reflection
 open Microsoft.FSharp.Core
 open ExcelDna.Integration
-open ExcelDna.CustomRegistration
+open ExcelDna.Registration
 
 module FsParameterConversions =
 

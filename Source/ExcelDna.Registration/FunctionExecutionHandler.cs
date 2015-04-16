@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // Inspired by PostSharp
     public enum FlowBehavior

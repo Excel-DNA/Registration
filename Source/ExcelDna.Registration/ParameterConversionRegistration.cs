@@ -5,7 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Expr = System.Linq.Expressions.Expression;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // CONSIDER: Can one use an ExpressionVisitor to do these things....?
     public static class ParameterConversionRegistration

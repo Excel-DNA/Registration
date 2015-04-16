@@ -1,4 +1,4 @@
-﻿namespace ExcelDna.CustomRegistration.FSharpExample
+﻿namespace Registration.Samples.FSharp
 
 open ExcelDna.Integration
 

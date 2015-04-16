@@ -1,13 +1,13 @@
 ﻿using System;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     public static class ParamsFunctionExamples
     {
 
         // This function has its final argument marked with 'params' 
-        // Via the CustomRegistration helper will be registered in Excel as a function with 29 or 125 arguments,
+        // Via the Registration helper will be registered in Excel as a function with 29 or 125 arguments,
         // and the wrapper will automatically remove 'ExcelMissing' values.
         //
         // If ExplicitRegistration="true" was _not_ in the .dna file, then

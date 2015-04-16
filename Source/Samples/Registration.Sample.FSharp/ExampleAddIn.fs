@@ -1,8 +1,8 @@
-﻿namespace ExcelDna.CustomRegistration.FSharpExample
+﻿namespace Registration.Samples.FSharp
 
 open ExcelDna.Integration
-open ExcelDna.CustomRegistration
-open ExcelDna.CustomRegistration.FSharp
+open ExcelDna.Registration
+open ExcelDna.Registration.FSharp
 
 type FsAsyncAddIn () =
     interface IExcelAddIn with
@@ -10,11 +10,11 @@ type FsAsyncAddIn () =
             let paramConvertConfig = ParameterConversionConfiguration()
                                         .AddParameterConversion(FsParameterConversions.FsOptionalParameterConversion)
 
-            Registration.GetExcelFunctions ()
+            ExcelRegistration.GetExcelFunctions ()
             |> fun fns -> ParameterConversionRegistration.ProcessParameterConversions (fns, paramConvertConfig)
             |> FsAsyncRegistration.ProcessFsAsyncRegistrations
             |> AsyncRegistration.ProcessAsyncRegistrations
             |> MapArrayFunctionRegistration.ProcessMapArrayFunctions
-            |> Registration.RegisterFunctions
+            |> ExcelRegistration.RegisterFunctions
         
         member this.AutoClose () = ()

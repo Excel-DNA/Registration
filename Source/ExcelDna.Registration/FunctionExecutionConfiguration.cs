@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     public class FunctionExecutionConfiguration
     {

@@ -1,6 +1,7 @@
 ﻿using ExcelDna.Integration;
+using ExcelDna.Registration;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     public static class FunctionExecutionHandlerExamples
     {

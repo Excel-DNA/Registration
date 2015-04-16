@@ -2,14 +2,15 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using ExcelDna.CustomRegistration.Utils;
 using ExcelDna.Integration;
+using ExcelDna.Registration;
+using ExcelDna.Registration.Utils;
 
-namespace ExcelDna.CustomRegistration.Example
+namespace Registration.Sample
 {
     public static class AsyncFunctionExamples
     {
-        // Will not be registered in Excel by Excel-DNA, without being picked up by our CustomRegistration processing
+        // Will not be registered in Excel by Excel-DNA, without being picked up by our Registration processing
         // since there is no ExcelFunction attribute, and ExplicitRegistration="true" in the .dna file prevents this 
         // function from being registered by the default processing.
         public static string dnaSayHello(string name)
@@ -34,7 +35,7 @@ namespace ExcelDna.CustomRegistration.Example
             return "Hello " + name + "!";
         }
 
-        // Explicitly marked with ExcelAsyncFunction, so it will be wrapped by CustomRegistration
+        // Explicitly marked with ExcelAsyncFunction, so it will be wrapped by the Registration processing
         // If we marked this function with [ExcelFunction] instead of [ExcelAsyncFunction] it would
         // not be wrapped (since it doesn't return Task or IObservable).
         [ExcelAsyncFunction(Name="dnaDelayedHelloAsync", Description="A friendly async function")]
@@ -44,7 +45,7 @@ namespace ExcelDna.CustomRegistration.Example
             return "Hello " + name + "!";
         }
 
-        // A function that returns a Task<T> and will be wrapped by CustomRegistration
+        // A function that returns a Task<T> and will be wrapped by the Registration processing
         // It doesn't matter if this function is marked with ExcelFunction or ExcelAsyncFunction
         [ExcelFunction]
         public static Task<string> dnaDelayedTaskHello(string name, int msDelay)
@@ -63,7 +64,7 @@ namespace ExcelDna.CustomRegistration.Example
         //    return "Hello " + name;
         //}
 
-        // A function that returns a Task<T>, takes a CancellationToken as last parameter, and will be wrapped by CustomRegistration
+        // A function that returns a Task<T>, takes a CancellationToken as last parameter, and will be wrapped by the Registration processing
         // It doesn't matter if this function is marked with ExcelFunction or ExcelAsyncFunction.
         // Whether the registration uses the native async under Excel 2010+ will make a big difference to the cancellation here!
         [ExcelAsyncFunction]

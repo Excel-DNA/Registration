@@ -1,11 +1,11 @@
-﻿namespace ExcelDna.CustomRegistration.FSharpExample
+﻿namespace Registration.Samples.FSharp
 
 open System
 open System.Threading
 open System.Net
 open Microsoft.FSharp.Control.WebExtensions
 open ExcelDna.Integration
-open ExcelDna.CustomRegistration.FSharp
+open ExcelDna.Registration.FSharp
 
 // Some test functions
 module TestFunctions =

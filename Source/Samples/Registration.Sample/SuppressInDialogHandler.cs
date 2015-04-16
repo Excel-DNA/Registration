@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using ExcelDna.Integration;
 
-namespace ExcelDna.CustomRegistration
+namespace ExcelDna.Registration
 {
     // Alternative pattern - make this an attribute directly
     // CONSIDER: In this case we never need the parameters. It would be nice never have to pull them into the FunctionExecutionArgs.

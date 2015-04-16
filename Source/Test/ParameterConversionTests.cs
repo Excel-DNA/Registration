@@ -7,7 +7,7 @@ using System.Text;
 using ExcelDna.Integration;
 using NUnit.Framework;
 
-namespace ExcelDna.CustomRegistration.Test
+namespace ExcelDna.Registration.Test
 {
     [TestFixture]
     public static class ParameterConversionTests

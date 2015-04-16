@@ -8,7 +8,7 @@
 Imports System.Reflection
 Imports Microsoft.Office.Interop.Excel
 Imports ExcelDna.Integration
-Imports ExcelDna.CustomRegistration
+Imports ExcelDna.Registration
 
 Public Module VbaCompatibleRegistration
 
