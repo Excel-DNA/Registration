@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -125,11 +125,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExcelDna.CustomRegistration.VisualBasic\ExcelDna.CustomRegistration.VisualBasic.vbproj">
+    <ProjectReference Include="..\..\ExcelDna.Registration.VisualBasic\ExcelDna.Registration.VisualBasic.vbproj">
       <Project>{b3a61274-849f-41b3-a933-9b18d81a13f1}</Project>
       <Name>ExcelDna.CustomRegistration.VisualBasic</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
+    <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
       <Name>ExcelDna.CustomRegistration</Name>
     </ProjectReference>
