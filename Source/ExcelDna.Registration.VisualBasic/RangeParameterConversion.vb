@@ -1,6 +1,7 @@
 ﻿Imports System.Runtime.CompilerServices
-Imports ExcelDna.Integration
 Imports Microsoft.Office.Interop.Excel
+Imports ExcelDna.Integration
+Imports ExcelDna.CustomRegistration
 
 Public Module RangeParameterConversion
 
@@ -21,17 +22,17 @@ Public Module RangeParameterConversion
     End Function
 
     Private Function UpdateAttributesForRangeParameters(reg As ExcelFunctionRegistration) As ExcelFunctionRegistration
-        
-        Dim rangeParams = From parWithIndex In reg.FunctionLambda.Parameters.Select(Function(par, i) New With { .Parameter = par, .Index = i})
+
+        Dim rangeParams = From parWithIndex In reg.FunctionLambda.Parameters.Select(Function(par, i) New With {.Parameter = par, .Index = i})
                           Where parWithIndex.Parameter.Type.IsEquivalentTo(GetType(Range))
                           Select parWithIndex
-                          
+
         Dim hasRangeParam As Boolean = False
         For Each param In rangeParams
             reg.ParameterRegistrations(param.Index).ArgumentAttribute.AllowReference = True
             hasRangeParam = True
         Next
-        
+
         If hasRangeParam Then
             reg.FunctionAttribute.IsMacroType = True
         End If
@@ -40,7 +41,7 @@ Public Module RangeParameterConversion
     End Function
 
     ' Must be run before the parameter conversions
-    <Extension()> 
+    <Extension()>
     Function UpdateRegistrationsForRangeParameters(regs As IEnumerable(Of ExcelFunctionRegistration)) As IEnumerable(Of ExcelFunctionRegistration)
         Return regs.Select(AddressOf UpdateAttributesForRangeParameters)
     End Function

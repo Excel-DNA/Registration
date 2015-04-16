@@ -5,9 +5,10 @@
 ' * Enables Params parameter arrays
 ' * Does ReferenceToRange conversions (including setting IsMacroType=True for such functions)
 
+Imports System.Reflection
 Imports Microsoft.Office.Interop.Excel
 Imports ExcelDna.Integration
-Imports System.Reflection
+Imports ExcelDna.CustomRegistration
 
 Public Module VbaCompatibleRegistration
 
@@ -15,7 +16,7 @@ Public Module VbaCompatibleRegistration
 
         Dim conversionConfig As ParameterConversionConfiguration
         conversionConfig = New ParameterConversionConfiguration() _
-                                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing := False)) _
+                                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing:=False)) _
                                 .AddParameterConversionFunc(Of Object, Range)(AddressOf ReferenceToRange)
 
         GetAllPublicSharedFunctions() _
@@ -30,22 +31,22 @@ Public Module VbaCompatibleRegistration
 
     ' Gets the Public Shared methods that don't return Void
     Private Function GetAllPublicSharedFunctions() As IEnumerable(Of ExcelFunctionRegistration)
-        Return From ass in ExcelIntegration.GetExportedAssemblies()
-               From typ in ass.GetTypes()
+        Return From ass In ExcelIntegration.GetExportedAssemblies()
+               From typ In ass.GetTypes()
                Where Not typ.FullName.Contains(".My.")
-               From mi in typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
+               From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
                Where Not mi.ReturnType = GetType(Void)
-               Select new ExcelFunctionRegistration(mi)
+               Select New ExcelFunctionRegistration(mi)
     End Function
 
     ' Gets the Public Shared methods that return Void
     Private Function GetAllPublicSharedSubs() As IEnumerable(Of ExcelCommandRegistration)
-        Return From ass in ExcelIntegration.GetExportedAssemblies()
-               From typ in ass.GetTypes()
+        Return From ass In ExcelIntegration.GetExportedAssemblies()
+               From typ In ass.GetTypes()
                Where Not typ.FullName.Contains(".My.")
-               From mi in typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
+               From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
                Where mi.ReturnType = GetType(Void)
-               Select new ExcelCommandRegistration(mi)
+               Select New ExcelCommandRegistration(mi)
     End Function
 
 End Module

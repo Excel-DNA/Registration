@@ -8,7 +8,7 @@
     <ProjectGuid>ee39a060-0120-4ca3-bd3f-aaf80a4e857f</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ExcelDna.CustomRegistration.FSharp</RootNamespace>
-    <AssemblyName>ExcelDna.CustomRegistration.FSharp</AssemblyName>
+    <AssemblyName>ExcelDna.Registration.FSharp</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>ExcelDna.CustomRegistration.FSharp</Name>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharp.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\ExcelDna.Registration.FSharp.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

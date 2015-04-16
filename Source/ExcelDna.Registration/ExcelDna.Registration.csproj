@@ -7,8 +7,8 @@
     <ProjectGuid>{4D1E4CF3-9D43-4B71-B81F-440606A36A3D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExcelDna.CustomRegistration</RootNamespace>
-    <AssemblyName>ExcelDna.CustomRegistration</AssemblyName>
+    <RootNamespace>ExcelDna.Registration</RootNamespace>
+    <AssemblyName>ExcelDna.Registration</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>

@@ -1,5 +1,5 @@
 ﻿Imports ExcelDna.Integration
-Imports ExcelDna.CustomRegistration.VisualBasic
+Imports ExcelDna.Registration.VisualBasic
 
 Public Class ExampleAddIn
     Implements IExcelAddIn

@@ -1,5 +1,5 @@
 <DnaLibrary Name="Registration.Sample Add-In" RuntimeVersion="v4.0">
-  <ExternalLibrary Path="ExcelDna.CustomRegistration.Example.dll" LoadFromBytes="true" Pack="true" />
+  <ExternalLibrary Path="Registration.Sample.dll" LoadFromBytes="true" Pack="true" />
   
   <!-- 
        The RuntimeVersion attribute above allows two settings:

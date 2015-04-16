@@ -7,8 +7,8 @@
     <ProjectGuid>{AD73A461-EA24-4F6B-8487-FCD32F4D1F06}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ExcelDna.CustomRegistration.Example</RootNamespace>
-    <AssemblyName>ExcelDna.CustomRegistration.Example</AssemblyName>
+    <RootNamespace>Registration.Sample</RootNamespace>
+    <AssemblyName>Registration.Sample</AssemblyName>
     <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -60,10 +60,10 @@
     <Compile Include="TimingFunctionExecutionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <Content Include="Registration.Sample-AddIn.dna">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
