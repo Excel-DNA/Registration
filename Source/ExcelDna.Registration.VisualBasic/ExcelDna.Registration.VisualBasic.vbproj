@@ -122,7 +122,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.Registration\ExcelDna.Registration.csproj">
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
-      <Name>ExcelDna.CustomRegistration</Name>
+      <Name>ExcelDna.Registration</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />

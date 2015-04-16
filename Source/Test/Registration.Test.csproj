@@ -60,18 +60,15 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="ExcelDna.CustomRegistration.Test-AddIn.dna">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ExcelDna.Registration\ExcelDna.Registration.csproj">
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
-      <Name>ExcelDna.CustomRegistration</Name>
+      <Name>ExcelDna.Registration</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
@@ -110,10 +110,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <Content Include="ExcelDna.CustomRegistration.VBExample-AddIn.dna">
+    <Content Include="Registration.Sample.VisualBasic-AddIn.dna">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="packages.config" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -127,20 +127,20 @@
   <ItemGroup>
     <ProjectReference Include="..\..\ExcelDna.Registration.VisualBasic\ExcelDna.Registration.VisualBasic.vbproj">
       <Project>{b3a61274-849f-41b3-a933-9b18d81a13f1}</Project>
-      <Name>ExcelDna.CustomRegistration.VisualBasic</Name>
+      <Name>ExcelDna.Registration.VisualBasic</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
-      <Name>ExcelDna.CustomRegistration</Name>
+      <Name>ExcelDna.Registration</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.xll*" /C /Y
-xcopy "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna*" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna*" /C /Y
-xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.xll*" /C /Y
-"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn.dna" /Y
-"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.VBExample-AddIn64.dna" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample.VisualBasic-AddIn.xll*" /C /Y
+xcopy "$(TargetDir)Registration.Sample.VisualBasic-AddIn.dna*" "$(TargetDir)Registration.Sample.VisualBasic-AddIn64.dna*" /C /Y
+xcopy "C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample.VisualBasic-AddIn64.xll*" /C /Y
+"C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.VisualBasic-AddIn.dna" /Y
+"C:\Work\Excel-DNA\CustomRegistration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.VisualBasic-AddIn64.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

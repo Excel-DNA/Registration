@@ -68,8 +68,10 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
-      <Name>ExcelDna.CustomRegistration</Name>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelDna.Registration\ExcelDna.Registration.csproj">
+      <Name>ExcelDna.Registration</Name>
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
       <Private>True</Private>
     </ProjectReference>
