@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>b0f06b76-0a7b-48b9-b4a7-ac437a00dbf7</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ExcelDna.CustomRegistration.FSharpExample</RootNamespace>
+    <AssemblyName>ExcelDna.CustomRegistration.FSharpExample</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Name>ExcelDna.CustomRegistration.FSharpExample</Name>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <TargetFSharpCoreVersion>4.3.0.0</TargetFSharpCoreVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Debug\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
+    <StartAction>Program</StartAction>
+    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
+    <StartArguments>"$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\bin\Debug\ExcelDna.CustomRegistration.FSharpExample-AddIn.xll" "$(SolutionDir)\ExcelDna.CustomRegistration.FSharpExample\FSharpExample.xlsx"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Release\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ExcelDna.Integration">
+      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AsyncFunctionExamples.fs" />
+    <Compile Include="OptionalExamples.fs" />
+    <Compile Include="MapArrayFunctionExamples.fs" />
+    <Compile Include="ExampleAddIn.fs" />
+    <Content Include="ExcelDna.CustomRegistration.FSharpExample-AddIn.dna">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="packages.config" />
+    <None Include="FSharpExample.xlsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExcelDna.CustomRegistration.FSharp\ExcelDna.CustomRegistration.FSharp.fsproj">
+      <Name>ExcelDna.CustomRegistration.FSharp</Name>
+      <Project>{ee39a060-0120-4ca3-bd3f-aaf80a4e857f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ExcelDna.CustomRegistration\ExcelDna.CustomRegistration.csproj">
+      <Name>ExcelDna.CustomRegistration</Name>
+      <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <Choose>
+    <When Condition="'$(VisualStudioVersion)' == '11.0'">
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+  <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.xll*" /C /Y
+xcopy "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.dna*" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn64.dna*" /C /Y
+xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn64.xll*" /C /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn.dna" /Y
+"$(SolutionDir)\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.FSharpExample-AddIn64.dna" /Y</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
