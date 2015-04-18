@@ -15,7 +15,7 @@ namespace ExcelDna.Registration
         public ExcelArgumentAttribute ArgumentAttribute { get; set; }
 
         // Used only for the Registration processing
-        public List<object> CustomAttributes { get; set; } // Should not be null, and elements should not be null
+        public List<object> CustomAttributes { get; private set; } // Should not be null, and elements should not be null
 
         public ExcelParameterRegistration(ExcelArgumentAttribute argumentAttribute)
         {
@@ -82,8 +82,8 @@ namespace ExcelDna.Registration
         public List<ExcelParameterRegistration> ParameterRegistrations { get; set; }    // A list of ExcelParameterRegistrations with length equal to the number of parameters in Delegate
 
         // These are used only for the Registration processing
-        public List<object> CustomAttributes { get; set; }                 // List may not be null
-        public List<object> ReturnCustomAttributes { get; set; }                 // List may not be null
+        public List<object> CustomAttributes { get; private set; }                 // List may not be null
+        public List<object> ReturnCustomAttributes { get; private set; }                 // List may not be null
 
         // Checks that the property invariants are met, particularly regarding the attributes lists.
         internal bool IsValid()

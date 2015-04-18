@@ -23,7 +23,6 @@ namespace ExcelDna.Registration
                     var initialParamType = reg.FunctionLambda.Parameters[i].Type;
                     var paramReg = reg.ParameterRegistrations[i];
 
-                    // NOTE: We add null for cases where no conversions apply.
                     var paramConversions = GetParameterConversions(conversionConfig, initialParamType, paramReg);
                     paramsConversions.Add(paramConversions);
                 } // for each parameter
@@ -41,16 +40,13 @@ namespace ExcelDna.Registration
         // Should return null if there are no conversions to apply
         static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramReg)
         {
-            // paramReg Might be modified internally, should not become a different object
+            // paramReg might be modified internally, but won't become a different object
             var paramType = initialParamType; // Might become a different type as we convert
 
             // Assume most parameters will need no conversion
             List<LambdaExpression> paramConversions = null;
 
-            // Get hold of the global conversions list (which we assume is always present)
-            var globalParameterConversions = conversionConfig.ParameterConversions[typeof(void)];
-
-            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied only once.
+            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied at most once.
             var conversionsApplied = new List<ParameterConversion>();
 
             // Try to repeatedly apply conversions until none are applicable.
@@ -60,25 +56,12 @@ namespace ExcelDna.Registration
             var depth = 0;
             while (depth < maxConversionDepth)
             {
-                // First check specific type conversions, 
-                // then also the global type conversions (that are not restricted to a specific type)
-                // NOTE: Special extension of the type interpretation here, to cater for the Range COM type equivalence
-                var conversionKeyValues = conversionConfig.ParameterConversions.Where(kv => paramType == kv.Key || paramType.IsEquivalentTo(kv.Key)).ToArray();
-
-                List<ParameterConversion> typeConversions;
-                if (conversionKeyValues.Any())
-                {
-                    typeConversions = conversionKeyValues.First().Value;
-                    typeConversions.AddRange(globalParameterConversions);
-                }
-                else
-                {
-                    typeConversions = globalParameterConversions;
-                }
+                // Get type-specific and global conversions, 
+                List<ParameterConversion> typeConversions = conversionConfig.GetParameterConversions(paramType);
 
                 var applied = false;
-                // we have conversions that might be applied to this type...
-                // see if we can find one to be applied
+                // We now have the conversions that might be applied to this type...
+                // see if we can find one to be applied (that has not been applied before)
                 // Note that convert might also make modifications to the paramReg object...
                 foreach (var convert in typeConversions.Except(conversionsApplied))
                 {
@@ -120,10 +103,7 @@ namespace ExcelDna.Registration
             // Assume most returns will need no conversion
             List<LambdaExpression> returnConversions = null;
 
-            // Get hold of the global conversions list (which we assume is always present)
-            var globalReturnConversions = conversionConfig.ReturnConversions[typeof(void)];
-
-            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied only once.
+            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied at most once.
             var conversionsApplied = new List<ReturnConversion>();
 
             // Try to repeatedly apply conversions until none are applicable.
@@ -133,13 +113,7 @@ namespace ExcelDna.Registration
             var depth = 0;
             while (depth < maxConversionDepth)
             {
-                // First check specific type conversions, 
-                // then also the global type conversions (that are not restricted to a specific type)
-                List<ReturnConversion> typeConversions;
-                if (conversionConfig.ReturnConversions.TryGetValue(returnType, out typeConversions))
-                    typeConversions.AddRange(globalReturnConversions);
-                else
-                    typeConversions = globalReturnConversions;
+                List<ReturnConversion> typeConversions = conversionConfig.GetReturnConversions(returnType);
 
                 var applied = false;
                 // we have conversions that might be applied to this type...

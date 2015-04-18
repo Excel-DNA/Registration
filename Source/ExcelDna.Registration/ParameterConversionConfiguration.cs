@@ -1,32 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace ExcelDna.Registration
 {
-
-    // TODO: Maybe need to turn these into objects with type and name so that we can trace and debug....
+    // TODO: We need to turn these into objects with type and name so that we can trace and debug....
     public delegate LambdaExpression ParameterConversion(Type parameterType, ExcelParameterRegistration parameterRegistration);
     public delegate LambdaExpression ReturnConversion(Type returnType, List<object> returnCustomAttributes);
 
+    // CONSIDER: Do we need to consider Co-/Contravariance and allow processing of sub-/super-types?
+    // What about native async function, they return 'void' type?
     public class ParameterConversionConfiguration
     {
-        // UGLY: We use Void as a special value to indicate the conversions to be processed for all types
-        //       I try to hide that as an implementation, to the external functions use null to indicate the universal case.
-        // Some concerns: What about native async function, they return 'void' type?
-        // (Might interfere with our abuse of void in the Dictionary)
+        // Token type used to indicate the conversions applied to all types in the Dictionaries.
+        class GlobalConversionToken { }
+        static internal Type GlobalConversionType = typeof(GlobalConversionToken);
 
-        internal Dictionary<Type, List<ParameterConversion>> ParameterConversions { get; private set; }
-        internal Dictionary<Type, List<ReturnConversion>> ReturnConversions {get; private set; }
+        Dictionary<Type, List<ParameterConversion>> _parameterConversions;
+        Dictionary<Type, List<ReturnConversion>> _returnConversions;
+
+        // NOTE: Special extension of the type interpretation here, mainly to cater for the Range COM type equivalence
+        public List<ParameterConversion> GetParameterConversions(Type paramType) 
+        {
+            return _parameterConversions.Where(kv => paramType == kv.Key || paramType.IsEquivalentTo(kv.Key))
+                                       .SelectMany(kv => kv.Value)
+                                       .Union(_parameterConversions[GlobalConversionType])
+                                       .ToList();
+        } 
+    
+        public List<ReturnConversion> GetReturnConversions(Type returnType) 
+        {
+            return _returnConversions.Where(kv => returnType == kv.Key || returnType.IsEquivalentTo(kv.Key))
+                                    .SelectMany(kv => kv.Value)
+                                    .Union(_returnConversions[GlobalConversionType])
+                                    .ToList();
+        }
 
         public ParameterConversionConfiguration()
         {
-            ParameterConversions = new Dictionary<Type, List<ParameterConversion>>();
-            ReturnConversions = new Dictionary<Type, List<ReturnConversion>>();
+            _parameterConversions = new Dictionary<Type, List<ParameterConversion>>();
+            _returnConversions = new Dictionary<Type, List<ReturnConversion>>();
 
             // Add room for the special 'global' conversions, applied for all types.
-            ParameterConversions.Add(typeof(void), new List<ParameterConversion>());
-            ReturnConversions.Add(typeof(void), new List<ReturnConversion>());
+            _parameterConversions.Add(GlobalConversionType, new List<ParameterConversion>());
+            _returnConversions.Add(GlobalConversionType, new List<ReturnConversion>());
         }
 
         #region Various overloads for adding conversions
@@ -41,23 +59,23 @@ namespace ExcelDna.Registration
         /// <param name="parameterConversion"></param>
         public ParameterConversionConfiguration AddParameterConversion(Type targetTypeOrNull, ParameterConversion parameterConversion)
         {
-            var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
+            var targetTypeOrGlobal = targetTypeOrNull ?? GlobalConversionType;
 
             List<ParameterConversion> typeConversions;
-            if (ParameterConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
+            if (_parameterConversions.TryGetValue(targetTypeOrGlobal, out typeConversions))
             {
                 typeConversions.Add(parameterConversion);
             }
             else
             {
-                ParameterConversions[targetTypeOrVoid] = new List<ParameterConversion> { parameterConversion };
+                _parameterConversions[targetTypeOrGlobal] = new List<ParameterConversion> { parameterConversion };
             }
             return this;
         }
 
         public ParameterConversionConfiguration AddParameterConversion(ParameterConversion parameterConversion)
         {
-            AddParameterConversion(null, parameterConversion);
+            AddParameterConversion(GlobalConversionType, parameterConversion);
             return this;
         }
 
@@ -94,16 +112,16 @@ namespace ExcelDna.Registration
         // Most general case - called by the overloads below
         public ParameterConversionConfiguration AddReturnConversion(Type targetTypeOrNull, ReturnConversion returnConversion)
         {
-            var targetTypeOrVoid = targetTypeOrNull ?? typeof(void);
+            var targetTypeOrVoid = targetTypeOrNull ?? GlobalConversionType;
 
             List<ReturnConversion> typeConversions;
-            if (ReturnConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
+            if (_returnConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
             {
                 typeConversions.Add(returnConversion);
             }
             else
             {
-                ReturnConversions[targetTypeOrVoid] = new List<ReturnConversion> { returnConversion };
+                _returnConversions[targetTypeOrVoid] = new List<ReturnConversion> { returnConversion };
             }
             return this;
         }
