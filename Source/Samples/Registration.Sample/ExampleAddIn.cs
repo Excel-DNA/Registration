@@ -68,27 +68,27 @@ namespace Registration.Sample
             //           Type2 -> string
             //       
 
-            return new ParameterConversionConfiguration()
+            var paramConversionConfig = new ParameterConversionConfiguration()
+            
             // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
                 .AddParameterConversion(ParameterConversions.GetNullableConversion(treatEmptyAsMissing: false))
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: false))
 
-            // Some ideas ways to define and register conversions
-                // These are for a particular parameter type
-                // (Func<object, MyType> would allow MyType to be taken as parameter)
-
-            // Inline Lambda - one way
-                
+            // Register some type conversions (not the ordering discussed above)        
                 .AddParameterConversion((string value) => new TestType1(value))
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
 
+            // This is a conversion applied to thre return value fot he function
                 .AddReturnConversion((TestType1 value) => value.ToString())
 
             //  .AddParameterConversion((string value) => convert2(convert1(value)));
 
-            // Alternative - use method via lambda
-                // This adds a conversion to allow string[] parameters (by accepting object[] instead).
+            // This parameter conversion adds support for string[] parameters (by accepting object[] instead).
+            // It uses the TypeConversion utility class defined in ExcelDna.Registration to get an object->string
+            // conversion that is consist with Excel (in this case, Excel is called to do the conversion).
                 .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray());
+
+            return paramConversionConfig;
         }
 
         static FunctionExecutionConfiguration GetFunctionExecutionHandlerConfig()
