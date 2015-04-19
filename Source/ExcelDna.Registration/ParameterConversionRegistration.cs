@@ -25,10 +25,10 @@ namespace ExcelDna.Registration
 
                     var paramConversions = GetParameterConversions(conversionConfig, initialParamType, paramReg);
                     paramsConversions.Add(paramConversions);
-                } // for each parameter
+                } // for each parameter !
 
                 // Process return conversions
-                var returnConversions = GetReturnConversions(conversionConfig, reg.FunctionLambda.ReturnType, reg.ReturnCustomAttributes);
+                var returnConversions = GetReturnConversions(conversionConfig, reg.FunctionLambda.ReturnType, reg.ReturnRegistration);
 
                 // Now we apply all the conversions
                 ApplyConversions(reg, paramsConversions, returnConversions);
@@ -38,117 +38,65 @@ namespace ExcelDna.Registration
         }
 
         // Should return null if there are no conversions to apply
-        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramReg)
+        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
         {
-            // paramReg might be modified internally, but won't become a different object
+            var appliedConversions = new List<LambdaExpression>();
+
+            // paramReg might be modified internally by the conversions, but won't become a different object
             var paramType = initialParamType; // Might become a different type as we convert
-
-            // Assume most parameters will need no conversion
-            List<LambdaExpression> paramConversions = null;
-
-            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied at most once.
-            var conversionsApplied = new List<ParameterConversion>();
-
-            // Try to repeatedly apply conversions until none are applicable.
-            // We add a simple guard to covers for cycles and ill-behaved conversions functions
-            // TODO: Improve tracing and log better error
-            const int maxConversionDepth = 16;
-            var depth = 0;
-            while (depth < maxConversionDepth)
+            foreach (var paramConversion in conversionConfig.ParameterConversions)
             {
-                // Get type-specific and global conversions, 
-                List<ParameterConversion> typeConversions = conversionConfig.GetParameterConversions(paramType);
+                var lambda = paramConversion.Convert(paramType, paramRegistration);
+                if (lambda == null)
+                    continue;
 
-                var applied = false;
-                // We now have the conversions that might be applied to this type...
-                // see if we can find one to be applied (that has not been applied before)
-                // Note that convert might also make modifications to the paramReg object...
-                foreach (var convert in typeConversions.Except(conversionsApplied))
-                {
-                    var lambda = convert(paramType, paramReg);
-                    if (lambda == null)
-                        continue; // Try next conversion for this type
+                // We got one to apply...
+                // Some sanity checks
+                Debug.Assert(lambda.Parameters.Count == 1);
+                Debug.Assert(lambda.ReturnType == paramType || lambda.ReturnType.IsEquivalentTo(paramType));
 
-                    // We got one to apply...
-                    // Some sanity checks
-                    Debug.Assert(lambda.Parameters.Count == 1);
-                    Debug.Assert(lambda.ReturnType == paramType || lambda.ReturnType.IsEquivalentTo(paramType));
+                appliedConversions.Add(lambda);
 
-                    // Check if we need to make a new conversion list
-                    if (paramConversions == null)
-                        paramConversions = new List<LambdaExpression>();
+                // Change the Parameter Type to be whatever the conversion function takes us to
+                // for the next round of processing
+                paramType = lambda.Parameters[0].Type;
+            }
 
-                    paramConversions.Add(lambda);
-                    // Change the Parameter Type to be whatever the conversion function takes us to
-                    // for the next round of processing
-                    paramType = lambda.Parameters[0].Type;
-                    conversionsApplied.Add(convert);
-                    applied = true;
-                    break;
-                }
-                if (applied)
-                    depth++;
-                else
-                    break; // None of the conversions were applied - stop trying
-            } // while checking types
+            if (appliedConversions.Count == 0)
+                return null;
 
-            return paramConversions;
+            return appliedConversions;
         }
 
-        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, List<object> returnCustomAttributes)
+        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration)
         {
-            // returnCustomAttributes list might be modified, should not become a different object
+            var appliedConversions = new List<LambdaExpression>();
+
+            // paramReg might be modified internally by the conversions, but won't become a different object
             var returnType = initialReturnType; // Might become a different type as we convert
 
-            // Assume most returns will need no conversion
-            List<LambdaExpression> returnConversions = null;
-
-            // Keep an extra list of conversions that have been applied, ensuring that each conversion can be applied at most once.
-            var conversionsApplied = new List<ReturnConversion>();
-
-            // Try to repeatedly apply conversions until none are applicable.
-            // We add a simple guard to covers for cycles and ill-behaved conversions functions
-            // TODO: Improve tracing and log better error
-            const int maxConversionDepth = 16;
-            var depth = 0;
-            while (depth < maxConversionDepth)
+            foreach (var returnConversion in conversionConfig.ReturnConversions)
             {
-                List<ReturnConversion> typeConversions = conversionConfig.GetReturnConversions(returnType);
+                var lambda = returnConversion.Convert(returnType, returnRegistration);
+                if (lambda == null)
+                    continue;
 
-                var applied = false;
-                // we have conversions that might be applied to this type...
-                // see if we can find one to be applied
-                // Note that convert might also make modifications to the return attributes list...
-                foreach (var convert in typeConversions.Except(conversionsApplied))
-                {
-                    var lambda = convert(returnType, returnCustomAttributes);
-                    if (lambda == null)
-                        continue; // Try next conversion for this type
+                // We got one to apply...
+                // Some sanity checks
+                Debug.Assert(lambda.Parameters.Count == 1);
+                Debug.Assert(lambda.Parameters[0].Type == returnType);
 
-                    // We got one to apply...
-                    // Some sanity checks
-                    Debug.Assert(lambda.Parameters.Count == 1);
-                    Debug.Assert(lambda.Parameters[0].Type == returnType);
+                appliedConversions.Add(lambda);
 
-                    // Check if we need to make a new conversion list
-                    if (returnConversions == null)
-                        returnConversions = new List<LambdaExpression>();
+                // Change the Return Type to be whatever the conversion function returns
+                // for the next round of processing
+                returnType = lambda.ReturnType;
+            }
 
-                    returnConversions.Add(lambda);
-                    // Change the Return Type to be whatever the conversion function returns
-                    // for the next round of processing
-                    returnType = lambda.ReturnType;
-                    conversionsApplied.Add(convert);
-                    applied = true;
-                    break;
-                }
-                if (applied)
-                    depth++;
-                else
-                    break; // None of the conversions were applied - stop trying
-            } // while checking types
+            if (appliedConversions.Count == 0)
+                return null;
 
-            return returnConversions;
+            return appliedConversions;
         }
 
         // returnsConversion and the entries in paramsConversions may be null.

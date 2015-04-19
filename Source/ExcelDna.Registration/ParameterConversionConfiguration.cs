@@ -5,46 +5,81 @@ using System.Linq.Expressions;
 
 namespace ExcelDna.Registration
 {
-    // TODO: We need to turn these into objects with type and name so that we can trace and debug....
-    public delegate LambdaExpression ParameterConversion(Type parameterType, ExcelParameterRegistration parameterRegistration);
-    public delegate LambdaExpression ReturnConversion(Type returnType, List<object> returnCustomAttributes);
-
+    // CONSIDER: Add a name to the XXXConversion for tracing and debugging
     // CONSIDER: Do we need to consider Co-/Contravariance and allow processing of sub-/super-types?
     // What about native async function, they return 'void' type?
+
     public class ParameterConversionConfiguration
     {
-        // Token type used to indicate the conversions applied to all types in the Dictionaries.
-        class GlobalConversionToken { }
-        static internal Type GlobalConversionType = typeof(GlobalConversionToken);
-
-        Dictionary<Type, List<ParameterConversion>> _parameterConversions;
-        Dictionary<Type, List<ReturnConversion>> _returnConversions;
-
-        // NOTE: Special extension of the type interpretation here, mainly to cater for the Range COM type equivalence
-        public List<ParameterConversion> GetParameterConversions(Type paramType) 
+        internal class ParameterConversion
         {
-            return _parameterConversions.Where(kv => paramType == kv.Key || paramType.IsEquivalentTo(kv.Key))
-                                       .SelectMany(kv => kv.Value)
-                                       .Union(_parameterConversions[GlobalConversionType])
-                                       .ToList();
-        } 
-    
-        public List<ReturnConversion> GetReturnConversions(Type returnType) 
-        {
-            return _returnConversions.Where(kv => returnType == kv.Key || returnType.IsEquivalentTo(kv.Key))
-                                    .SelectMany(kv => kv.Value)
-                                    .Union(_returnConversions[GlobalConversionType])
-                                    .ToList();
+            // Conversion receives the parameter type and parameter registration info, 
+            // and should return an Expression<Func<TTo, TFrom>> 
+            // (and may optionally update the information in the ExcelParameterRegistration.
+            // May return null to indicate that no conversion should be applied.
+            public Func<Type, ExcelParameterRegistration, LambdaExpression> Conversion { get; private set; }
+
+            // The TypeFilter is used as a quick filter to decide whether the Conversion function should be called for a parameter.
+            // TypeFilter may be null to indicate that conversion should be applied for all types.
+            // (The Conversion function may anyway return null to indicate that no conversion should be applied.)
+            public Type TypeFilter { get; private set; }
+
+            public ParameterConversion(Func<Type, ExcelParameterRegistration, LambdaExpression> conversion, Type typeFilter = null)
+            {
+                if (conversion == null)
+                    throw new ArgumentNullException("conversion");
+
+                Conversion = conversion;
+                TypeFilter = typeFilter;
+            }
+        
+            internal LambdaExpression Convert(Type paramType, ExcelParameterRegistration paramReg)
+            {
+                if (TypeFilter != null && paramType != TypeFilter)
+                    return null;
+
+ 	            return Conversion(paramType, paramReg);
+            }
         }
+
+        internal class ReturnConversion
+        {
+            // Conversion receives the return type and list of custom attributes applied to the return value,
+            // and should return  an Expression<Func<TTo, TFrom>> 
+            // (and may optionally update the information in the ExcelParameterRegistration.
+            // May return null to indicate that no conversion should be applied.
+            public Func<Type, ExcelReturnRegistration, LambdaExpression> Conversion { get; private set; }
+
+            // TypeFilter is used as a quick filter to decide whether the conversion function should be called for a return value.
+            // TypeFilter be null to indicate that conversion should be applied for all types
+            // The Conversion function may anyway return null to indicate that no conversion should be applied.
+            public Type TypeFilter { get; private set; }
+
+            public ReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> conversion, Type typeFilter = null)
+            {
+                if (conversion == null)
+                    throw new ArgumentNullException("conversion");
+
+                Conversion = conversion;
+                TypeFilter = typeFilter;
+            }
+        
+            internal LambdaExpression Convert(Type returnType, ExcelReturnRegistration returnRegistration)
+            {
+                if (TypeFilter != null && returnType != TypeFilter)
+                    return null;
+
+ 	            return Conversion(returnType, returnRegistration);
+            }
+        }
+
+        internal List<ParameterConversion> ParameterConversions { get; private set; }
+        internal List<ReturnConversion>    ReturnConversions    { get; private set; }
 
         public ParameterConversionConfiguration()
         {
-            _parameterConversions = new Dictionary<Type, List<ParameterConversion>>();
-            _returnConversions = new Dictionary<Type, List<ReturnConversion>>();
-
-            // Add room for the special 'global' conversions, applied for all types.
-            _parameterConversions.Add(GlobalConversionType, new List<ParameterConversion>());
-            _returnConversions.Add(GlobalConversionType, new List<ReturnConversion>());
+            ParameterConversions = new List<ParameterConversion>();
+            ReturnConversions    = new List<ReturnConversion>();
         }
 
         #region Various overloads for adding conversions
@@ -55,33 +90,18 @@ namespace ExcelDna.Registration
         /// Will only be considered for those parameters that have a 'to' type that matches targetTypeOrNull,
         ///  or for all types if null is passes for the first parameter.
         /// </summary>
-        /// <param name="targetTypeOrNull"></param>
         /// <param name="parameterConversion"></param>
-        public ParameterConversionConfiguration AddParameterConversion(Type targetTypeOrNull, ParameterConversion parameterConversion)
+        /// <param name="targetTypeOrNull"></param>
+        public ParameterConversionConfiguration AddParameterConversion(Func<Type, ExcelParameterRegistration, LambdaExpression> parameterConversion, Type targetTypeOrNull = null)
         {
-            var targetTypeOrGlobal = targetTypeOrNull ?? GlobalConversionType;
-
-            List<ParameterConversion> typeConversions;
-            if (_parameterConversions.TryGetValue(targetTypeOrGlobal, out typeConversions))
-            {
-                typeConversions.Add(parameterConversion);
-            }
-            else
-            {
-                _parameterConversions[targetTypeOrGlobal] = new List<ParameterConversion> { parameterConversion };
-            }
+            var pc = new ParameterConversion(parameterConversion, targetTypeOrNull);
+            ParameterConversions.Add(pc);
             return this;
         }
 
-        public ParameterConversionConfiguration AddParameterConversion(ParameterConversion parameterConversion)
+        public ParameterConversionConfiguration AddParameterConversion<TTo>(Func<Type, ExcelParameterRegistration, LambdaExpression> parameterConversion)
         {
-            AddParameterConversion(GlobalConversionType, parameterConversion);
-            return this;
-        }
-
-        public ParameterConversionConfiguration AddParameterConversion<TTo>(ParameterConversion parameterConversion)
-        {
-            AddParameterConversion(typeof(TTo), parameterConversion);
+            AddParameterConversion(parameterConversion, typeof(TTo));
             return this;
         }
 
@@ -91,64 +111,25 @@ namespace ExcelDna.Registration
             return this;
         }
 
-        // This is a nice signature for registering conversions, but is worse than Expression<...> when applying
-        public ParameterConversionConfiguration AddParameterConversionFunc<TFrom, TTo>(Func<TFrom, TTo> convert)
-        {
-            AddParameterConversion<TTo>(
-                (unusedParamType, unusedParamReg) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convert(value)));
-            return this;
-        }
-
-        public ParameterConversionConfiguration AddParameterConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
-        {
-            // CONSIDER: We really don't want our Registration processing to build out a closure object here...
-            AddParameterConversion<TTo>(
-                (unusedParamType, paramReg) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(paramReg.CustomAttributes, value)));
-            return this;
-        }
-
         // Most general case - called by the overloads below
-        public ParameterConversionConfiguration AddReturnConversion(Type targetTypeOrNull, ReturnConversion returnConversion)
+        public ParameterConversionConfiguration AddReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null)
         {
-            var targetTypeOrVoid = targetTypeOrNull ?? GlobalConversionType;
-
-            List<ReturnConversion> typeConversions;
-            if (_returnConversions.TryGetValue(targetTypeOrVoid, out typeConversions))
-            {
-                typeConversions.Add(returnConversion);
-            }
-            else
-            {
-                _returnConversions[targetTypeOrVoid] = new List<ReturnConversion> { returnConversion };
-            }
+            var rc = new ReturnConversion(returnConversion, targetTypeOrNull);
+            ReturnConversions.Add(rc);
             return this;
         }
 
-        public ParameterConversionConfiguration AddReturnConversion<TFrom>(ReturnConversion returnConversion)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom>(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null)
         {
-            AddReturnConversion(typeof(TFrom), returnConversion);
+            AddReturnConversion(returnConversion, typeof(TFrom));
             return this;
         }
 
-        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Func<TFrom, TTo> convert)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert)
         {
-            AddReturnConversion<TFrom>(
-                (unusedReturnType, unusedAttributes) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convert(value)));
-            return this;
-        }
-
-        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Func<List<object>, TFrom, TTo> convertWithAttributes)
-        {
-            AddReturnConversion<TFrom>(
-                (unusedReturnType, returnAttributes) =>
-                    (Expression<Func<TFrom, TTo>>)(value => convertWithAttributes(returnAttributes, value)));
+            AddReturnConversion<TFrom>((unusedReturnType, unusedAttributes) => convert);
             return this;
         }
         #endregion
     }
-
-
 }

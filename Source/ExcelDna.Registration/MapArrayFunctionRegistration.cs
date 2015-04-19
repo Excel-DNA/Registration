@@ -69,7 +69,7 @@ namespace ExcelDna.Registration
                 {
                     var inputShimParameters = reg.FunctionLambda.Parameters.ZipSameLengths(reg.ParameterRegistrations, 
                                         (p, r) => new ShimParameter(p.Type, r.CustomAttributes)).ToList();
-                    var resultShimParameter = new ShimParameter(reg.FunctionLambda.ReturnType, reg.ReturnCustomAttributes);
+                    var resultShimParameter = new ShimParameter(reg.FunctionLambda.ReturnType, reg.ReturnRegistration.CustomAttributes);
 
                     // create the shim function as a lambda, using reflection
                     LambdaExpression shim = MakeObjectArrayShim(

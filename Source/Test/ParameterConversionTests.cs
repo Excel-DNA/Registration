@@ -64,9 +64,8 @@ namespace ExcelDna.Registration.Test
             var registration = new ExcelFunctionRegistration(testLambda);
 
             var conversionConfig = new ParameterConversionConfiguration()
-                .AddReturnConversion(null,
-                (type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
-                                                ((object returnValue) => returnValue.Equals("NA") ? (object)"### WAIT ###" : returnValue)));
+                .AddReturnConversion((type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
+                                                ((object returnValue) => returnValue.Equals("NA") ? (object)"### WAIT ###" : returnValue)), null);
 
             var convertedRegistrations = ParameterConversionRegistration.ProcessParameterConversions(new[] { registration }, conversionConfig);
             var converted = convertedRegistrations.First();
@@ -92,9 +91,8 @@ namespace ExcelDna.Registration.Test
             var registration = new ExcelFunctionRegistration(typeof(ParameterConversionTests).GetMethod("TestMethodWithLambda", BindingFlags.NonPublic | BindingFlags.Static));
 
             var conversionConfig = new ParameterConversionConfiguration()
-                .AddReturnConversion(null,
-                (type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
-                                                ((object returnValue) => returnValue.Equals("NANA") ? (object)"### WAIT ###" : returnValue)));
+                .AddReturnConversion((type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
+                                                ((object returnValue) => returnValue.Equals("NANA") ? (object)"### WAIT ###" : returnValue)), null);
 
             var convertedRegistrations = ParameterConversionRegistration.ProcessParameterConversions(new[] { registration }, conversionConfig);
             var converted = convertedRegistrations.First();
@@ -115,7 +113,7 @@ namespace ExcelDna.Registration.Test
 
             var conversionConfig = new ParameterConversionConfiguration()
                 // Add a return conversion that is never applied
-                .AddReturnConversion(null, (type, customAttributes) => null);
+                .AddReturnConversion((type, customAttributes) => null, null);
 
             var convertedRegistrations = ParameterConversionRegistration.ProcessParameterConversions(new[] { registration }, conversionConfig);
             var converted = convertedRegistrations.First();

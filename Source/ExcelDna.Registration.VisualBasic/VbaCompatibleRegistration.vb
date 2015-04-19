@@ -17,16 +17,15 @@ Public Module VbaCompatibleRegistration
         Dim conversionConfig As ParameterConversionConfiguration
         conversionConfig = New ParameterConversionConfiguration() _
                                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing:=False)) _
-                                .AddParameterConversionFunc(Of Object, Range)(AddressOf ReferenceToRange)
+                                .AddParameterConversion(AddressOf RangeParameterConversion.ParameterConversion, Nothing)
 
         GetAllPublicSharedFunctions() _
-            .UpdateRegistrationsForRangeParameters() _
             .ProcessParamsRegistrations() _
+            .UpdateRegistrationsForRangeParameters() _
             .ProcessParameterConversions(conversionConfig) _
             .RegisterFunctions()
 
         GetAllPublicSharedSubs().RegisterCommands()
-
     End Sub
 
     ' Gets the Public Shared methods that don't return Void

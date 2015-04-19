@@ -33,18 +33,42 @@ namespace Registration.Sample
 
         static ParameterConversionConfiguration GetPostAsyncReturnConversionConfig()
         {
+            // This conversion replaces the default #N/A return value of async functions with the #GETTING_DATA value.
+            // This is not supported on old Excel versions, bu looks nicer these days.
+            // Note that this ReturnConversion does not actually check whether the functions is an async function, 
+            // so all registered functions are affected by this processing.
             return new ParameterConversionConfiguration()
-                .AddReturnConversion(null, 
-                (type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
-                                                ((object returnValue) => returnValue.Equals(ExcelError.ExcelErrorNA) ? (object)"### WAIT ###" : returnValue)));
+                .AddReturnConversion((type, customAttributes) => type != typeof(object) ? null : ((Expression<Func<object, object>>)
+                                                ((object returnValue) => returnValue.Equals(ExcelError.ExcelErrorNA) ? ExcelError.ExcelErrorGettingData : returnValue)));
         }
 
         static ParameterConversionConfiguration GetParameterConversionConfig()
         {
-            return new ParameterConversionConfiguration()
-                // CONSIDER: This might have to change if we want to add improved tracing to the conversions.
-                // TODO: Parameter vs Return conversions...?
+            // NOTE: The parameter conversion list is processed once per parameter.
+            //       Parameter conversions will apply from most inside, to most outside.
+            //       So to apply a conversion chain like
+            //           string -> Type1 -> Type2
+            //       we need to register in the (reverse) order
+            //           Type1 -> Type2
+            //           string -> Type1
+            //
+            //       (If the registration were in the order
+            //           string -> Type1
+            //           Type1 -> Type2
+            //       the parameter (starting as Type2) would not match the first conversion,
+            //       then the second conversion (Type1 -> Type2) would be applied, and no more,
+            //       leaving the parameter having Type1 (and probably not eligible for Excel registration.)
+            //      
+            //
+            //       Return conversions are also applied from most inside to most outside.
+            //       So to apply a return conversion chain like
+            //           Type1 -> Type2 -> string
+            //       we need to register the ReturnConversions as
+            //           Type1 -> Type2 
+            //           Type2 -> string
+            //       
 
+            return new ParameterConversionConfiguration()
             // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
                 .AddParameterConversion(ParameterConversions.GetNullableConversion(treatEmptyAsMissing: false))
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: false))
@@ -54,6 +78,7 @@ namespace Registration.Sample
                 // (Func<object, MyType> would allow MyType to be taken as parameter)
 
             // Inline Lambda - one way
+                
                 .AddParameterConversion((string value) => new TestType1(value))
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
 
@@ -64,9 +89,6 @@ namespace Registration.Sample
             // Alternative - use method via lambda
                 // This adds a conversion to allow string[] parameters (by accepting object[] instead).
                 .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray());
-
-            // Pass Delegate - different name and needs the signature types, but also works...
-            //  .AddParameterConversionFunc<string, TestType>(ConvertToTestType);
         }
 
         static FunctionExecutionConfiguration GetFunctionExecutionHandlerConfig()

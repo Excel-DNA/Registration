@@ -1,4 +1,5 @@
-﻿Imports System.Runtime.CompilerServices
+﻿Imports System.Linq.Expressions
+Imports System.Runtime.CompilerServices
 Imports Microsoft.Office.Interop.Excel
 Imports ExcelDna.Integration
 Imports ExcelDna.Registration
@@ -46,4 +47,13 @@ Public Module RangeParameterConversion
         Return regs.Select(AddressOf UpdateAttributesForRangeParameters)
     End Function
 
+    ' NOTE: This parameter conversion should be registered to run for all types (with 'Nothing' as the TypeFilter)
+    ' so that the COM-friendly type equivalence check here can be done, instead of exact type check.
+    Function ParameterConversion(paramType As Type, paramRegistration As ExcelParameterRegistration)
+        If paramType.IsEquivalentTo(GetType(Range)) Then
+            Return CType(Function(input As Object) ReferenceToRange(input), Expression(Of Func(Of Object, Range)))
+        Else
+            Return Nothing
+        End If
+    End Function
 End Module

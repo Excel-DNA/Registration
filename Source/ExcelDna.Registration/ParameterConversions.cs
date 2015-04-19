@@ -13,12 +13,12 @@ namespace ExcelDna.Registration
     public static class ParameterConversions
     {
         // These can be used directly in .AddParameterConversion
-        public static ParameterConversion GetNullableConversion(bool treatEmptyAsMissing = false)
+        public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing = false)
         {
             return (type, paramReg) => NullableConversion(type, paramReg, treatEmptyAsMissing);
         }
 
-        public static ParameterConversion GetOptionalConversion(bool treatEmptyAsMissing = false)
+        public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetOptionalConversion(bool treatEmptyAsMissing = false)
         {
             return (type, paramReg) => OptionalConversion(type, paramReg, treatEmptyAsMissing);
         }

@@ -12,7 +12,7 @@ namespace ExcelDna.Registration
     public class ExcelParameterRegistration
     {
         // Used for the final Excel-DNA registration
-        public ExcelArgumentAttribute ArgumentAttribute { get; set; }
+        public ExcelArgumentAttribute ArgumentAttribute { get; private set; }
 
         // Used only for the Registration processing
         public List<object> CustomAttributes { get; private set; } // Should not be null, and elements should not be null
@@ -72,6 +72,17 @@ namespace ExcelDna.Registration
         }
     }
 
+    public class ExcelReturnRegistration
+    {
+        // Used only for the Registration processing
+        public List<object> CustomAttributes { get; private set; } // Should not be null, and elements should not be null
+
+        public ExcelReturnRegistration()
+        {
+            CustomAttributes = new List<object>();
+        }
+    }
+
     // CONSIDER: Improve safety here... make invalid data unrepresentable.
     // CONSIDER: Should ExcelCommands also be handled here...? For the moment not...
     public class ExcelFunctionRegistration
@@ -79,11 +90,11 @@ namespace ExcelDna.Registration
         // These are used for registration
         public LambdaExpression FunctionLambda { get; set; }                        
         public ExcelFunctionAttribute FunctionAttribute { get; set; }                   // May not be null
-        public List<ExcelParameterRegistration> ParameterRegistrations { get; set; }    // A list of ExcelParameterRegistrations with length equal to the number of parameters in Delegate
+        public List<ExcelParameterRegistration> ParameterRegistrations { get; private set; }    // A list of ExcelParameterRegistrations with length equal to the number of parameters in Delegate
 
         // These are used only for the Registration processing
         public List<object> CustomAttributes { get; private set; }                 // List may not be null
-        public List<object> ReturnCustomAttributes { get; private set; }                 // List may not be null
+        public ExcelReturnRegistration ReturnRegistration { get; private set; }                 // List may not be null
 
         // Checks that the property invariants are met, particularly regarding the attributes lists.
         internal bool IsValid()
@@ -94,8 +105,9 @@ namespace ExcelDna.Registration
                    ParameterRegistrations.Count == FunctionLambda.Parameters.Count &&
                    CustomAttributes != null &&
                    CustomAttributes.All(att => att != null) &&
-                   ReturnCustomAttributes != null &&
-                   ReturnCustomAttributes.All(att => att != null) &&
+                   ReturnRegistration != null &&
+                   ReturnRegistration.CustomAttributes != null &&
+                   ReturnRegistration.CustomAttributes.All(att => att != null) &&
                    ParameterRegistrations.All(pr => pr.IsValid());
         }
 
@@ -128,7 +140,7 @@ namespace ExcelDna.Registration
 
             // Create the lists - hope the rest is filled in right...?
             CustomAttributes = new List<object>();
-            ReturnCustomAttributes = new List<object>();
+            ReturnRegistration = new ExcelReturnRegistration();
         }
 
         /// <summary>
@@ -147,7 +159,7 @@ namespace ExcelDna.Registration
                                      .ToList();
 
             CustomAttributes = new List<object>();
-            ReturnCustomAttributes = new List<object>();
+            ReturnRegistration = new ExcelReturnRegistration();
         }
 
         // NOTE: 16 parameter max for Expression.GetDelegateType
@@ -192,7 +204,8 @@ namespace ExcelDna.Registration
             }
 
             ParameterRegistrations = methodInfo.GetParameters().Select(pi => new ExcelParameterRegistration(pi)).ToList();
-            ReturnCustomAttributes = methodInfo.ReturnParameter.GetCustomAttributes(true).ToList();
+            ReturnRegistration = new ExcelReturnRegistration();
+            ReturnRegistration.CustomAttributes.AddRange(methodInfo.ReturnParameter.GetCustomAttributes(true));
 
             // Check that we haven't made a mistake
             Debug.Assert(IsValid());
