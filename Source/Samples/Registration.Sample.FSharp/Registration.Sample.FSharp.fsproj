@@ -26,6 +26,7 @@
     <StartAction>Program</StartAction>
     <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
     <StartArguments>"C:\Work\Excel-DNA\Registration\Source\Samples\Registration.Sample.FSharp\bin\Debug\Registration.Sample.FSharp-AddIn.xll"</StartArguments>
+    <RemoteDebugEnabled>false</RemoteDebugEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
