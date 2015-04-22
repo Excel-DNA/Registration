@@ -29,7 +29,7 @@ namespace ExcelDna.Registration
     // CONSIDER: One might make a generic typed version of this...
     public class FunctionExecutionArgs
     {
-        public string FunctionName { get; private set; }
+        public string FunctionName { get; set; }
         // Can't change arguments - Make ReadOnly collection?
         public object[] Arguments { get; private set; }
         public object ReturnValue { get; set; }
