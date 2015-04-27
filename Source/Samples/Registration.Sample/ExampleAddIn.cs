@@ -29,6 +29,9 @@ namespace Registration.Sample
                              .ProcessParamsRegistrations()
                              .ProcessFunctionExecutionHandlers(functionHandlerConfig)
                              .RegisterFunctions();
+
+            // First example if Instance -> Static conversion
+            InstanceMemberRegistration.TestInstanceRegistration();
         }
 
         static ParameterConversionConfiguration GetPostAsyncReturnConversionConfig()
