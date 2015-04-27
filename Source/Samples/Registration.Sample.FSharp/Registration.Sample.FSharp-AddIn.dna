@@ -1,4 +1,4 @@
-<DnaLibrary Name="Registration.Sample.FSharp Add-In" RuntimeVersion="v4.0">
+<DnaLibrary Name="Registration.Sample.FSharp Add-In" RuntimeVersion="v4.0" ExplicitRegistration="true">
   <ExternalLibrary Path="Registration.Sample.FSharp.dll" LoadFromBytes="true" Pack="true" />
   
   <!-- 
