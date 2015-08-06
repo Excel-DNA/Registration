@@ -44,24 +44,24 @@
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
+    <Reference Include="ExcelDna.Integration, Version=0.33.5692.38628, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ExcelDna.Integration.0.33.7-rc1\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\packages\ExcelDna.Interop.14.0.1\lib\Microsoft.Office.Interop.Excel.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\packages\ExcelDna.Interop.14.0.1\lib\Microsoft.Vbe.Interop.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Microsoft.Vbe.Interop.dll</HintPath>
     </Reference>
     <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\packages\ExcelDna.Interop.14.0.1\lib\Office.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Office.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -108,6 +108,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ExcelDna.Registration.VisualBasic-AddIn.dna">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -126,6 +129,13 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn.xll*" /C /Y
+xcopy "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn.dna*" "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn64.dna*" /C /Y
+xcopy "C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn64.xll*" /C /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn.dna" /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.Registration.VisualBasic-AddIn64.dna" /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

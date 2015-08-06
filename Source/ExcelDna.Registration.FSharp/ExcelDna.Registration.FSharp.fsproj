@@ -54,11 +54,14 @@
     <Compile Include="FsAsyncRegistration.fs" />
     <Compile Include="FsParameterConversions.fs" />
     <Compile Include="FsAsyncUtil.fs" />
-    <None Include="packages.config" />
+    <Content Include="packages.config" />
+    <None Include="ExcelDna.Registration.FSharp-AddIn.dna">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\packages\ExcelDna.Integration.0.33.7-rc1\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -68,14 +71,20 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ExcelDna.Registration\ExcelDna.Registration.csproj">
       <Name>ExcelDna.Registration</Name>
       <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>
+xcopy "C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDna.xll" "$(TargetDir)ExcelDna.Registration.FSharp-AddIn.xll*" /C /Y
+xcopy "$(TargetDir)ExcelDna.Registration.FSharp-AddIn.dna*" "$(TargetDir)ExcelDna.Registration.FSharp-AddIn64.dna*" /C /Y
+xcopy "C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.Registration.FSharp-AddIn64.xll*" /C /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.Registration.FSharp-AddIn.dna" /Y
+"C:\Work\Excel-DNA\Registration\Source\packages\ExcelDna.AddIn.0.33.7-rc1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.Registration.FSharp-AddIn64.dna" /Y</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

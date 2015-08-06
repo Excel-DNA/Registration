@@ -17,6 +17,6 @@
     </dependencies>
     </metadata>
     <files>
-        <file src="..\....\Source\Registration\bin\Release\ExcelDna.Registration.dll" target="lib\net40\ExcelDna.Registration.dll" />
+        <file src="..\....\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.dll" target="lib\net40\ExcelDna.Registration.dll" />
     </files>
 </package>
