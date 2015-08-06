@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
-        <id>ExcelDna.Registration</id>
-        <version>0.33.7-rc1</version>
-        <title>Excel-DNA Registration Extensions</title>
+        <id>ExcelDna.Registration.VisualBasic</id>
+        <version>0.33.7-rc2</version>
+        <title>Excel-DNA Registration Extensions for Visual Basic</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
         <projectUrl>http://excel-dna.net</projectUrl>
         <iconUrl>http://docs.excel-dna.net/NuGetIcon.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Excel-DNA Registration is an enhancement for Excel-DNA.</description>
+        <description>Excel-DNA Registration is an extension package for Excel-DNA, adding custom registration processing. 
+        This package adds additional transformations appropriate to Visual Basic projects, enhancing VBA compatibility.</description>
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
             <dependencies>
       <dependency id="ExcelDna.Integration" version="[0.33.0,0.34)" />
+      <dependency id="ExcelDna.Registration" version="[0.33.0,0.34)" />
+      <dependency id="ExcelDna.Interop" version="14.0.0" />
     </dependencies>
     </metadata>
     <files>
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.dll" target="lib\net40\ExcelDna.Registration.dll" />
+        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\ExcelDna.Registration.VisualBasic.dll" target="lib\net40\ExcelDna.Registration.VisualBasic.dll" />
     </files>
 </package>
