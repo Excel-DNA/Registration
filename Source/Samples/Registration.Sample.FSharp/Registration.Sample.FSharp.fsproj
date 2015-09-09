@@ -39,7 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\..\packages\Excel-DNA.Lib.0.32.0\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\..\packages\ExcelDna.Integration.0.33.9\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -56,10 +56,10 @@
     <Compile Include="MapArrayFunctionExamples.fs" />
     <Compile Include="ExampleAddIn.fs" />
     <None Include="FSharpExample.xlsx" />
-    <None Include="packages.config" />
     <Content Include="Registration.Sample.FSharp-AddIn.dna">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ExcelDna.Registration.FSharp\ExcelDna.Registration.FSharp.fsproj">
@@ -121,11 +121,15 @@
     <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn.xll*" /C /Y
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn.xll*" /C /Y
 xcopy "$(TargetDir)Registration.Sample.FSharp-AddIn.dna*" "$(TargetDir)Registration.Sample.FSharp-AddIn64.dna*" /C /Y
-xcopy "C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn64.xll*" /C /Y
-"C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn.dna" /Y
-"C:\Work\Excel-DNA\Registration\Source\packages\Excel-DNA.0.32.0\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn64.dna" /Y</PostBuildEvent>
+xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn64.xll*" /C /Y
+"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn.dna" /Y
+"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn64.dna" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

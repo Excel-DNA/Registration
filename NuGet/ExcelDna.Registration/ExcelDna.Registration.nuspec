@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration</id>
-        <version>0.33.7-rc1</version>
+        <version>0.33.9</version>
         <title>Excel-DNA Registration Extensions</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
@@ -13,7 +13,7 @@
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
             <dependencies>
-      <dependency id="ExcelDna.Integration" version="[0.33.0,0.34)" />
+      <dependency id="ExcelDna.Integration" version="[0.33.9,0.34)" />
     </dependencies>
     </metadata>
     <files>
