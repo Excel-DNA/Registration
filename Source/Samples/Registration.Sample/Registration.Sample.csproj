@@ -34,8 +34,8 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ExcelDna.Integration, Version=0.33.5730.40390, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ExcelDna.Integration.0.33.9\lib\ExcelDna.Integration.dll</HintPath>
+    <Reference Include="ExcelDna.Integration, Version=0.34.6161.41353, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ExcelDna.Integration.0.34.1-beta\lib\ExcelDna.Integration.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -62,9 +62,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <Content Include="Registration.Sample-AddIn.dna">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Properties\ExcelDna.Build.props" />
+    <None Include="Registration.Sample-AddIn.dna" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
@@ -79,12 +78,14 @@ xcopy "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna*" "$(TargetDir)
 xcopy "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDna64.xll" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.xll*" /C /Y
 "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn.dna" /Y
 "$(SolutionDir)\packages\Excel-DNA.0.32.0-rc3-1\tools\ExcelDnaPack.exe" "$(TargetDir)ExcelDna.CustomRegistration.Example-AddIn64.dna" /Y</PostBuildEvent>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample-AddIn.xll*" /C /Y
-xcopy "$(TargetDir)Registration.Sample-AddIn.dna*" "$(TargetDir)Registration.Sample-AddIn64.dna*" /C /Y
-xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample-AddIn64.xll*" /C /Y
-"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn.dna" /Y
-"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample-AddIn64.dna" /Y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
+  <Import Project="..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets')" />
+  <Target Name="EnsureExcelDnaTargetsImported" BeforeTargets="BeforeBuild" Condition="'$(ExcelDnaTargetsImported)' == ''">
+    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="You are trying to build with ExcelDna, but the NuGet targets file that ExcelDna depends on is not available on this computer. This is probably because the ExcelDna package has not been committed to source control, or NuGet Package Restore is not enabled. Please enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="ExcelDna cannot be run because NuGet packages were restored prior to the build running, and the targets file was unavailable when the build started. Please build the project again to include these packages in the build. You may also need to make sure that your build server does not delete packages prior to each build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

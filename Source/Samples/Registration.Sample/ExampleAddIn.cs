@@ -51,7 +51,7 @@ namespace Registration.Sample
             //       Parameter conversions will apply from most inside, to most outside.
             //       So to apply a conversion chain like
             //           string -> Type1 -> Type2
-            //       we need to register in the (reverse) order
+            //       we need to register in the (seemingly reverse) order
             //           Type1 -> Type2
             //           string -> Type1
             //
@@ -77,9 +77,9 @@ namespace Registration.Sample
                 .AddParameterConversion(ParameterConversions.GetNullableConversion(treatEmptyAsMissing: false))
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: false))
 
-            // Register some type conversions (not the ordering discussed above)        
-                .AddParameterConversion((string value) => new TestType1(value))
+            // Register some type conversions (note the ordering discussed above)        
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
+                .AddParameterConversion((string value) => new TestType1(value))
 
             // This is a conversion applied to thre return value fot he function
                 .AddReturnConversion((TestType1 value) => value.ToString())
