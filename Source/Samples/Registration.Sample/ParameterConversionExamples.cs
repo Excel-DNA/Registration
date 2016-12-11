@@ -1,5 +1,6 @@
 ﻿using System;
 using ExcelDna.Integration;
+using System.Numerics;
 
 namespace Registration.Sample
 {
@@ -9,7 +10,7 @@ namespace Registration.Sample
 
     public static class ParameterConversionExamples
     {
-        // Explore conversions from object -> different types
+/*        // Explore conversions from object -> different types
         [ExcelFunction(IsMacroType=true)]
         public static string dnaConversionTest([ExcelArgument(AllowReference=true)] object arg)
         {
@@ -187,23 +188,93 @@ namespace Registration.Sample
         {
             return val.HasValue ? "VAL: " + val : "NULL";
         }
-
+        
         [ExcelFunction]
         public static string dnaNullableDateTime(DateTime? val)
         {
             return val.HasValue ? "VAL: " + val : "NULL";
         }
-
+        
         [ExcelFunction]
         public static string dnaNullableBoolean(bool? val)
         {
             return val.HasValue ? "VAL: " + val : "NULL";
+        }*/
+
+        public enum  TestEnum1
+        {
+            Negative,
+            Zero,
+            Positive
         }
 
+        public enum TestEnum2
+        {
+            Real,
+            Imaginary
+        }
+
+/*        [ExcelFunction]
+        public static TestEnum1 dnaReturnEnum1(string val)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            return (TestEnum1)Enum.Parse(typeof(TestEnum1), val, true);
+        }
+
+        [ExcelFunction]
+        public static TestEnum2 dnaReturnEnum2(string val)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            return (TestEnum2)Enum.Parse(typeof(TestEnum2), val, true);
+        }
+
+        [ExcelFunction]
+        public static Complex dnaEnumParameters(TestEnum1 val1, TestEnum2 val2)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            double r = 0;
+            if (val1 == TestEnum1.Negative)
+                r = -1;
+            else if (val1 == TestEnum1.Positive)
+                r = +1;
+            double c = 0;
+            if (val2 == TestEnum2.Imaginary)
+                c = 1;
+            return new Complex(r, c);
+        }*/
+
+        [ExcelFunction]
+        public static Complex dnaNullableEnum(TestEnum1? val1, TestEnum2? val2)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            double r = 0;
+            if (val1.HasValue && val1 == TestEnum1.Negative)
+                r = -1;
+            else if (val1 == TestEnum1.Positive)
+                r = +1;
+            double c = 0;
+            if (val2.HasValue && val2 == TestEnum2.Imaginary)
+                c = 1;
+            return new Complex(r, c);
+        }
+
+        [ExcelFunction]
+        public static Complex dnaComplex(Complex c)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            return c;
+        }
+
+        [ExcelFunction]
+        public static Complex dnaNullableComplex(Complex? c)
+        {
+            //return val.HasValue ? val.Value : TestEnum.Zero;
+            return c ?? new Complex(111,222);
+        }
     }
 
     // Here I test some custom conversions, including a two-hop conversion
-    public class TestType1
+/*    public class TestType1
     {
         public string Value;
         public TestType1(string value)
@@ -264,5 +335,5 @@ namespace Registration.Sample
         {
             return System.Threading.Tasks.Task.FromResult(s1);
         }
-    }
+    }*/
 }

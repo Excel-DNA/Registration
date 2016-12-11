@@ -34,13 +34,13 @@ namespace ExcelDna.Registration
                 Conversion = conversion;
                 TypeFilter = typeFilter;
             }
-        
+
             internal LambdaExpression Convert(Type paramType, ExcelParameterRegistration paramReg)
             {
                 if (TypeFilter != null && paramType != TypeFilter)
                     return null;
 
- 	            return Conversion(paramType, paramReg);
+                return Conversion(paramType, paramReg);
             }
         }
 
@@ -68,10 +68,19 @@ namespace ExcelDna.Registration
         
             internal LambdaExpression Convert(Type returnType, ExcelReturnRegistration returnRegistration)
             {
-                if (TypeFilter != null && returnType != TypeFilter)
+                if (TypeFilter != null && returnType != TypeFilter && !returnType.IsSubclassOf(TypeFilter))
                     return null;
 
- 	            return Conversion(returnType, returnRegistration);
+ 	            LambdaExpression result = Conversion(returnType, returnRegistration);
+
+                if (TypeFilter != null && returnType != TypeFilter)
+                {
+                    var returnValue = Expression.Parameter(returnType, "returnValue");
+                    var castExpr = Expression.Convert(returnValue, TypeFilter);
+                    var composeExpr = Expression.Invoke(result, castExpr);
+                    result = Expression.Lambda(composeExpr, returnValue);
+                }
+                return result;
             }
         }
 

@@ -23,6 +23,11 @@ namespace ExcelDna.Registration
             return (type, paramReg) => OptionalConversion(type, paramReg, treatEmptyAsMissing);
         }
 
+        public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetEnumConversion()
+        {
+            return (type, paramReg) => EnumConversion(type, paramReg);
+        }
+        
         // Implementations
         static LambdaExpression NullableConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing)
         {
@@ -32,7 +37,7 @@ namespace ExcelDna.Registration
 
             var innerType = type.GetGenericArguments()[0]; // E.g. innerType is double
             // Here's the actual conversion function
-            var input = Expression.Parameter(typeof(object));
+            var input = Expression.Parameter(typeof(object), "input");
             var result =
                 Expression.Lambda(
                     Expression.Condition(
@@ -42,6 +47,24 @@ namespace ExcelDna.Registration
                         Expression.Constant(null, type),
                 // else convert to int, and cast that to int?
                         Expression.Convert(TypeConversion.GetConversion(input, innerType), type)),
+                    input);
+            return result;
+        }
+
+        static LambdaExpression EnumConversion(Type type, ExcelParameterRegistration paramReg)
+        {
+            // Decide whether to return a conversion function for this parameter
+            if (!type.IsEnum)
+                return null;
+
+            var input = Expression.Parameter(typeof(object), "input");
+            var enumTypeParam = Expression.Parameter(typeof(Type), "enumType");
+            Expression<Func<Type, object, object>> enumParse = (t, s) => Enum.Parse(t, s.ToString().Trim(), true);
+            var result =
+                Expression.Lambda(
+                    Expression.Convert(
+                        Expression.Invoke(enumParse, Expression.Constant(type), input),
+                        type),
                     input);
             return result;
         }
@@ -61,7 +84,7 @@ namespace ExcelDna.Registration
             paramReg.CustomAttributes.RemoveAll(att => att is DefaultParameterValueAttribute);
 
             // Here's the actual conversion function
-            var input = Expression.Parameter(typeof(object));
+            var input = Expression.Parameter(typeof(object), "input");
             return
                 Expression.Lambda(
                     Expression.Condition(

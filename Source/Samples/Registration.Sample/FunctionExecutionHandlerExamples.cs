@@ -3,7 +3,7 @@ using ExcelDna.Registration;
 
 namespace Registration.Sample
 {
-    public static class FunctionExecutionHandlerExamples
+/*    public static class FunctionExecutionHandlerExamples
     {
         // Slow function that will be cached for 30 seconds
         // F2, Enter or Ctrl+Alt+F9 should be fast for a while, then slow if you wait or change inputs
@@ -25,5 +25,5 @@ namespace Registration.Sample
             }
             return total;
         }
-    }
+    }*/
 }
