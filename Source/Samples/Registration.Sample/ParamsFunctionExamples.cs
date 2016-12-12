@@ -3,7 +3,7 @@ using ExcelDna.Integration;
 
 namespace Registration.Sample
 {
-/*    public static class ParamsFunctionExamples
+    public static class ParamsFunctionExamples
     {
 
         // This function has its final argument marked with 'params' 
@@ -50,5 +50,5 @@ namespace Registration.Sample
         {
             return String.Join(separator, values);
         }
-    }*/
+    }
 }

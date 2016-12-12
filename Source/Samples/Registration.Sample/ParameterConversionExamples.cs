@@ -10,7 +10,7 @@ namespace Registration.Sample
 
     public static class ParameterConversionExamples
     {
-/*        // Explore conversions from object -> different types
+        // Explore conversions from object -> different types
         [ExcelFunction(IsMacroType=true)]
         public static string dnaConversionTest([ExcelArgument(AllowReference=true)] object arg)
         {
@@ -188,18 +188,18 @@ namespace Registration.Sample
         {
             return val.HasValue ? "VAL: " + val : "NULL";
         }
-        
+
         [ExcelFunction]
         public static string dnaNullableDateTime(DateTime? val)
         {
             return val.HasValue ? "VAL: " + val : "NULL";
         }
-        
+
         [ExcelFunction]
         public static string dnaNullableBoolean(bool? val)
         {
             return val.HasValue ? "VAL: " + val : "NULL";
-        }*/
+        }
 
         public enum  TestEnum1
         {
@@ -214,7 +214,7 @@ namespace Registration.Sample
             Imaginary
         }
 
-/*        [ExcelFunction]
+        [ExcelFunction]
         public static TestEnum1 dnaReturnEnum1(string val)
         {
             //return val.HasValue ? val.Value : TestEnum.Zero;
@@ -241,7 +241,7 @@ namespace Registration.Sample
             if (val2 == TestEnum2.Imaginary)
                 c = 1;
             return new Complex(r, c);
-        }*/
+        }
 
         [ExcelFunction]
         public static Complex dnaNullableEnum(TestEnum1? val1, TestEnum2? val2)
@@ -274,7 +274,7 @@ namespace Registration.Sample
     }
 
     // Here I test some custom conversions, including a two-hop conversion
-/*    public class TestType1
+    public class TestType1
     {
         public string Value;
         public TestType1(string value)
@@ -335,5 +335,5 @@ namespace Registration.Sample
         {
             return System.Threading.Tasks.Task.FromResult(s1);
         }
-    }*/
+    }
 }

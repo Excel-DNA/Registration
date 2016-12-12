@@ -9,7 +9,7 @@ using ExcelDna.Registration;
 
 namespace Registration.Sample
 {
-/*    // Test class
+    // Test class
     [AttributeUsage(AttributeTargets.All)]
     public class ExcelObjectAttribute : Attribute
     {
@@ -70,5 +70,5 @@ namespace Registration.Sample
             var processed = ParameterConversionRegistration.ProcessParameterConversions(new[] { reg }, paramConversionConfig);
             processed.RegisterFunctions();
         }
-    }*/
+    }
 }

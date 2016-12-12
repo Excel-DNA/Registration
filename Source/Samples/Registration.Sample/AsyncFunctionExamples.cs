@@ -8,7 +8,7 @@ using ExcelDna.Registration.Utils;
 
 namespace Registration.Sample
 {
-/*    public static class AsyncFunctionExamples
+    public static class AsyncFunctionExamples
     {
         // Will not be registered in Excel by Excel-DNA, without being picked up by our Registration processing
         // since there is no ExcelFunction attribute, and ExplicitRegistration="true" in the .dna file prevents this 
@@ -96,5 +96,5 @@ namespace Registration.Sample
             new Timer(_ => tcs.SetResult(null)).Change(milliseconds, Timeout.Infinite);
             return tcs.Task;
         }
-    }*/
+    }
 }

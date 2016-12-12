@@ -12,12 +12,6 @@ namespace ExcelDna.Registration
     /// </summary>
     public static class ParameterConversions
     {
-        // These can be used directly in .AddParameterConversion
-        public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing = false)
-        {
-            return (type, paramReg) => NullableConversion(type, paramReg, treatEmptyAsMissing);
-        }
-
         public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetOptionalConversion(bool treatEmptyAsMissing = false)
         {
             return (type, paramReg) => OptionalConversion(type, paramReg, treatEmptyAsMissing);
@@ -26,29 +20,6 @@ namespace ExcelDna.Registration
         public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetEnumConversion()
         {
             return (type, paramReg) => EnumConversion(type, paramReg);
-        }
-        
-        // Implementations
-        static LambdaExpression NullableConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing)
-        {
-            // Decide whether to return a conversion function for this parameter
-            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>))                 // E.g. type is Nullable<double>
-                return null;
-
-            var innerType = type.GetGenericArguments()[0]; // E.g. innerType is double
-            // Here's the actual conversion function
-            var input = Expression.Parameter(typeof(object), "input");
-            var result =
-                Expression.Lambda(
-                    Expression.Condition(
-                // if the value is missing (or possibly empty)
-                        MissingTest(input, treatEmptyAsMissing),
-                // cast null to int?
-                        Expression.Constant(null, type),
-                // else convert to int, and cast that to int?
-                        Expression.Convert(TypeConversion.GetConversion(input, innerType), type)),
-                    input);
-            return result;
         }
 
         static LambdaExpression EnumConversion(Type type, ExcelParameterRegistration paramReg)
@@ -88,23 +59,10 @@ namespace ExcelDna.Registration
             return
                 Expression.Lambda(
                     Expression.Condition(
-                        MissingTest(input, treatEmptyAsMissing),
+                        ParameterConversionConfiguration.MissingTest(input, treatEmptyAsMissing),
                         Expression.Constant(defaultValue, type),
                         TypeConversion.GetConversion(input, type)),
                     input);
-        }
-
-        static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing)
-        {
-            if (treatEmptyAsMissing)
-            {
-                return Expression.Or(Expression.TypeIs(input, typeof(ExcelMissing)), 
-                                     Expression.TypeIs(input, typeof(ExcelEmpty)));
-            }
-            else
-            {
-                return Expression.TypeIs(input, typeof(ExcelMissing));
-            }
         }
     }
 }

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using ExcelDna.Integration;
 
 namespace ExcelDna.Registration
 {
@@ -142,5 +144,76 @@ namespace ExcelDna.Registration
             return this;
         }
         #endregion
+
+        LambdaExpression NullableConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing)
+        {
+            // Decide whether to return a conversion function for this parameter
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>)) // E.g. type is Nullable<Complex>
+                return null;
+
+            var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
+            ParameterConversion innerTypeParameterConversion = ParameterConversions.First(c => c.Convert(innerType, paramReg)!=null); // Try to find a converter for innerType in the config
+            ParameterExpression input = null;
+            Expression innerTypeConversion = null;
+            // if we have a converter for innertype in the config, then use it. Otherwise try one of the conversions for the basic types
+            if (innerTypeParameterConversion == null)
+            {
+                input = Expression.Parameter(typeof(object), "input");
+                innerTypeConversion = TypeConversion.GetConversion(input, innerType);
+            }
+            else
+            {
+                var innerTypeParamConverter = innerTypeParameterConversion.Convert(innerType, paramReg);
+                input = Expression.Parameter(innerTypeParamConverter.Parameters[0].Type, "input");
+                innerTypeConversion = Expression.Invoke(innerTypeParamConverter, input);
+            }
+            // Here's the actual conversion function
+            var result =
+                Expression.Lambda(
+                    Expression.Condition(
+                        // if the value is missing (or possibly empty)
+                        MissingTest(input, treatEmptyAsMissing),
+                        // cast null to int?
+                        Expression.Constant(null, type),
+                        // else convert to int, and cast that to int?
+                        Expression.Convert(innerTypeConversion, type)),
+                    input);
+            return result;
+        }
+
+        Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing)
+        {
+            return (type, paramReg) => NullableConversion(type, paramReg, treatEmptyAsMissing);
+        }
+
+        public ParameterConversionConfiguration AddNullableConversion(bool treatEmptyAsMissing = false)
+        {
+            return AddParameterConversion(GetNullableConversion(treatEmptyAsMissing));
+        }
+
+        static bool MissingOrNATest(object input)
+        {
+            var inputArray = input as object[];
+            if (inputArray != null && inputArray.Length == 1)
+                input = inputArray[0];
+            Type inputType = input.GetType();
+            bool result = (inputType == typeof(ExcelMissing)) || (inputType == typeof(ExcelEmpty));
+            if (!result && inputType == typeof(ExcelError))
+                result = (ExcelError)input == ExcelError.ExcelErrorNA;
+            return result;
+        }
+
+        internal static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing)
+        {
+            Expression r = null;
+            if (!treatEmptyAsMissing)
+                r = Expression.TypeIs(input, typeof(ExcelMissing));
+            else
+            {
+                var methodMissingorNATest = typeof(ParameterConversionConfiguration).GetMethod("MissingOrNATest", BindingFlags.NonPublic| BindingFlags.Static);
+                r = Expression.Call(null, methodMissingorNATest, input);
+            }
+            return r;
+        }
     }
 }

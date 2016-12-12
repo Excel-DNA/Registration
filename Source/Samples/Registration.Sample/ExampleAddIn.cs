@@ -32,7 +32,7 @@ namespace Registration.Sample
                              .RegisterFunctions();
 
             // First example if Instance -> Static conversion
-            //InstanceMemberRegistration.TestInstanceRegistration();
+            InstanceMemberRegistration.TestInstanceRegistration();
         }
 
         static ParameterConversionConfiguration GetPostAsyncReturnConversionConfig()
@@ -75,15 +75,14 @@ namespace Registration.Sample
             var paramConversionConfig = new ParameterConversionConfiguration()
 
                 // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
-                .AddParameterConversion(ParameterConversions.GetNullableConversion(treatEmptyAsMissing: false))
-                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: false))
+                .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: true))
 
                 // Register some type conversions (not the ordering discussed above)        
-                //.AddParameterConversion((string value) => new TestType1(value))
-                //.AddParameterConversion((TestType1 value) => new TestType2(value))
+                .AddParameterConversion((string value) => new TestType1(value))
+                .AddParameterConversion((TestType1 value) => new TestType2(value))
 
-                // This is a conversion applied to the return value fo the function
-                //.AddReturnConversion((TestType1 value) => value.ToString())
+                // This is a conversion applied to the return value of the function
+                .AddReturnConversion((TestType1 value) => value.ToString())
                 .AddReturnConversion((Complex value) => new double[2] {value.Real, value.Imaginary})
 
                 //  .AddParameterConversion((string value) => convert2(convert1(value)));
@@ -97,7 +96,8 @@ namespace Registration.Sample
                 .AddReturnConversion((Enum value) => value.ToString())
                 .AddParameterConversion(ParameterConversions.GetEnumConversion())
 
-                .AddParameterConversion((double[] input) => new Complex(input[0], input[1]));
+                .AddParameterConversion((object[] input) => new Complex(TypeConversion.ConvertToDouble(input[0]), TypeConversion.ConvertToDouble(input[1])))
+                .AddNullableConversion(treatEmptyAsMissing: true);
 
             return paramConversionConfig;
         }
