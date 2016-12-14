@@ -152,7 +152,7 @@ namespace ExcelDna.Registration
                 return null;
 
             var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
-            ParameterConversion innerTypeParameterConversion = ParameterConversions.First(c => c.Convert(innerType, paramReg)!=null); // Try to find a converter for innerType in the config
+            ParameterConversion innerTypeParameterConversion = ParameterConversions.FirstOrDefault(c => c.Convert(innerType, paramReg)!=null); // Try to find a converter for innerType in the config
             ParameterExpression input = null;
             Expression innerTypeConversion = null;
             // if we have a converter for innertype in the config, then use it. Otherwise try one of the conversions for the basic types
