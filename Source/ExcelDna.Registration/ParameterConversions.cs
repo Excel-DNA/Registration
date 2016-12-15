@@ -22,6 +22,21 @@ namespace ExcelDna.Registration
             return (type, paramReg) => EnumConversion(type, paramReg);
         }
 
+        internal static object EnumParse(Type enumType, object obj)
+        {
+            object result;
+            string objToString = obj.ToString().Trim();
+            try
+            {
+                result = Enum.Parse(enumType, objToString, true);
+            }
+            catch (ArgumentException x)
+            {
+                throw new ArgumentException($"'{objToString}' is not a value of enum '{enumType.Name}'. Legal values are: {enumType.GetEnumNames()}");
+            }
+            return result;
+        }
+
         static LambdaExpression EnumConversion(Type type, ExcelParameterRegistration paramReg)
         {
             // Decide whether to return a conversion function for this parameter
@@ -30,7 +45,7 @@ namespace ExcelDna.Registration
 
             var input = Expression.Parameter(typeof(object), "input");
             var enumTypeParam = Expression.Parameter(typeof(Type), "enumType");
-            Expression<Func<Type, object, object>> enumParse = (t, s) => Enum.Parse(t, s.ToString().Trim(), true);
+            Expression<Func<Type, object, object>> enumParse = (t, s) => EnumParse(t, s.ToString().Trim());
             var result =
                 Expression.Lambda(
                     Expression.Convert(
