@@ -93,11 +93,11 @@ namespace Registration.Sample
                 .AddParameterConversion((object[] inputs) => inputs.Select(TypeConversion.ConvertToString).ToArray())
 
                 // This is a pair of very generic conversions for Enum types
-                .AddReturnConversion((Enum value) => value.ToString())
-                .AddParameterConversion(ParameterConversions.GetEnumConversion())
+                .AddReturnConversion((Enum value) => value.ToString(), handleSubTypes: true)
+                .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
 
                 .AddParameterConversion((object[] input) => new Complex(TypeConversion.ConvertToDouble(input[0]), TypeConversion.ConvertToDouble(input[1])))
-                .AddNullableConversion(treatEmptyAsMissing: true);
+                .AddNullableConversion(treatEmptyAsMissing: true, treatNAErrorAsMissing: true);
 
             return paramConversionConfig;
         }

@@ -59,21 +59,27 @@ namespace ExcelDna.Registration
             // The Conversion function may anyway return null to indicate that no conversion should be applied.
             public Type TypeFilter { get; private set; }
 
-            public ReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> conversion, Type typeFilter = null)
+            /// <summary>
+            /// If true, the conversion will also convert all subtypes of its input type
+            /// </summary>
+            public bool HandleSubTypes { get; private set; }
+
+            public ReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> conversion, Type typeFilter = null, bool handleSubTypes = false)
             {
                 if (conversion == null)
                     throw new ArgumentNullException("conversion");
 
                 Conversion = conversion;
                 TypeFilter = typeFilter;
+                HandleSubTypes = handleSubTypes;
             }
-        
+
             internal LambdaExpression Convert(Type returnType, ExcelReturnRegistration returnRegistration)
             {
-                if (TypeFilter != null && returnType != TypeFilter && !returnType.IsSubclassOf(TypeFilter))
+                if (TypeFilter != null && returnType != TypeFilter && (!HandleSubTypes || !returnType.IsSubclassOf(TypeFilter)))
                     return null;
 
- 	            LambdaExpression result = Conversion(returnType, returnRegistration);
+                LambdaExpression result = Conversion(returnType, returnRegistration);
 
                 if (TypeFilter != null && returnType != TypeFilter)
                 {
@@ -125,34 +131,39 @@ namespace ExcelDna.Registration
         }
 
         // Most general case - called by the overloads below
-        public ParameterConversionConfiguration AddReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null)
+        public ParameterConversionConfiguration AddReturnConversion(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null, bool handleSubTypes = false)
         {
-            var rc = new ReturnConversion(returnConversion, targetTypeOrNull);
+            var rc = new ReturnConversion(returnConversion, targetTypeOrNull, handleSubTypes);
             ReturnConversions.Add(rc);
             return this;
         }
 
-        public ParameterConversionConfiguration AddReturnConversion<TFrom>(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom>(Func<Type, ExcelReturnRegistration, LambdaExpression> returnConversion, Type targetTypeOrNull = null, bool handleSubTypes = false)
         {
-            AddReturnConversion(returnConversion, typeof(TFrom));
+            AddReturnConversion(returnConversion, typeof(TFrom), handleSubTypes);
             return this;
         }
 
-        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert)
+        public ParameterConversionConfiguration AddReturnConversion<TFrom, TTo>(Expression<Func<TFrom, TTo>> convert, bool handleSubTypes = false)
         {
-            AddReturnConversion<TFrom>((unusedReturnType, unusedAttributes) => convert);
+            AddReturnConversion<TFrom>((unusedReturnType, unusedAttributes) => convert, null, handleSubTypes);
             return this;
         }
         #endregion
 
-        LambdaExpression NullableConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing)
+        internal static LambdaExpression NullableConversion(IEnumerable<ParameterConversion> parameterConversions, Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing,
+            bool treatNAErrorAsMissing)
         {
             // Decide whether to return a conversion function for this parameter
             if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>)) // E.g. type is Nullable<Complex>
                 return null;
 
             var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
-            ParameterConversion innerTypeParameterConversion = ParameterConversions.FirstOrDefault(c => c.Convert(innerType, paramReg)!=null); // Try to find a converter for innerType in the config
+            // Try to find a converter for innerType in the config
+            ParameterConversion innerTypeParameterConversion = null;
+            if (parameterConversions != null)
+                innerTypeParameterConversion =
+                    parameterConversions.FirstOrDefault(c => c.Convert(innerType, paramReg) != null);
             ParameterExpression input = null;
             Expression innerTypeConversion = null;
             // if we have a converter for innertype in the config, then use it. Otherwise try one of the conversions for the basic types
@@ -172,7 +183,7 @@ namespace ExcelDna.Registration
                 Expression.Lambda(
                     Expression.Condition(
                         // if the value is missing (or possibly empty)
-                        MissingTest(input, treatEmptyAsMissing),
+                        MissingTest(input, treatEmptyAsMissing, treatNAErrorAsMissing),
                         // cast null to int?
                         Expression.Constant(null, type),
                         // else convert to int, and cast that to int?
@@ -181,37 +192,52 @@ namespace ExcelDna.Registration
             return result;
         }
 
-        Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing)
+        Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing, bool treatNAErrorAsMissing)
         {
-            return (type, paramReg) => NullableConversion(type, paramReg, treatEmptyAsMissing);
+            return (type, paramReg) => NullableConversion(ParameterConversions, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
         }
 
-        public ParameterConversionConfiguration AddNullableConversion(bool treatEmptyAsMissing = false)
+        /// <summary>
+        /// Adds a Nullable conversion that will also translate any type parameter T of Nullable[T] for which there is a conversion in the configutation.
+        /// Note that the added rule is quite generic and only has access to the T conversion rules that have already been added before it, so you should
+        /// call this at the very bottom of your configuration setup sequence.
+        /// </summary>
+        /// <param name="treatEmptyAsMissing">If true, any empty cells will be treated as null values</param>
+        /// <param name="treatNAErrorAsMissing">If true, any #NA! errors will be treated as null values</param>
+        /// <returns>The parameter conversion configuration with the new added rule</returns>
+        public ParameterConversionConfiguration AddNullableConversion(bool treatEmptyAsMissing = false, bool treatNAErrorAsMissing = false)
         {
-            return AddParameterConversion(GetNullableConversion(treatEmptyAsMissing));
+            return AddParameterConversion(GetNullableConversion(treatEmptyAsMissing, treatNAErrorAsMissing));
         }
 
-        static bool MissingOrNATest(object input)
+        static bool MissingOrNATest(object input, bool treatEmptyAsMissing)
         {
             var inputArray = input as object[];
             if (inputArray != null && inputArray.Length == 1)
                 input = inputArray[0];
             Type inputType = input.GetType();
-            bool result = (inputType == typeof(ExcelMissing)) || (inputType == typeof(ExcelEmpty));
+            bool result = (inputType == typeof(ExcelMissing)) ||
+                          (treatEmptyAsMissing && inputType == typeof(ExcelEmpty));
             if (!result && inputType == typeof(ExcelError))
-                result = (ExcelError)input == ExcelError.ExcelErrorNA;
+                result = (ExcelError) input == ExcelError.ExcelErrorNA;
             return result;
         }
 
-        internal static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing)
+        internal static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing,
+            bool treatNAErrorAsMissing)
         {
             Expression r = null;
-            if (!treatEmptyAsMissing)
-                r = Expression.TypeIs(input, typeof(ExcelMissing));
+            if (treatNAErrorAsMissing)
+            {
+                var methodMissingOrNATest = typeof(ParameterConversionConfiguration).GetMethod("MissingOrNATest",
+                    BindingFlags.NonPublic | BindingFlags.Static);
+                r = Expression.Call(null, methodMissingOrNATest, input, Expression.Constant(treatEmptyAsMissing));
+            }
             else
             {
-                var methodMissingorNATest = typeof(ParameterConversionConfiguration).GetMethod("MissingOrNATest", BindingFlags.NonPublic| BindingFlags.Static);
-                r = Expression.Call(null, methodMissingorNATest, input);
+                r = Expression.TypeIs(input, typeof(ExcelMissing));
+                if (treatEmptyAsMissing)
+                    r = Expression.OrElse(r, Expression.TypeIs(input, typeof(ExcelEmpty)));
             }
             return r;
         }
