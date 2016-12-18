@@ -45,7 +45,6 @@ namespace ExcelDna.Registration
         {
             // Decide whether to return a conversion function for this parameter
             if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>))
-                // E.g. type is Nullable<Complex>
                 return null;
 
             var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
@@ -107,7 +106,7 @@ namespace ExcelDna.Registration
                     input);
         }
 
-        internal static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing,
+        static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing,
             bool treatNAErrorAsMissing)
         {
             Expression r = null;
