@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using ExcelDna.Integration;
 
@@ -23,7 +25,7 @@ namespace ExcelDna.Registration
         /// <returns></returns>
         public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing = false, bool treatNAErrorAsMissing = false)
         {
-            return (type, paramReg) => ParameterConversionConfiguration.NullableConversion(null, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
+            return (type, paramReg) => NullableConversion(null, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
         }
 
         public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetOptionalConversion(bool treatEmptyAsMissing = false, bool treatNAErrorAsMissing = false)
@@ -34,6 +36,107 @@ namespace ExcelDna.Registration
         public static Func<Type, ExcelParameterRegistration, LambdaExpression> GetEnumStringConversion()
         {
             return (type, paramReg) => EnumStringConversion(type, paramReg);
+        }
+
+        internal static LambdaExpression NullableConversion(
+            IEnumerable<ParameterConversionConfiguration.ParameterConversion> parameterConversions, Type type,
+            ExcelParameterRegistration paramReg, bool treatEmptyAsMissing,
+            bool treatNAErrorAsMissing)
+        {
+            // Decide whether to return a conversion function for this parameter
+            if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Nullable<>))
+                // E.g. type is Nullable<Complex>
+                return null;
+
+            var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
+            // Try to find a converter for innerType in the config
+            ParameterConversionConfiguration.ParameterConversion innerTypeParameterConversion = null;
+            if (parameterConversions != null)
+                innerTypeParameterConversion =
+                    parameterConversions.FirstOrDefault(c => c.Convert(innerType, paramReg) != null);
+            ParameterExpression input = null;
+            Expression innerTypeConversion = null;
+            // if we have a converter for innertype in the config, then use it. Otherwise try one of the conversions for the basic types
+            if (innerTypeParameterConversion == null)
+            {
+                input = Expression.Parameter(typeof(object), "input");
+                innerTypeConversion = TypeConversion.GetConversion(input, innerType);
+            }
+            else
+            {
+                var innerTypeParamConverter = innerTypeParameterConversion.Convert(innerType, paramReg);
+                input = Expression.Parameter(innerTypeParamConverter.Parameters[0].Type, "input");
+                innerTypeConversion = Expression.Invoke(innerTypeParamConverter, input);
+            }
+            // Here's the actual conversion function
+            var result =
+                Expression.Lambda(
+                    Expression.Condition(
+                        // if the value is missing (or possibly empty)
+                        MissingTest(input, treatEmptyAsMissing, treatNAErrorAsMissing),
+                        // cast null to int?
+                        Expression.Constant(null, type),
+                        // else convert to int, and cast that to int?
+                        Expression.Convert(innerTypeConversion, type)),
+                    input);
+            return result;
+        }
+
+        static LambdaExpression OptionalConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing, bool treatNAErrorAsMissing)
+        {
+            // Decide whether to return a conversion function for this parameter
+            if (!paramReg.CustomAttributes.OfType<OptionalAttribute>().Any())
+                return null;
+
+            var defaultAttribute = paramReg.CustomAttributes.OfType<DefaultParameterValueAttribute>().FirstOrDefault();
+            var defaultValue = defaultAttribute == null ? TypeConversion.GetDefault(type) : defaultAttribute.Value;
+            // var returnType = type.GetGenericArguments()[0]; // E.g. returnType is double
+
+            // Consume the attributes
+            paramReg.CustomAttributes.RemoveAll(att => att is OptionalAttribute);
+            paramReg.CustomAttributes.RemoveAll(att => att is DefaultParameterValueAttribute);
+
+            // Here's the actual conversion function
+            var input = Expression.Parameter(typeof(object), "input");
+            return
+                Expression.Lambda(
+                    Expression.Condition(
+                        MissingTest(input, treatEmptyAsMissing, treatNAErrorAsMissing),
+                        Expression.Constant(defaultValue, type),
+                        TypeConversion.GetConversion(input, type)),
+                    input);
+        }
+
+        internal static Expression MissingTest(ParameterExpression input, bool treatEmptyAsMissing,
+            bool treatNAErrorAsMissing)
+        {
+            Expression r = null;
+            if (treatNAErrorAsMissing)
+            {
+                var methodMissingOrNATest = typeof(ParameterConversions).GetMethod("MissingOrNATest",
+                    BindingFlags.NonPublic | BindingFlags.Static);
+                r = Expression.Call(null, methodMissingOrNATest, input, Expression.Constant(treatEmptyAsMissing));
+            }
+            else
+            {
+                r = Expression.TypeIs(input, typeof(ExcelMissing));
+                if (treatEmptyAsMissing)
+                    r = Expression.OrElse(r, Expression.TypeIs(input, typeof(ExcelEmpty)));
+            }
+            return r;
+        }
+
+        static bool MissingOrNATest(object input, bool treatEmptyAsMissing)
+        {
+            var inputArray = input as object[];
+            if (inputArray != null && inputArray.Length == 1)
+                input = inputArray[0];
+            Type inputType = input.GetType();
+            bool result = (inputType == typeof(ExcelMissing)) ||
+                          (treatEmptyAsMissing && inputType == typeof(ExcelEmpty));
+            if (!result && inputType == typeof(ExcelError))
+                result = (ExcelError)input == ExcelError.ExcelErrorNA;
+            return result;
         }
 
         internal static object EnumParse(Type enumType, object obj)
@@ -67,31 +170,6 @@ namespace ExcelDna.Registration
                         type),
                     input);
             return result;
-        }
-
-        static LambdaExpression OptionalConversion(Type type, ExcelParameterRegistration paramReg, bool treatEmptyAsMissing, bool treatNAErrorAsMissing)
-        {
-            // Decide whether to return a conversion function for this parameter
-            if (!paramReg.CustomAttributes.OfType<OptionalAttribute>().Any())
-                return null;
-
-            var defaultAttribute = paramReg.CustomAttributes.OfType<DefaultParameterValueAttribute>().FirstOrDefault();
-            var defaultValue = defaultAttribute == null ? TypeConversion.GetDefault(type) : defaultAttribute.Value;
-            // var returnType = type.GetGenericArguments()[0]; // E.g. returnType is double
-
-            // Consume the attributes
-            paramReg.CustomAttributes.RemoveAll(att => att is OptionalAttribute);
-            paramReg.CustomAttributes.RemoveAll(att => att is DefaultParameterValueAttribute);
-
-            // Here's the actual conversion function
-            var input = Expression.Parameter(typeof(object), "input");
-            return
-                Expression.Lambda(
-                    Expression.Condition(
-                        ParameterConversionConfiguration.MissingTest(input, treatEmptyAsMissing, treatNAErrorAsMissing),
-                        Expression.Constant(defaultValue, type),
-                        TypeConversion.GetConversion(input, type)),
-                    input);
         }
     }
 }
