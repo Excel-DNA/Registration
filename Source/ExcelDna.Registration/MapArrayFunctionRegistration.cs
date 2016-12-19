@@ -438,6 +438,10 @@ namespace ExcelDna.Registration
                 {
                     return DateTime.FromOADate((int)from);
                 }
+                if (toType.IsEnum)
+                {
+                    return ParameterConversions.EnumParse(toType, from);
+                }
                 if (from is ExcelEmpty)
                 {
                     // use default ctor if it exists exist
