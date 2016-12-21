@@ -7,10 +7,33 @@ using Expr = System.Linq.Expressions.Expression;
 
 namespace ExcelDna.Registration
 {
+    /// <summary>
+    /// A marshal-by-reference object cache must implement this interface.
+    /// See class ExcelObjectCache for a readily available implementation which you will most likely want to reuse.
+    /// This interface is used to store any results and look up any parameters of type T, where T was either decorated
+    /// with ExcelMarshalByRefAttribute or added to ParameterConversionConfiguration.MarshalByRef property of the configuration
+    /// being used.
+    /// </summary>
     public interface IReferenceMarshaller
     {
+        /// <summary>
+        /// This method is called to look up an object id string in the cache.
+        /// </summary>
+        /// <param name="id">The object id string coming from Excel</param>
+        /// <returns></returns>
         object Lookup(string id);
+
+        /// <summary>
+        /// This method is called to store any objects returned by a function.
+        /// </summary>
+        /// <param name="o">The object</param>
+        /// <returns>The string id to display in the cell</returns>
         string Store(object o);
+
+        /// <summary>
+        /// This method is called to tell the cache that we are starting to evaluate a new cell.
+        /// </summary>
+        void SetCurrentCell();
     }
 
     // CONSIDER: Can one use an ExpressionVisitor to do these things....?
@@ -52,8 +75,33 @@ namespace ExcelDna.Registration
             return r;
         }
 
+        static LambdaExpression ComposeLambdas(IEnumerable<LambdaExpression> lambdas)
+        {
+            LambdaExpression result = null;
+            if (lambdas != null)
+            {
+                var convsIter = lambdas.GetEnumerator();
+                if (convsIter.MoveNext())
+                {
+                    result = convsIter.Current;
+                    while (convsIter.MoveNext())
+                    {
+                        result = Expression.Lambda(Expression.Invoke(result, convsIter.Current),
+                            convsIter.Current.Parameters);
+                    }
+                }
+            }
+            return result;
+        }
+
+        internal static LambdaExpression GetParameterConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialParamType, ExcelParameterRegistration paramRegistration)
+        {
+            return ComposeLambdas(GetParameterConversions(conversionConfig, initialParamType, paramRegistration));
+        }
+
         // Should return null if there are no conversions to apply
-        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
+        internal static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
         {
             var appliedConversions = new List<LambdaExpression>();
 
@@ -101,17 +149,34 @@ namespace ExcelDna.Registration
 
         private delegate string StoreToCacheDelegate(object o);
 
-        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration)
+        internal static LambdaExpression GetReturnConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialReturnType, ExcelReturnRegistration returnRegistration, bool setCurrentCellInMarshalByRefCache = true)
+        {
+            return ComposeLambdas(GetReturnConversions(conversionConfig, initialReturnType, returnRegistration, setCurrentCellInMarshalByRefCache));
+        }
+
+        internal static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration,
+            bool setCurrentCellInMarshalByRefCache = true)
         {
             var appliedConversions = new List<LambdaExpression>();
 
-            bool marshalByRef = conversionConfig.MarshalByRef.Contains(initialReturnType);
-            marshalByRef = marshalByRef || initialReturnType.GetCustomAttributes(typeof(ExcelMarshalByRefAttribute), true).Length > 0;
-
-            if (marshalByRef && conversionConfig.ReferenceMarshaller != null)
+            bool marshalByRef = conversionConfig.IsMarshalByRef(initialReturnType);
+            if (marshalByRef)
             {
                 var input = Expression.Parameter(initialReturnType, "input");
-                StoreToCacheDelegate storeToCacheDelegate = (o) => conversionConfig.ReferenceMarshaller.Store((object) o);
+
+                StoreToCacheDelegate storeToCacheDelegate = null;
+                if (setCurrentCellInMarshalByRefCache)
+                    storeToCacheDelegate = (o) =>
+                    {
+                        conversionConfig.ReferenceMarshaller.SetCurrentCell();
+                        return conversionConfig.ReferenceMarshaller.Store((object) o);
+                    };
+                else storeToCacheDelegate = (o) =>
+                    {
+                        return conversionConfig.ReferenceMarshaller.Store((object) o);
+                    };
+
                 var storeToCacheLambda = Expression.Lambda(Expression.Call(Expression.Constant(storeToCacheDelegate.Target), storeToCacheDelegate.Method, input), input);
                 appliedConversions.Add(storeToCacheLambda);
             }

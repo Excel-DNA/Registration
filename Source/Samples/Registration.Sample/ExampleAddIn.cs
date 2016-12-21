@@ -27,7 +27,7 @@ namespace Registration.Sample
             // Get all the ExcelFunction functions, process and register
             // Since the .dna file has ExplicitExports="true", these explicit registrations are the only ones - there is no default processing
             ExcelRegistration.GetExcelFunctions()
-                .ProcessMapArrayFunctions()
+                .ProcessMapArrayFunctions(conversionConfig)
                 .ProcessParameterConversions(conversionConfig)
                 .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
                 .ProcessParameterConversions(postAsyncReturnConfig)
@@ -78,6 +78,8 @@ namespace Registration.Sample
 
             var paramConversionConfig = new ParameterConversionConfiguration()
 
+                .AddReferenceMarshaller(ExcelObjectCache.Instance)
+
                 // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: true))
 
@@ -101,9 +103,7 @@ namespace Registration.Sample
                 .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
 
                 .AddParameterConversion((object[] input) => new Complex(TypeConversion.ConvertToDouble(input[0]), TypeConversion.ConvertToDouble(input[1])))
-                .AddNullableConversion(treatEmptyAsMissing: true, treatNAErrorAsMissing: true)
-
-                .AddReferenceMarshaller(ExcelObjectCache.Instance);
+                .AddNullableConversion(treatEmptyAsMissing: true, treatNAErrorAsMissing: true);
 
             return paramConversionConfig;
         }

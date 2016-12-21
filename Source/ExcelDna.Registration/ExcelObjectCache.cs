@@ -7,6 +7,9 @@ using ExcelDna.Integration;
 
 namespace ExcelDna.Registration
 {
+    /// <summary>
+    /// Any types decorated with this attribute will be marshalled to Excel by reference through the ParameterConversionConfiguration.ReferenceMashaller object
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class|AttributeTargets.Interface, Inherited = true)]
     public class ExcelMarshalByRefAttribute : Attribute
     {
@@ -16,9 +19,8 @@ namespace ExcelDna.Registration
     }
 
     /// <summary>
-    /// This class implements an object cache to marshall object identities back and forth the Excel s/s.
-    /// The algorithm works as follows:
-    /// 1. The new object is assigned an id and is places in a thread-local dictionary for temporary objects. This dictionary is cleaned every time
+    /// This class implements an object cache to marshall object identities back and forth the Excel workbook.
+    /// It was deisgned as a singleton because it uses thread local storage to support multi-threaded scenarios in an efficient way.
     /// </summary>
     public class ExcelObjectCache : IReferenceMarshaller
     {
@@ -27,6 +29,9 @@ namespace ExcelDna.Registration
 
         private ExcelObjectCache() { }
 
+        /// <summary>
+        /// The singleton instance of this class
+        /// </summary>
         public static ExcelObjectCache Instance
         {
             get
@@ -44,30 +49,40 @@ namespace ExcelDna.Registration
             }
         }
 
-        private struct CacheItem
-        {
-            public CacheItem(int theId, object theObject)
-            {
-                Id = theId;
-                Object = theObject;
-            }
+        /// <summary>
+        /// This tracks which object id's have been create din which cell
+        /// </summary>
+        private Dictionary<ExcelReference, HashSet<int>> BirthCell = new Dictionary<ExcelReference, HashSet<int>>();
 
-            public readonly int Id;
-            public readonly object Object;
-        }
-
-        private Dictionary<ExcelReference, CacheItem> Cache = new Dictionary<ExcelReference, CacheItem>();
+        /// <summary>
+        /// This is where we actually look objects up
+        /// </summary>
         private Dictionary<int, object> IdLookup = new Dictionary<int, object>();
 
+        /// <summary>
+        /// This acculates all objects created during the possibly nested evaluations that happen in a cell.
+        /// It is cleared every time the thread sees a different cell.
+        /// </summary>
         [ThreadStatic]
         private static Dictionary<int, object> TempObjects = new Dictionary<int, object>();
+
+        /// <summary>
+        /// This is the cell being handled by the current thread
+        /// </summary>
         [ThreadStatic]
-        private static ExcelReference _currentCaller;
+        private static ExcelReference _currentCell;
+
+        /// <summary>
+        /// An atomically incremented counted that provides the object identifiers.
+        /// </summary>
         private static int _idCounter = 0;
+
+        /// NullXlRef is what we get for calls from VBA
         private static readonly ExcelReference NullXlRef = new ExcelReference(-1, -1);
 
         private static readonly char Separator = '@';
 
+        /// <inheritdoc/>
         public object Lookup(string idString)
         {
             int idPos = idString.IndexOf('@');
@@ -77,7 +92,7 @@ namespace ExcelDna.Registration
             object result;
             if (!TempObjects.TryGetValue(id, out result))
             {
-                lock (Cache)
+                lock (BirthCell)
                 {
                     IdLookup.TryGetValue(id, out result);
                 }
@@ -85,37 +100,56 @@ namespace ExcelDna.Registration
             return result;
         }
 
+        /// <inheritdoc/>
         public string Store(object o)
         {
-            int id;
-            // First of all, we assign an id and place object in thread-local dictionary for temporary objects.
-            // This is where we support function calls like objectConsumerFunc(objectFactory1(...), ..., objectFactoryN(...))
-            ExcelReference caller = XlCall.Excel(XlCall.xlfCaller) as ExcelReference;
-            caller = caller ?? NullXlRef; // NullXlRef is what we get for calls from VBA
-            lock (Cache)
+            int id = Interlocked.Increment(ref _idCounter);
+            lock (BirthCell)
             {
-                // If we are now processing a different cell, then we get rid of any old temp objects
-                if (caller != _currentCaller)
-                {
-                    foreach (int tempId in TempObjects.Keys)
-                        IdLookup.Remove(tempId);
-                    TempObjects.Clear();
-                    _currentCaller = caller;
-                }
-
-                id = Interlocked.Increment(ref _idCounter);
                 TempObjects[id] = o;
-                
-                // If the cache had any object at this cell, then drop it from the lookup dictionary
-                CacheItem oldObject;
-                Cache.TryGetValue(caller, out oldObject);
-                IdLookup.Remove(oldObject.Id);
-
-                // Store the new object in the cache
-                Cache[caller] = new CacheItem(id, o);
+                HashSet<int> objectsBornInTheCurrentCell = BirthCell[_currentCell]; // must succeed if SetCurrentCell has been called
+                objectsBornInTheCurrentCell.Add(id);
                 IdLookup[id] = o;
             }
             return $"{o.GetType().Name}{Separator}{id}";
+        }
+
+        /// <inheritdoc/>
+        public void SetCurrentCell()
+        {
+            ExcelReference previousCell = _currentCell;
+            ExcelReference thisCell = XlCall.Excel(XlCall.xlfCaller) as ExcelReference;
+            thisCell = thisCell ?? NullXlRef;
+            lock (BirthCell)
+            {
+                // If we are now processing a different cell, then we get rid of any old temp objects
+                if (thisCell != previousCell)
+                {
+                    HashSet<int> objectsCreatedAtThePreviousCell = null;
+                    if (previousCell != null)
+                        BirthCell.TryGetValue(previousCell, out objectsCreatedAtThePreviousCell);
+                    foreach (int tempId in TempObjects.Keys)
+                        if (objectsCreatedAtThePreviousCell==null || !objectsCreatedAtThePreviousCell.Contains(tempId))
+                            IdLookup.Remove(tempId);
+                    TempObjects.Clear();
+                    _currentCell = thisCell;
+                }
+
+                HashSet<int> objectsCreatedAtTheCurrentCell = null;
+                BirthCell.TryGetValue(thisCell, out objectsCreatedAtTheCurrentCell);
+
+                if (objectsCreatedAtTheCurrentCell == null)
+                {
+                    objectsCreatedAtTheCurrentCell = new HashSet<int>();
+                    BirthCell[thisCell] = objectsCreatedAtTheCurrentCell;
+                }
+                else
+                {
+                    foreach (var id in objectsCreatedAtTheCurrentCell)
+                        IdLookup.Remove(id);
+                    objectsCreatedAtTheCurrentCell.Clear();
+                }
+            }
         }
     }
 }

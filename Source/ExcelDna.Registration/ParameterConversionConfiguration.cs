@@ -168,9 +168,16 @@ namespace ExcelDna.Registration
             return this;
         }
 
+        public bool IsMarshalByRef(Type type)
+        {
+            bool marshalByRef = MarshalByRef.Contains(type);
+            marshalByRef = marshalByRef || type.GetCustomAttributes(typeof(ExcelMarshalByRefAttribute), true).Length > 0;
+            return marshalByRef && ReferenceMarshaller != null;
+        }
+
         Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing, bool treatNAErrorAsMissing)
         {
-            return (type, paramReg) => Registration.ParameterConversions.NullableConversion(ParameterConversions, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
+            return (type, paramReg) => Registration.ParameterConversions.NullableConversion(this, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
         }
 
         /// <summary>
