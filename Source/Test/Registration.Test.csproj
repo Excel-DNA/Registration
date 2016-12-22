@@ -38,7 +38,7 @@
       <HintPath>..\packages\ExcelDna.Integration.0.33.9\lib\ExcelDna.Integration.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+      <HintPath>..\packages\NUnit.3.5.0\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

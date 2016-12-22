@@ -248,19 +248,32 @@ namespace ExcelDna.Registration.Test
 
         #endregion
 
+        #region Static methods for tests
+        public static bool Not(bool x) { return !x; }
+        public static bool And(bool x, bool y) { return x && y; }
+        public static double Plus1Double(double x) { return x + 1; }
+        public static int Plus1Int(int x) { return x+1; }
+        public static string ToUpper(string s) { return s.ToUpper(); }
+        public static DateTime Identity(DateTime x) { return x; }
+        public static bool ClassDefaultCtorParam(TestClassDefaultCtor x) { return x.I == 0; }
+        public static bool StructDefaultCtorParam(TestStructDefaultCtor x) { return x.I == 0; }
+        public static bool ClassWithCtorParam(TestClassWithCtor x) { return x == null; }
+        public static bool StructWithCtorParam(TestStructWithCtor x) { return x.I == 0; }
+        #endregion
+
         //////////////////////////////////////////////////////////////////////////////////////////////
         #region Test Cases
 
         public static TestCase[] TestCases =
         {
             // Functions which take and return simple value types - no mapping
-            new TestCase(((Func<bool, bool>)(x => !x)).Method, new object[] { true }, false),
-            new TestCase(((Func<double, double>)(x => x+1)).Method, new object[] { 123.0 }, 124.0 ),
-            new TestCase(((Func<int, int>)(x => x+1)).Method, new object[] { 123 }, 124 ),
-            new TestCase(((Func<string, string>)(x => x.ToUpper())).Method, new object[] { "hello" }, "HELLO" ),
+            new TestCase(((Func<bool, bool>)Not).Method, new object[] { true }, false),
+            new TestCase(((Func<double, double>)Plus1Double).Method, new object[] { 123.0 }, 124.0 ),
+            new TestCase(((Func<int, int>)Plus1Int).Method, new object[] { 123 }, 124 ),
+            new TestCase(((Func<string, string>)ToUpper).Method, new object[] { "hello" }, "HELLO" ),
                 // Excel provides dates as doubles. The shim will pass them back as DateTime, because Excel-DNA will convert for us.
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { 41757 }, DateTime.FromOADate(41757)),
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { 41757.123 }, DateTime.FromOADate(41757.123)),
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { 41757 }, DateTime.FromOADate(41757)),
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { 41757.123 }, DateTime.FromOADate(41757.123)),
 
             // Functions which take and return sequences of plain value types - no mapping
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (int)),
@@ -305,15 +318,15 @@ namespace ExcelDna.Registration.Test
                 "ReverseNonGenericNoMapping"),
 
             // Check handling of empty values, for value types, strings, and classes
-            new TestCase(((Func<bool, bool>)(x => !x)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<double, double>)(x => x+1)).Method, new object[] { ExcelEmpty.Value }, 1.0 ),
-            new TestCase(((Func<int, int>)(x => x+1)).Method, new object[] { ExcelEmpty.Value }, 1 ),
-            new TestCase(((Func<string, string>)(x => x.ToUpper())).Method, new object[] { ExcelEmpty.Value }, "" ),
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { ExcelEmpty.Value }, new DateTime()),
-            new TestCase(((Func<TestClassDefaultCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestStructDefaultCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestClassWithCtor, bool>)(x => x == null)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestStructWithCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<bool, bool>)Not).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<double, double>)Plus1Double).Method, new object[] { ExcelEmpty.Value }, 1.0 ),
+            new TestCase(((Func<int, int>)Plus1Int).Method, new object[] { ExcelEmpty.Value }, 1 ),
+            new TestCase(((Func<string, string>)ToUpper).Method, new object[] { ExcelEmpty.Value }, "" ),
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { ExcelEmpty.Value }, new DateTime()),
+            new TestCase(((Func<TestClassDefaultCtor, bool>)ClassDefaultCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestStructDefaultCtor, bool>)StructDefaultCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestClassWithCtor, bool>)ClassWithCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestStructWithCtor, bool>)StructWithCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
 
             // Functions which take a sequence, and return a sequence, using ExcelMapPropertiesToColumnHeaders
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseEnumerable").MakeGenericMethod(typeof (TestStructWithCtor)),
@@ -371,7 +384,7 @@ namespace ExcelDna.Registration.Test
                 _expectedOutputDataMixedNoAppend),
 
             // Failure to execute shim
-            new TestCase(((Func<bool, bool, bool>)((x,y) => x && y)).Method, 
+            new TestCase(((Func<bool, bool, bool>)And).Method, 
                 new object[] { true, "this is not a bool" }, 
                 new object[,] { {ExcelError.ExcelErrorValue}, {"Failed to convert parameter 2: String was not recognized as a valid Boolean."} },
                 "Execute failure"),
