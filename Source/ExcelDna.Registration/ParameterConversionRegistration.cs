@@ -37,8 +37,33 @@ namespace ExcelDna.Registration
             }
         }
 
+        static LambdaExpression ComposeLambdas(IEnumerable<LambdaExpression> lambdas)
+        {
+            LambdaExpression result = null;
+            if (lambdas != null)
+            {
+                var convsIter = lambdas.GetEnumerator();
+                if (convsIter.MoveNext())
+                {
+                    result = convsIter.Current;
+                    while (convsIter.MoveNext())
+                    {
+                        result = Expression.Lambda(Expression.Invoke(result, convsIter.Current),
+                            convsIter.Current.Parameters);
+                    }
+                }
+            }
+            return result;
+        }
+
+        internal static LambdaExpression GetParameterConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialParamType, ExcelParameterRegistration paramRegistration)
+        {
+            return ComposeLambdas(GetParameterConversions(conversionConfig, initialParamType, paramRegistration));
+        }
+
         // Should return null if there are no conversions to apply
-        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
+        internal static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
         {
             var appliedConversions = new List<LambdaExpression>();
 
@@ -68,7 +93,13 @@ namespace ExcelDna.Registration
             return appliedConversions;
         }
 
-        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration)
+        internal static LambdaExpression GetReturnConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialReturnType, ExcelReturnRegistration returnRegistration)
+        {
+            return ComposeLambdas(GetReturnConversions(conversionConfig, initialReturnType, returnRegistration));
+        }
+
+        internal static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration)
         {
             var appliedConversions = new List<LambdaExpression>();
 

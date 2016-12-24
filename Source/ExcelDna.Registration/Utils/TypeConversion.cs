@@ -6,6 +6,12 @@ namespace ExcelDna.Registration
 {
     public static class TypeConversion
     {
+        public static LambdaExpression GetConversion(Type inputType, Type targetType)
+        {
+            var input = Expression.Parameter(typeof(object), "input");
+            return Expression.Lambda(GetConversion(input, targetType), input);
+        }
+
         public static Expression GetConversion(Expression input, Type type)
         {
             if (type == typeof(Object))

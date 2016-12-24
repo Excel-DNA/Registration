@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using ExcelDna.Integration;
 using System.Numerics;
+using ExcelDna.Registration;
 
 namespace Registration.Sample
 {
@@ -270,6 +272,23 @@ namespace Registration.Sample
         {
             //return val.HasValue ? val.Value : TestEnum.Zero;
             return c ?? new Complex(111,222);
+        }
+
+        [ExcelMapArrayFunction]
+        public static IEnumerable<TestEnum1> dnaEnumsEnumerated(IEnumerable<TestEnum2> v)
+        {
+            foreach(var i in v)
+            {
+                switch (i)
+                {
+                    case TestEnum2.Imaginary:
+                        yield return TestEnum1.Negative;
+                        break;
+                    case TestEnum2.Real:
+                        yield return TestEnum1.Positive;
+                        break;
+                }
+            }
         }
     }
 

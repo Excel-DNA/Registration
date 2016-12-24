@@ -54,7 +54,8 @@ namespace ExcelDna.Registration
         /// [ExcelMapPropertiesToColumnHeaders].
         /// </summary>
         public static IEnumerable<ExcelFunctionRegistration> ProcessMapArrayFunctions(
-            this IEnumerable<ExcelFunctionRegistration> registrations)
+            this IEnumerable<ExcelFunctionRegistration> registrations,
+            ParameterConversionConfiguration config = null)
         {
             foreach (var reg in registrations)
             {
@@ -68,8 +69,8 @@ namespace ExcelDna.Registration
                 try
                 {
                     var inputShimParameters = reg.FunctionLambda.Parameters.ZipSameLengths(reg.ParameterRegistrations, 
-                                        (p, r) => new ShimParameter(p.Type, r.CustomAttributes)).ToList();
-                    var resultShimParameter = new ShimParameter(reg.FunctionLambda.ReturnType, reg.ReturnRegistration.CustomAttributes);
+                                        (p, r) => new ShimParameter(p.Type, r, config)).ToList();
+                    var resultShimParameter = new ShimParameter(reg.FunctionLambda.ReturnType, reg.ReturnRegistration, config);
 
                     // create the shim function as a lambda, using reflection
                     LambdaExpression shim = MakeObjectArrayShim(
@@ -129,8 +130,8 @@ namespace ExcelDna.Registration
                 try
                 {
                     if (inputObjectArray.GetLength(0) != nParams)
-                        throw new InvalidOperationException(string.Format("Expected {0} params, received {1}", nParams,
-                            inputObjectArray.GetLength(0)));
+                        throw new InvalidOperationException(
+                            $"Expected {nParams} params, received {inputObjectArray.GetLength(0)}");
 
                     var targetMethodInputs = new object[nParams];
 
@@ -140,9 +141,9 @@ namespace ExcelDna.Registration
                         {
                             targetMethodInputs[i] = inputShimParameters[i].ConvertShimToTarget(inputObjectArray[i]);
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
-                            throw new InvalidOperationException(string.Format("Failed to convert parameter {0}: {1}", i + 1, e.Message));
+                            throw new InvalidOperationException($"Failed to convert parameter {i + 1}: {e.Message}");
                         }
                     }
 
@@ -150,7 +151,7 @@ namespace ExcelDna.Registration
 
                     return resultShimParameter.ConvertTargetToShim(targetMethodResult);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     return new object[,] {{ExcelError.ExcelErrorValue}, {e.Message}};
                 }
@@ -238,6 +239,40 @@ namespace ExcelDna.Registration
                 MappedProperties = recordProperties;
             }
 
+            private Func<object,object>[] PropertyConverters { set; get; }
+
+            ExcelParameterRegistration ParameterRegistration { set; get; }
+
+            void PreparePropertyConverters<Registration>(ParameterConversionConfiguration config,
+                Registration reg, Func<ParameterConversionConfiguration, Type, Registration, LambdaExpression> getConversion)
+            {
+                Type[] propTypes = (MappedProperties == null)
+                    ? new[] {EnumeratedType ?? Type}
+                    : Array.ConvertAll(MappedProperties, p => p.PropertyType);
+                LambdaExpression[] lambdas = Array.ConvertAll(propTypes,
+                    pt => (config == null) ? null : getConversion(config, EnumeratedType ?? Type, reg));
+                lambdas = Array.ConvertAll(lambdas, l => CastParamAndResult(l, typeof(object)));
+                PropertyConverters = Array.ConvertAll(lambdas,
+                    l => (l == null) ? null : (Func<object, object>) l.Compile());
+            }
+
+            public ShimParameter(Type type, ExcelParameterRegistration reg, ParameterConversionConfiguration config)
+                : this(type, reg.CustomAttributes)
+            {
+                // Try to find a converter for EnumeratedType
+                ParameterRegistration = reg;
+                PreparePropertyConverters(config, reg, ParameterConversionRegistration.GetParameterConversion);
+            }
+
+            ExcelReturnRegistration ReturnRegistration { set; get; }
+
+            public ShimParameter(Type type, ExcelReturnRegistration reg, ParameterConversionConfiguration config)
+                : this(type, reg.CustomAttributes)
+            {
+                ReturnRegistration = reg;
+                PreparePropertyConverters(config, reg, ParameterConversionRegistration.GetReturnConversion);
+            }
+             
             /// <summary>
             /// Returns a help string for the parameter or return type, containing
             /// a list of the fields in the header row (if appropriate).
@@ -278,7 +313,7 @@ namespace ExcelDna.Registration
                     // column indices from the input array. We have to do this each time
                     // the shim is invoked to map column headers dynamically.
                     // Would this be better as a SelectMany?
-                    var inputPropertyCols = this.MappedProperties.Select(propInfo =>
+                    var inputPropertyCols = ZipSameLengths(MappedProperties, PropertyConverters, (propInfo, converter) =>
                     {
                         int colIndex = -1;
 
@@ -295,8 +330,8 @@ namespace ExcelDna.Registration
                             }
                         }
                         if (colIndex == -1)
-                            throw new InvalidOperationException(string.Format("No column found for property {0}", propInfo.Name));
-                        return Tuple.Create(propInfo, colIndex);
+                            throw new InvalidOperationException($"No column found for property {propInfo.Name}");
+                        return Tuple.Create(propInfo, colIndex, converter);
                     }).ToArray();
 
                     // create a sequence of InputRecords
@@ -313,7 +348,7 @@ namespace ExcelDna.Registration
                                 inputPropertyCols.Select(
                                     prop =>
                                         ConvertFromExcelObject(objectArray2D[row + 1, prop.Item2],
-                                            prop.Item1.PropertyType)).ToArray());
+                                            prop.Item1.PropertyType, prop.Item3)).ToArray());
                         }
                         catch (MissingMethodException)
                         {
@@ -324,7 +359,7 @@ namespace ExcelDna.Registration
                             foreach (var prop in inputPropertyCols)
                                 prop.Item1.SetValue(inputRecord,
                                     ConvertFromExcelObject(objectArray2D[row + 1, prop.Item2],
-                                        prop.Item1.PropertyType), null);
+                                        prop.Item1.PropertyType, prop.Item3), null);
                         }
 
                         records.SetValue(inputRecord, row);
@@ -341,7 +376,7 @@ namespace ExcelDna.Registration
                     {
                         // attempt to convert single item directly
                         result = Array.CreateInstance(EnumeratedType, 1);
-                        result.SetValue(ConvertFromExcelObject(inputObject, EnumeratedType), 0);
+                        result.SetValue(ConvertFromExcelObject(inputObject, EnumeratedType, PropertyConverters[0]), 0);
                     }
                     else
                     {
@@ -355,13 +390,13 @@ namespace ExcelDna.Registration
                         int nItems = nRows == 1 ? nCols : nRows;
                         result = Array.CreateInstance(EnumeratedType, nItems);
                         for (int i = 0; i != nItems; ++i)
-                            result.SetValue(ConvertFromExcelObject(objectArray[nRows==1? 0: i, nRows == 1? i: 0], EnumeratedType), i);
+                            result.SetValue(ConvertFromExcelObject(objectArray[nRows==1? 0: i, nRows == 1? i: 0], this.EnumeratedType, PropertyConverters[0]), i);
                     }
                     return result;
                 }
 
                 // it's a simple value type
-                return ConvertFromExcelObject(inputObject, this.Type);
+                return ConvertFromExcelObject(inputObject, this.Type, PropertyConverters[0]);
             }
 
             /// <summary>
@@ -394,8 +429,12 @@ namespace ExcelDna.Registration
                     {
                         for (int returnCol = 0; returnCol != this.MappedProperties.Length; ++returnCol)
                         {
-                            returnObjectArray[returnRow + 1, returnCol] = this.MappedProperties[returnCol].
+                            object value = this.MappedProperties[returnCol].
                                 GetValue(returnRecordArray.GetValue(returnRow), null);
+                            Func<object, object> converter = PropertyConverters[returnCol];
+                            if (converter != null)
+                                value = converter(value);
+                            returnObjectArray[returnRow + 1, returnCol] = value;
                         }
                     }
 
@@ -410,7 +449,7 @@ namespace ExcelDna.Registration
                     if (genericToArray2D == null)
                         throw new InvalidOperationException("Internal error. Failed to find Enumerable.ToArray2D extension method");
                     var toArray2D = genericToArray2D.MakeGenericMethod(this.EnumeratedType);
-                    var returnRecordArray = toArray2D.Invoke(null, new object[] { outputObject, Orientation.Vertical }) as object[,];
+                    var returnRecordArray = toArray2D.Invoke(null, new object[] { outputObject, Orientation.Vertical, PropertyConverters[0] }) as object[,];
                     if (returnRecordArray == null)
                         throw new InvalidOperationException("Internal error. Failed to convert return record to 2D Array");
 
@@ -426,8 +465,12 @@ namespace ExcelDna.Registration
             /// <param name="from">Excel object to convert into a different .NET type</param>
             /// <param name="toType">Type to convert to</param>
             /// <returns>Converted object</returns>
-            private static object ConvertFromExcelObject(object from, Type toType)
+            private static object ConvertFromExcelObject(object from, Type toType, Func<object,object> converter)
             {
+                if (converter != null)
+                {
+                    return converter(from);
+                }
                 // special case when converting from Excel double to DateTime
                 // no need for special case in reverse, because Excel-DNA understands a DateTime object
                 if (toType == typeof(DateTime) && (from is double))
@@ -489,16 +532,64 @@ namespace ExcelDna.Registration
             Vertical
         }
 
-        public static object[,] ToArray2D<T>(this IEnumerable<T> input, Orientation orient)
+        public static object[,] ToArray2D<T>(this IEnumerable<T> input, Orientation orient, Func<object,object> itemConverter = null)
         {
             var list = input.ToList();
             var result =
                 new object[orient == Orientation.Horizontal ? 1 : list.Count,
                     orient == Orientation.Horizontal ? list.Count : 1];
+            if (itemConverter == null)
+                itemConverter = (x) => (object)x;
             for (int i = 0; i != list.Count; ++i)
             {
                 result[orient == Orientation.Horizontal ? 0 : i,
-                    orient == Orientation.Horizontal ? i : 0] = list[i];
+                    orient == Orientation.Horizontal ? i : 0] = itemConverter(list[i]);
+            }
+            return result;
+        }
+
+        private static LambdaExpression CastResult(LambdaExpression lambda, Type type)
+        {
+            var result = (lambda == null)
+                ? null
+                : lambda.ReturnType == type
+                    ? lambda
+                    : Expression.Lambda(
+                        Expression.Convert(Expression.Invoke(lambda, lambda.Parameters), type),
+                        lambda.Parameters);
+            return result;
+        }
+
+        private static LambdaExpression CastParameter(LambdaExpression lambda, Type type)
+        {
+            LambdaExpression result = null;
+            if (lambda != null)
+            {
+                if (lambda.Parameters[0].Type == type)
+                    result = lambda;
+                else
+                {
+                    var input = Expression.Parameter(type, "input");
+                    result =
+                        Expression.Lambda(
+                            Expression.Invoke(lambda, Expression.Convert(input, lambda.Parameters[0].Type)), input);
+                }
+            }
+            return result;
+        }
+
+        private static LambdaExpression CastParamAndResult(LambdaExpression lambda, Type t)
+        {
+            return CastResult(CastParameter(lambda, t), t);
+        }
+
+        private static Func<object, object> GetItemConverter(LambdaExpression lambda)
+        {
+            Func<object, object> result = null;
+            if (lambda != null)
+            {
+                lambda = CastParamAndResult(lambda, typeof(object));
+                result = (Func<object, object>)lambda.Compile();
             }
             return result;
         }
