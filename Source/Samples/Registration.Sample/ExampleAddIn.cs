@@ -24,12 +24,13 @@ namespace Registration.Sample
             // Get all the ExcelFunction functions, process and register
             // Since the .dna file has ExplicitExports="true", these explicit registrations are the only ones - there is no default processing
             ExcelRegistration.GetExcelFunctions()
-                             .ProcessParameterConversions(conversionConfig)
-                             .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
-                             .ProcessParameterConversions(postAsyncReturnConfig)
-                             .ProcessParamsRegistrations()
-                             .ProcessFunctionExecutionHandlers(functionHandlerConfig)
-                             .RegisterFunctions();
+                .ProcessMapArrayFunctions(conversionConfig)
+                .ProcessParameterConversions(conversionConfig)
+                .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
+                .ProcessParameterConversions(postAsyncReturnConfig)
+                .ProcessParamsRegistrations()
+                .ProcessFunctionExecutionHandlers(functionHandlerConfig)
+                .RegisterFunctions();
 
             // First example if Instance -> Static conversion
             InstanceMemberRegistration.TestInstanceRegistration();

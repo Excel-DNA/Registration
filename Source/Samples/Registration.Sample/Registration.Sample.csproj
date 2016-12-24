@@ -62,7 +62,9 @@
     <Compile Include="TimingFunctionExecutionHandler.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CustomRegistrationConversions.xlsm" />
     <None Include="packages.config" />
+    <None Include="Registration.Samples.xlsx" />
     <None Include="Properties\ExcelDna.Build.props" />
     <None Include="Registration.Sample-AddIn.dna" />
   </ItemGroup>

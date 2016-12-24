@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Numerics;
 using ExcelDna.Integration;
 using NUnit.Framework;
 using Orientation = ExcelDna.Registration.MapArrayFunctionRegistration.Orientation;
@@ -29,12 +31,13 @@ namespace ExcelDna.Registration.Test
         /// </summary>
         public struct TestStructWithCtor
         {
-            public TestStructWithCtor(double d, int i, string s, DateTime dt)
+            public TestStructWithCtor(double d, int i, string s, DateTime dt, NegZeroPos en)
             {
                 _d = d;
                 _i = i;
                 _s = s;
                 _dt = dt;
+                _en = en;
             }
 
             private double _d;
@@ -48,6 +51,9 @@ namespace ExcelDna.Registration.Test
 
             private DateTime _dt;
             public DateTime Dt { set { _dt = value; } get { return _dt; } }
+
+            private NegZeroPos _en;
+            public NegZeroPos En { set { _en = value; } get { return _en; } }
         }
 
         /// <summary>
@@ -55,18 +61,20 @@ namespace ExcelDna.Registration.Test
         /// </summary>
         public class TestClassWithCtor
         {
-            public TestClassWithCtor(double d, int i, string s, DateTime dt)
+            public TestClassWithCtor(double d, int i, string s, DateTime dt, NegZeroPos en)
             {
                 D = d;
                 I = i;
                 S = s;
                 Dt = dt;
+                En = en;
             }
 
             public double D { get; set; }
             public int I { get; set; }
             public string S { get; set; }
             public DateTime Dt { get; set; }
+            public NegZeroPos En { get; set; }
         }
 
         /// <summary>
@@ -78,6 +86,7 @@ namespace ExcelDna.Registration.Test
             public int I { get; set; }
             public string S { get; set; }
             public DateTime Dt { get; set; }
+            public NegZeroPos En { get; set; }
         }
 
         /// <summary>
@@ -89,7 +98,19 @@ namespace ExcelDna.Registration.Test
             public int I { get; set; }
             public string S { get; set; }
             public DateTime Dt { get; set; }
+            public NegZeroPos En { get; set; }
         }
+
+        /// <summary>
+        /// An enum type
+        /// </summary>
+        public enum NegZeroPos
+        {
+            Negative,
+            Zero,
+            Positive
+        };
+
 
         #endregion
 
@@ -98,18 +119,28 @@ namespace ExcelDna.Registration.Test
 
         public class TestCase
         {
-            public TestCase(MethodInfo methodInfo, object[] inputData, object expectedOutputData, string name = "")
+            public TestCase(MethodInfo methodInfo, object[] inputData, object expectedOutputData, string name = "",
+                ParameterConversionConfiguration config = null)
             {
                 MethodInfo = methodInfo;
                 InputData = inputData;
                 ExpectedOutputData = expectedOutputData;
                 Name =
                     (String.IsNullOrEmpty(name) ? MethodInfo.ToString() : name);
+                Config = config;
             }
+
+            public TestCase(MethodInfo methodInfo, object[] inputData, object expectedOutputData,
+                ParameterConversionConfiguration config)
+                : this(methodInfo, inputData, expectedOutputData, "", config)
+            {
+            }
+
             public MethodInfo MethodInfo { set; get; }
             public object[] InputData { set; get; }
             public object ExpectedOutputData { set; get; }
             public string Name { set; get; }
+            public ParameterConversionConfiguration Config { set; get; }
 
             // for nunit's convenience
             public override string ToString()
@@ -126,50 +157,50 @@ namespace ExcelDna.Registration.Test
         private static readonly object[,] _recordsInputData =
         {
             // input data can have fields in any order, with different case
-            { "I", "S", "D", "DT" },
+            { "I", "S", "D", "DT", "EN" },
 
-            { 123, "123", 123.0, new DateTime(2014,03,10,17,40,21) },
-            { 456, "456", 456.0, new DateTime(2001,11,23,22,45,00) },
-            { 56789.3, 56789, 56789, 41910.0 }  // Test conversion from non-regular types
+            { 123, "123", 123.0, new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative },
+            { 456, "456", 456.0, new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 56789.3, 56789, 56789, 41910.0, NegZeroPos.Positive }  // Test conversion from non-regular types
         };
-        private static readonly TestClassWithCtor _mixedInputsRecord = new TestClassWithCtor(111.1, 222, "333", new DateTime(2044, 4, 4, 4, 44, 44));
+        private static readonly TestClassWithCtor _mixedInputsRecord = new TestClassWithCtor(111.1, 222, "333", new DateTime(2044, 4, 4, 4, 44, 44), NegZeroPos.Negative);
 
         private static readonly object[,] _expectedRecordsOutputData1To1 = 
         {
             // output data fields are determined by type, not data
-            { "D", "I", "S", "Dt" },
+            { "D", "I", "S", "Dt", "En" },
 
-            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0) },
-            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00) },
-            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21) }
+            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0), NegZeroPos.Positive },
+            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative }
         };
         private static readonly object[,] _expectedRecordsOutputData2To1 = 
         {
-            { "D", "I", "S", "Dt" },
+            { "D", "I", "S", "Dt", "En" },
 
-            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0) },
-            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00) },
-            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21) },
-            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0) },
-            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00) },
-            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21) }
+            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0), NegZeroPos.Positive },
+            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative },
+            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0), NegZeroPos.Positive },
+            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative }
         };
         private static readonly object[,] _expectedOutputDataMixedWithAppend = 
         {
-            { "D", "I", "S", "Dt" },
+            { "D", "I", "S", "Dt", "En" },
 
-            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21) },
-            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00) },
-            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0) },
-            { _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt }
+            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative },
+            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0), NegZeroPos.Positive },
+            { _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt, _mixedInputsRecord.En }
         };
         private static readonly object[,] _expectedOutputDataMixedNoAppend = 
         {
-            { "D", "I", "S", "Dt" },
+            { "D", "I", "S", "Dt", "En" },
 
-            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21) },
-            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00) },
-            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0) },
+            { 123.0, 123, "123", new DateTime(2014,03,10,17,40,21), NegZeroPos.Negative },
+            { 456.0, 456, "456", new DateTime(2001,11,23,22,45,00), NegZeroPos.Zero },
+            { 56789.0, 56789, "56789", DateTime.FromOADate(41910.0), NegZeroPos.Positive },
         };
 
         #endregion
@@ -248,133 +279,177 @@ namespace ExcelDna.Registration.Test
 
         #endregion
 
+        #region Static methods for tests
+        public static bool Not(bool x) { return !x; }
+        public static bool And(bool x, bool y) { return x && y; }
+        public static double Plus1Double(double x) { return x + 1; }
+        public static int Plus1Int(int x) { return x+1; }
+        public static string ToUpper(string s) { return s.ToUpper(); }
+        public static DateTime Identity(DateTime x) { return x; }
+        public static bool ClassDefaultCtorParam(TestClassDefaultCtor x) { return x.I == 0; }
+        public static bool StructDefaultCtorParam(TestStructDefaultCtor x) { return x.I == 0; }
+        public static bool ClassWithCtorParam(TestClassWithCtor x) { return x == null; }
+        public static bool StructWithCtorParam(TestStructWithCtor x) { return x.I == 0; }
+        public static double MakeADoubleFromEnum(NegZeroPos e)
+        {
+            return (e == NegZeroPos.Negative) ? -1 : (e == NegZeroPos.Positive) ? 1 : 0;
+        }
+        public static Complex MakeAComplexFromEnums(NegZeroPos real, NegZeroPos img)
+        {
+            return new Complex(MakeADoubleFromEnum(real), MakeADoubleFromEnum(img));
+        }
+        #endregion
+
+        #region The parameter config
+        static ParameterConversionConfiguration ParamConfig = new ParameterConversionConfiguration()
+            // A compound value type
+            .AddParameterConversion(
+                (object[] input) =>
+                    new Complex(TypeConversion.ConvertToDouble(input[0]),
+                        TypeConversion.ConvertToDouble(input[1])))
+            .AddReturnConversion((Complex value) => new double[2] { value.Real, value.Imaginary })
+            // This is a pair of very generic conversions for Enum types
+            .AddParameterConversion(ParameterConversions.GetEnumStringConversion())
+            .AddReturnConversion((Enum value) => value.ToString(), handleSubTypes: true);
+        #endregion
+
         //////////////////////////////////////////////////////////////////////////////////////////////
         #region Test Cases
 
         public static TestCase[] TestCases =
         {
             // Functions which take and return simple value types - no mapping
-            new TestCase(((Func<bool, bool>)(x => !x)).Method, new object[] { true }, false),
-            new TestCase(((Func<double, double>)(x => x+1)).Method, new object[] { 123.0 }, 124.0 ),
-            new TestCase(((Func<int, int>)(x => x+1)).Method, new object[] { 123 }, 124 ),
-            new TestCase(((Func<string, string>)(x => x.ToUpper())).Method, new object[] { "hello" }, "HELLO" ),
-                // Excel provides dates as doubles. The shim will pass them back as DateTime, because Excel-DNA will convert for us.
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { 41757 }, DateTime.FromOADate(41757)),
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { 41757.123 }, DateTime.FromOADate(41757.123)),
+            new TestCase(((Func<bool, bool>)Not).Method, new object[] { true }, false),
+            new TestCase(((Func<double, double>)Plus1Double).Method, new object[] { 123.0 }, 124.0 ),
+            new TestCase(((Func<int, int>)Plus1Int).Method, new object[] { 123 }, 124 ),
+            new TestCase(((Func<string, string>)ToUpper).Method, new object[] { "hello" }, "HELLO" ),
+            // Excel provides dates as doubles. The shim will pass them back as DateTime, because Excel-DNA will convert for us.
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { 41757 }, DateTime.FromOADate(41757)),
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { 41757.123 }, DateTime.FromOADate(41757.123)),
+
+            // Enum types
+            new TestCase(((Func<NegZeroPos, double>)MakeADoubleFromEnum).Method, new object[] { "Negative" }, -1.0, ParamConfig),
+            new TestCase(((Func<NegZeroPos, double>)MakeADoubleFromEnum).Method, new object[] { "Positive" }, +1.0, ParamConfig),
+            new TestCase(((Func<NegZeroPos, NegZeroPos, Complex>)MakeAComplexFromEnums).Method, new object[] { "Positive", "Negative" }, new Complex(+1,-1), ParamConfig),
+            new TestCase(((Func<NegZeroPos, NegZeroPos, Complex>)MakeAComplexFromEnums).Method, new object[] { "Negative", "Zero" }, new Complex(-1,0), ParamConfig),
 
             // Functions which take and return sequences of plain value types - no mapping
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (int)),
                 new [] { (object)23 },  // pass in a single item instead of array
                 new [,] { { (object)23 } },  // still produces an array output
-                "ReverseNoMapping int (single)"), 
+                "ReverseNoMapping int (single)", ParamConfig), 
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (int)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)i).ToArray2D(Orientation.Horizontal) },
                 Enumerable.Range(0, 10).Select(i => (object)(9-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping int (horizontal)"),
+                "ReverseNoMapping int (horizontal)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (int)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)i).ToArray2D(Orientation.Vertical) },
                 Enumerable.Range(0, 10).Select(i => (object)(9-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping int (vertical)"),
+                "ReverseNoMapping int (vertical)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (double)),
                 new [] { (object)23.45 },  // pass in a single item instead of array
                 new [,] { { (object)23.45 } },  // still produces an array output
-                "ReverseNoMapping double (single)"), 
+                "ReverseNoMapping double (single)", ParamConfig), 
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (double)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)(double)i).ToArray2D(Orientation.Horizontal) },
                 Enumerable.Range(0, 10).Select(i => (object)(double)(9-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping double (horizontal)"),
+                "ReverseNoMapping double (horizontal)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (double)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)(double)i).ToArray2D(Orientation.Vertical) },
                 Enumerable.Range(0, 10).Select(i => (object)(double)(9-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping double (vertical)"),
+                "ReverseNoMapping double (vertical)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (DateTime)),
                 new [] { (object)40000 },
                 new [,] { { (object)DateTime.FromOADate(40000) } },
-                "ReverseNoMapping datetime (single)"),
+                "ReverseNoMapping datetime (single)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (DateTime)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)(i+40000)).ToArray2D(Orientation.Horizontal) },
                 Enumerable.Range(0, 10).Select(i => (object)DateTime.FromOADate(40009-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping datetime (horizontal)"),
+                "ReverseNoMapping datetime (horizontal)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (DateTime)),
                 new [] { Enumerable.Range(0, 10).Select(i => (object)(i+40000)).ToArray2D(Orientation.Vertical) },
                 Enumerable.Range(0, 10).Select(i => (object)DateTime.FromOADate(40009-i)).ToArray2D(Orientation.Vertical),
-                "ReverseNoMapping datetime (vertical)"),
+                "ReverseNoMapping datetime (vertical)", ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNonGenericNoMapping"),
                 new [] { Enumerable.Range(0, 10).ToArray2D(Orientation.Vertical) },
                 Enumerable.Range(0, 10).Select(i => 9 - i).ToArray2D(Orientation.Vertical),
-                "ReverseNonGenericNoMapping"),
+                "ReverseNonGenericNoMapping", ParamConfig),
+            new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseNoMapping").MakeGenericMethod(typeof (NegZeroPos)),
+                new [] { (new [] { (object)"negative", (object)"zero", (object)"positive" }).ToArray2D(Orientation.Vertical) },
+                new [] { (object)"Positive", (object)"Zero", (object)"Negative" }.ToArray2D(Orientation.Vertical),
+                "ReverseNoMapping Enum (single)", ParamConfig),
 
             // Check handling of empty values, for value types, strings, and classes
-            new TestCase(((Func<bool, bool>)(x => !x)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<double, double>)(x => x+1)).Method, new object[] { ExcelEmpty.Value }, 1.0 ),
-            new TestCase(((Func<int, int>)(x => x+1)).Method, new object[] { ExcelEmpty.Value }, 1 ),
-            new TestCase(((Func<string, string>)(x => x.ToUpper())).Method, new object[] { ExcelEmpty.Value }, "" ),
-            new TestCase(((Func<DateTime, DateTime>)(x => x)).Method, new object[] { ExcelEmpty.Value }, new DateTime()),
-            new TestCase(((Func<TestClassDefaultCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestStructDefaultCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestClassWithCtor, bool>)(x => x == null)).Method, new object[] { ExcelEmpty.Value }, true),
-            new TestCase(((Func<TestStructWithCtor, bool>)(x => x.I == 0)).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<bool, bool>)Not).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<double, double>)Plus1Double).Method, new object[] { ExcelEmpty.Value }, 1.0 ),
+            new TestCase(((Func<int, int>)Plus1Int).Method, new object[] { ExcelEmpty.Value }, 1 ),
+            new TestCase(((Func<string, string>)ToUpper).Method, new object[] { ExcelEmpty.Value }, "" ),
+            new TestCase(((Func<DateTime, DateTime>)Identity).Method, new object[] { ExcelEmpty.Value }, new DateTime()),
+            new TestCase(((Func<TestClassDefaultCtor, bool>)ClassDefaultCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestStructDefaultCtor, bool>)StructDefaultCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestClassWithCtor, bool>)ClassWithCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
+            new TestCase(((Func<TestStructWithCtor, bool>)StructWithCtorParam).Method, new object[] { ExcelEmpty.Value }, true),
 
             // Functions which take a sequence, and return a sequence, using ExcelMapPropertiesToColumnHeaders
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseEnumerable").MakeGenericMethod(typeof (TestStructWithCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseEnumerable").MakeGenericMethod(typeof (TestClassWithCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseEnumerable").MakeGenericMethod(typeof (TestStructDefaultCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseEnumerable").MakeGenericMethod(typeof (TestClassDefaultCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseList").MakeGenericMethod(typeof (TestStructWithCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseList").MakeGenericMethod(typeof (TestClassWithCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseList").MakeGenericMethod(typeof (TestStructDefaultCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("ReverseList").MakeGenericMethod(typeof (TestClassDefaultCtor)),
                 new [] { _recordsInputData },
-                _expectedRecordsOutputData1To1),
+                _expectedRecordsOutputData1To1, ParamConfig),
 
             // Functions which take 2 sequences of records, and return a sequence of records, using ExcelMapPropertiesToColumnHeaders
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("CombineAndReverse").MakeGenericMethod(typeof(TestStructWithCtor)),
                 new [] { _recordsInputData, _recordsInputData },
-                _expectedRecordsOutputData2To1),
+                _expectedRecordsOutputData2To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("CombineAndReverse").MakeGenericMethod(typeof(TestClassWithCtor)),
                 new [] { _recordsInputData, _recordsInputData },
-                _expectedRecordsOutputData2To1),
+                _expectedRecordsOutputData2To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("CombineAndReverse").MakeGenericMethod(typeof(TestStructDefaultCtor)),
                 new [] { _recordsInputData, _recordsInputData },
-                _expectedRecordsOutputData2To1),
+                _expectedRecordsOutputData2To1, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("CombineAndReverse").MakeGenericMethod(typeof(TestClassDefaultCtor)),
                 new [] { _recordsInputData, _recordsInputData },
-                _expectedRecordsOutputData2To1),
+                _expectedRecordsOutputData2To1, ParamConfig),
 
             // Functions which take a mixture of sequence and value types, and return a sequence
             // with ExcelMapPropertiesToColumnHeaders
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("AppendOne").MakeGenericMethod(typeof(TestStructDefaultCtor)),
                 new object[] { _recordsInputData, true, _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt },
-                _expectedOutputDataMixedWithAppend),
+                _expectedOutputDataMixedWithAppend, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("AppendOne").MakeGenericMethod(typeof(TestClassDefaultCtor)),
                 new object[] { _recordsInputData, true, _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt },
-                _expectedOutputDataMixedWithAppend),
+                _expectedOutputDataMixedWithAppend, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("AppendOne").MakeGenericMethod(typeof(TestStructDefaultCtor)),
                 new object[] { _recordsInputData, false, _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt },
-                _expectedOutputDataMixedNoAppend),
+                _expectedOutputDataMixedNoAppend, ParamConfig),
             new TestCase(typeof (MapArrayFunctionTests).GetMethod("AppendOne").MakeGenericMethod(typeof(TestClassDefaultCtor)),
                 new object[] { _recordsInputData, false, _mixedInputsRecord.D, _mixedInputsRecord.I, _mixedInputsRecord.S, _mixedInputsRecord.Dt },
-                _expectedOutputDataMixedNoAppend),
+                _expectedOutputDataMixedNoAppend, ParamConfig),
 
             // Failure to execute shim
-            new TestCase(((Func<bool, bool, bool>)((x,y) => x && y)).Method, 
+            new TestCase(((Func<bool, bool, bool>)And).Method, 
                 new object[] { true, "this is not a bool" }, 
                 new object[,] { {ExcelError.ExcelErrorValue}, {"Failed to convert parameter 2: String was not recognized as a valid Boolean."} },
-                "Execute failure"),
+                "Execute failure", ParamConfig),
         };
 
         #endregion
@@ -399,7 +474,7 @@ namespace ExcelDna.Registration.Test
             //////////////////////////////////////////
             // act - process the registration object
 
-            var processed = Enumerable.Repeat(registration, 1).ProcessMapArrayFunctions().ToList();
+            var processed = Enumerable.Repeat(registration, 1).ProcessMapArrayFunctions(testCase.Config).ToList();
 
             //////////////////////////////////////////
             // assert
