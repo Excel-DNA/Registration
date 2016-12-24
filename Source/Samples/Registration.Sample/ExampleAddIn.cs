@@ -5,6 +5,9 @@ using System.Linq.Expressions;
 using ExcelDna.Integration;
 using ExcelDna.Registration;
 using System.Numerics;
+using System.Threading;
+using System.Collections.Concurrent;
+using System.Runtime.Caching;
 
 namespace Registration.Sample
 {
@@ -24,12 +27,13 @@ namespace Registration.Sample
             // Get all the ExcelFunction functions, process and register
             // Since the .dna file has ExplicitExports="true", these explicit registrations are the only ones - there is no default processing
             ExcelRegistration.GetExcelFunctions()
-                             .ProcessParameterConversions(conversionConfig)
-                             .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
-                             .ProcessParameterConversions(postAsyncReturnConfig)
-                             .ProcessParamsRegistrations()
-                             .ProcessFunctionExecutionHandlers(functionHandlerConfig)
-                             .RegisterFunctions();
+                .ProcessMapArrayFunctions(conversionConfig)
+                .ProcessParameterConversions(conversionConfig)
+                .ProcessAsyncRegistrations(nativeAsyncIfAvailable: false)
+                .ProcessParameterConversions(postAsyncReturnConfig)
+                .ProcessParamsRegistrations()
+                .ProcessFunctionExecutionHandlers(functionHandlerConfig)
+                .RegisterFunctions();
 
             // First example if Instance -> Static conversion
             InstanceMemberRegistration.TestInstanceRegistration();
@@ -73,6 +77,8 @@ namespace Registration.Sample
             //       
 
             var paramConversionConfig = new ParameterConversionConfiguration()
+
+                .AddReferenceMarshaller(ExcelObjectCache.Instance)
 
                 // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: true))

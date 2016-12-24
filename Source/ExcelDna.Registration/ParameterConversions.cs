@@ -39,7 +39,7 @@ namespace ExcelDna.Registration
         }
 
         internal static LambdaExpression NullableConversion(
-            IEnumerable<ParameterConversionConfiguration.ParameterConversion> parameterConversions, Type type,
+            ParameterConversionConfiguration config, Type type,
             ExcelParameterRegistration paramReg, bool treatEmptyAsMissing,
             bool treatNAErrorAsMissing)
         {
@@ -48,25 +48,9 @@ namespace ExcelDna.Registration
                 return null;
 
             var innerType = type.GetGenericArguments()[0]; // E.g. innerType is Complex
-            // Try to find a converter for innerType in the config
-            ParameterConversionConfiguration.ParameterConversion innerTypeParameterConversion = null;
-            if (parameterConversions != null)
-                innerTypeParameterConversion =
-                    parameterConversions.FirstOrDefault(c => c.Convert(innerType, paramReg) != null);
-            ParameterExpression input = null;
-            Expression innerTypeConversion = null;
-            // if we have a converter for innertype in the config, then use it. Otherwise try one of the conversions for the basic types
-            if (innerTypeParameterConversion == null)
-            {
-                input = Expression.Parameter(typeof(object), "input");
-                innerTypeConversion = TypeConversion.GetConversion(input, innerType);
-            }
-            else
-            {
-                var innerTypeParamConverter = innerTypeParameterConversion.Convert(innerType, paramReg);
-                input = Expression.Parameter(innerTypeParamConverter.Parameters[0].Type, "input");
-                innerTypeConversion = Expression.Invoke(innerTypeParamConverter, input);
-            }
+            LambdaExpression innerTypeConversion = ParameterConversionRegistration.GetParameterConversion(config, innerType, paramReg) ??
+                                                   TypeConversion.GetConversion(typeof(object), innerType);
+            ParameterExpression input = innerTypeConversion.Parameters[0];
             // Here's the actual conversion function
             var result =
                 Expression.Lambda(
@@ -76,7 +60,7 @@ namespace ExcelDna.Registration
                         // cast null to int?
                         Expression.Constant(null, type),
                         // else convert to int, and cast that to int?
-                        Expression.Convert(innerTypeConversion, type)),
+                        Expression.Convert(Expression.Invoke(innerTypeConversion, input), type)),
                     input);
             return result;
         }

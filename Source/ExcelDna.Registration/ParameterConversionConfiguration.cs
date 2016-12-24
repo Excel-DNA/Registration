@@ -94,11 +94,14 @@ namespace ExcelDna.Registration
 
         internal List<ParameterConversion> ParameterConversions { get; private set; }
         internal List<ReturnConversion>    ReturnConversions    { get; private set; }
+        internal HashSet<Type> MarshalByRef { get; private set; }
+        internal IReferenceMarshaller ReferenceMarshaller;
 
         public ParameterConversionConfiguration()
         {
             ParameterConversions = new List<ParameterConversion>();
             ReturnConversions    = new List<ReturnConversion>();
+            MarshalByRef = new HashSet<Type>();
         }
 
         #region Various overloads for adding conversions
@@ -151,9 +154,30 @@ namespace ExcelDna.Registration
         }
         #endregion
 
+        public ParameterConversionConfiguration AddMarshalByRef(Type refType)
+        {
+            if (refType.IsValueType)
+                throw new ArgumentException("A value type cannot be marshalled to/from Excel by reference.");
+            MarshalByRef.Add(refType);
+            return this;
+        }
+
+        public ParameterConversionConfiguration AddReferenceMarshaller(IReferenceMarshaller marshaller)
+        {
+            ReferenceMarshaller = marshaller;
+            return this;
+        }
+
+        public bool IsMarshalByRef(Type type)
+        {
+            bool marshalByRef = MarshalByRef.Contains(type);
+            marshalByRef = marshalByRef || type.GetCustomAttributes(typeof(ExcelMarshalByRefAttribute), true).Length > 0;
+            return marshalByRef && ReferenceMarshaller != null;
+        }
+
         Func<Type, ExcelParameterRegistration, LambdaExpression> GetNullableConversion(bool treatEmptyAsMissing, bool treatNAErrorAsMissing)
         {
-            return (type, paramReg) => Registration.ParameterConversions.NullableConversion(ParameterConversions, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
+            return (type, paramReg) => Registration.ParameterConversions.NullableConversion(this, type, paramReg, treatEmptyAsMissing, treatNAErrorAsMissing);
         }
 
         /// <summary>

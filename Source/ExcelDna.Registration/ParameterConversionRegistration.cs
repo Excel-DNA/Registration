@@ -7,6 +7,35 @@ using Expr = System.Linq.Expressions.Expression;
 
 namespace ExcelDna.Registration
 {
+    /// <summary>
+    /// A marshal-by-reference object cache must implement this interface.
+    /// See class ExcelObjectCache for a readily available implementation which you will most likely want to reuse.
+    /// This interface is used to store any results and look up any parameters of type T, where T was either decorated
+    /// with ExcelMarshalByRefAttribute or added to ParameterConversionConfiguration.MarshalByRef property of the configuration
+    /// being used.
+    /// </summary>
+    public interface IReferenceMarshaller
+    {
+        /// <summary>
+        /// This method is called to look up an object id string in the cache.
+        /// </summary>
+        /// <param name="id">The object id string coming from Excel</param>
+        /// <returns></returns>
+        object Lookup(string id);
+
+        /// <summary>
+        /// This method is called to store any objects returned by a function.
+        /// </summary>
+        /// <param name="o">The object</param>
+        /// <returns>The string id to display in the cell</returns>
+        string Store(object o);
+
+        /// <summary>
+        /// This method is called to tell the cache that we are starting to evaluate a new cell.
+        /// </summary>
+        void SetCurrentCell();
+    }
+
     // CONSIDER: Can one use an ExpressionVisitor to do these things....?
     public static class ParameterConversionRegistration
     {
@@ -37,29 +66,79 @@ namespace ExcelDna.Registration
             }
         }
 
+        private static T LookupFromCache<T>(IReferenceMarshaller objectCache, string idString) where T : class
+        {
+            object o = objectCache.Lookup(idString);
+            T r = o as T;
+            if (r == null)
+                throw new ArgumentException($"Object '{idString}' is not of type {typeof(T)}, it is of type {o.GetType()}.");
+            return r;
+        }
+
+        static LambdaExpression ComposeLambdas(IEnumerable<LambdaExpression> lambdas)
+        {
+            LambdaExpression result = null;
+            if (lambdas != null)
+            {
+                var convsIter = lambdas.GetEnumerator();
+                if (convsIter.MoveNext())
+                {
+                    result = convsIter.Current;
+                    while (convsIter.MoveNext())
+                    {
+                        result = Expression.Lambda(Expression.Invoke(result, convsIter.Current),
+                            convsIter.Current.Parameters);
+                    }
+                }
+            }
+            return result;
+        }
+
+        internal static LambdaExpression GetParameterConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialParamType, ExcelParameterRegistration paramRegistration)
+        {
+            return ComposeLambdas(GetParameterConversions(conversionConfig, initialParamType, paramRegistration));
+        }
+
         // Should return null if there are no conversions to apply
-        static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
+        internal static List<LambdaExpression> GetParameterConversions(ParameterConversionConfiguration conversionConfig, Type initialParamType, ExcelParameterRegistration paramRegistration)
         {
             var appliedConversions = new List<LambdaExpression>();
 
-            // paramReg might be modified internally by the conversions, but won't become a different object
-            var paramType = initialParamType; // Might become a different type as we convert
-            foreach (var paramConversion in conversionConfig.ParameterConversions)
+            bool marshalByRef = conversionConfig.MarshalByRef.Contains(initialParamType);
+            marshalByRef = marshalByRef || initialParamType.GetCustomAttributes(typeof(ExcelMarshalByRefAttribute), true).Length > 0;
+
+            if (marshalByRef && conversionConfig.ReferenceMarshaller != null)
             {
-                var lambda = paramConversion.Convert(paramType, paramRegistration);
-                if (lambda == null)
-                    continue;
+                var idString = Expression.Parameter(typeof(string), "idString");
+                var lookupFromCacheLambda = Expression.Lambda(
+                    Expression.Call(
+                        typeof(ParameterConversionRegistration), "LookupFromCache", new Type[] {initialParamType},
+                        Expression.Constant(conversionConfig.ReferenceMarshaller), idString),
+                    idString);
+                appliedConversions.Add(lookupFromCacheLambda);
+            }
+            else
+            {
+                // paramReg might be modified internally by the conversions, but won't become a different object
+                var paramType = initialParamType; // Might become a different type as we convert
+                foreach (var paramConversion in conversionConfig.ParameterConversions)
+                {
+                    var lambda = paramConversion.Convert(paramType, paramRegistration);
+                    if (lambda == null)
+                        continue;
 
-                // We got one to apply...
-                // Some sanity checks
-                Debug.Assert(lambda.Parameters.Count == 1);
-                Debug.Assert(lambda.ReturnType == paramType || lambda.ReturnType.IsEquivalentTo(paramType));
+                    // We got one to apply...
+                    // Some sanity checks
+                    Debug.Assert(lambda.Parameters.Count == 1);
+                    Debug.Assert(lambda.ReturnType == paramType || lambda.ReturnType.IsEquivalentTo(paramType));
 
-                appliedConversions.Add(lambda);
+                    appliedConversions.Add(lambda);
 
-                // Change the Parameter Type to be whatever the conversion function takes us to
-                // for the next round of processing
-                paramType = lambda.Parameters[0].Type;
+                    // Change the Parameter Type to be whatever the conversion function takes us to
+                    // for the next round of processing
+                    paramType = lambda.Parameters[0].Type;
+                }
             }
 
             if (appliedConversions.Count == 0)
@@ -68,29 +147,61 @@ namespace ExcelDna.Registration
             return appliedConversions;
         }
 
-        static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration)
+        private delegate string StoreToCacheDelegate(object o);
+
+        internal static LambdaExpression GetReturnConversion(ParameterConversionConfiguration conversionConfig,
+            Type initialReturnType, ExcelReturnRegistration returnRegistration, bool setCurrentCellInMarshalByRefCache = true)
+        {
+            return ComposeLambdas(GetReturnConversions(conversionConfig, initialReturnType, returnRegistration, setCurrentCellInMarshalByRefCache));
+        }
+
+        internal static List<LambdaExpression> GetReturnConversions(ParameterConversionConfiguration conversionConfig, Type initialReturnType, ExcelReturnRegistration returnRegistration,
+            bool setCurrentCellInMarshalByRefCache = true)
         {
             var appliedConversions = new List<LambdaExpression>();
 
-            // paramReg might be modified internally by the conversions, but won't become a different object
-            var returnType = initialReturnType; // Might become a different type as we convert
-
-            foreach (var returnConversion in conversionConfig.ReturnConversions)
+            bool marshalByRef = conversionConfig.IsMarshalByRef(initialReturnType);
+            if (marshalByRef)
             {
-                var lambda = returnConversion.Convert(returnType, returnRegistration);
-                if (lambda == null)
-                    continue;
+                var input = Expression.Parameter(initialReturnType, "input");
 
-                // We got one to apply...
-                // Some sanity checks
-                Debug.Assert(lambda.Parameters.Count == 1);
-                Debug.Assert(lambda.Parameters[0].Type == returnType);
+                StoreToCacheDelegate storeToCacheDelegate = null;
+                if (setCurrentCellInMarshalByRefCache)
+                    storeToCacheDelegate = (o) =>
+                    {
+                        conversionConfig.ReferenceMarshaller.SetCurrentCell();
+                        return conversionConfig.ReferenceMarshaller.Store((object) o);
+                    };
+                else storeToCacheDelegate = (o) =>
+                    {
+                        return conversionConfig.ReferenceMarshaller.Store((object) o);
+                    };
 
-                appliedConversions.Add(lambda);
+                var storeToCacheLambda = Expression.Lambda(Expression.Call(Expression.Constant(storeToCacheDelegate.Target), storeToCacheDelegate.Method, input), input);
+                appliedConversions.Add(storeToCacheLambda);
+            }
+            else
+            {
+                // paramReg might be modified internally by the conversions, but won't become a different object
+                var returnType = initialReturnType; // Might become a different type as we convert
 
-                // Change the Return Type to be whatever the conversion function returns
-                // for the next round of processing
-                returnType = lambda.ReturnType;
+                foreach (var returnConversion in conversionConfig.ReturnConversions)
+                {
+                    var lambda = returnConversion.Convert(returnType, returnRegistration);
+                    if (lambda == null)
+                        continue;
+
+                    // We got one to apply...
+                    // Some sanity checks
+                    Debug.Assert(lambda.Parameters.Count == 1);
+                    Debug.Assert(lambda.Parameters[0].Type == returnType);
+
+                    appliedConversions.Add(lambda);
+
+                    // Change the Return Type to be whatever the conversion function returns
+                    // for the next round of processing
+                    returnType = lambda.ReturnType;
+                }
             }
 
             if (appliedConversions.Count == 0)

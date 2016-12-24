@@ -55,6 +55,7 @@
     <Compile Include="FunctionExecutionHandlerExamples.cs" />
     <Compile Include="FunctionLoggingHandler.cs" />
     <Compile Include="InstanceMemberRegistration.cs" />
+    <Compile Include="MarshalByRefExamples.cs" />
     <Compile Include="ParameterConversionExamples.cs" />
     <Compile Include="ParamsFunctionExamples.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

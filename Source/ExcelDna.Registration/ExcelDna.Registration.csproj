@@ -48,6 +48,7 @@
     <Compile Include="FunctionExecutionHandler.cs" />
     <Compile Include="FunctionExecutionConfiguration.cs" />
     <Compile Include="FunctionExecutionRegistration.cs" />
+    <Compile Include="ExcelObjectCache.cs" />
     <Compile Include="ParameterConversionConfiguration.cs" />
     <Compile Include="ParameterConversionRegistration.cs">
       <SubType>Code</SubType>
