@@ -24,8 +24,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\Registration.Sample.FSharp.XML</DocumentationFile>
     <StartAction>Program</StartAction>
-    <StartProgram>c:\Program Files (x86)\Microsoft Office\Office15\Excel.exe</StartProgram>
-    <StartArguments>"C:\Work\Excel-DNA\Registration\Source\Samples\Registration.Sample.FSharp\bin\Debug\Registration.Sample.FSharp-AddIn.xll"</StartArguments>
+    <StartProgram>C:\Program Files (x86)\Microsoft Office\Office15\EXCEL.EXE</StartProgram>
+    <StartArguments>"Registration.Sample.FSharp-AddIn.xll"</StartArguments>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -37,42 +37,6 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Release\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="ExcelDna.Integration">
-      <HintPath>..\..\packages\ExcelDna.Integration.0.33.9\lib\ExcelDna.Integration.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncFunctionExamples.fs" />
-    <Compile Include="OptionalExamples.fs" />
-    <Compile Include="MapArrayFunctionExamples.fs" />
-    <Compile Include="ExampleAddIn.fs" />
-    <None Include="FSharpExample.xlsx" />
-    <Content Include="Registration.Sample.FSharp-AddIn.dna">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\ExcelDna.Registration.FSharp\ExcelDna.Registration.FSharp.fsproj">
-      <Name>ExcelDna.Registration.FSharp</Name>
-      <Project>{ee39a060-0120-4ca3-bd3f-aaf80a4e857f}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
-      <Name>ExcelDna.Registration</Name>
-      <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -125,12 +89,47 @@
     </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn.xll*" /C /Y
-xcopy "$(TargetDir)Registration.Sample.FSharp-AddIn.dna*" "$(TargetDir)Registration.Sample.FSharp-AddIn64.dna*" /C /Y
-xcopy "$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDna64.xll" "$(TargetDir)Registration.Sample.FSharp-AddIn64.xll*" /C /Y
-"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn.dna" /Y
-"$(SolutionDir)\packages\ExcelDna.AddIn.0.33.9\tools\ExcelDnaPack.exe" "$(TargetDir)Registration.Sample.FSharp-AddIn64.dna" /Y</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="AsyncFunctionExamples.fs" />
+    <Compile Include="OptionalExamples.fs" />
+    <Compile Include="MapArrayFunctionExamples.fs" />
+    <Compile Include="ExampleAddIn.fs" />
+    <None Include="FSharpExample.xlsx" />
+    <None Include="Registration.Sample.FSharp-AddIn.dna" />
+    <Content Include="packages.config" />
+    <None Include="Properties\ExcelDna.Build.props" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="ExcelDna.Integration">
+      <HintPath>..\..\packages\ExcelDna.Integration.0.34.1-beta\lib\ExcelDna.Integration.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\..\ExcelDna.Registration.FSharp\ExcelDna.Registration.FSharp.fsproj">
+      <Name>ExcelDna.Registration.FSharp</Name>
+      <Project>{ee39a060-0120-4ca3-bd3f-aaf80a4e857f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ExcelDna.Registration\ExcelDna.Registration.csproj">
+      <Name>ExcelDna.Registration</Name>
+      <Project>{4d1e4cf3-9d43-4b71-b81f-440606a36a3d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets')" />
+  <Target Name="EnsureExcelDnaTargetsImported" BeforeTargets="BeforeBuild" Condition="'$(ExcelDnaTargetsImported)' == ''">
+    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="You are trying to build with ExcelDna, but the NuGet targets file that ExcelDna depends on is not available on this computer. This is probably because the ExcelDna package has not been committed to source control, or NuGet Package Restore is not enabled. Please enable NuGet Package Restore to download them. For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\..\packages\ExcelDna.AddIn.0.34.1-beta\tools\ExcelDna.AddIn.targets') And ('$(RunExcelDnaBuild)' != '' And $(RunExcelDnaBuild))" Text="ExcelDna cannot be run because NuGet packages were restored prior to the build running, and the targets file was unavailable when the build started. Please build the project again to include these packages in the build. You may also need to make sure that your build server does not delete packages prior to each build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
