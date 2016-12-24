@@ -78,9 +78,9 @@ namespace Registration.Sample
                 // Register the Standard Parameter Conversions (with the optional switch on how to treat references to empty cells)
                 .AddParameterConversion(ParameterConversions.GetOptionalConversion(treatEmptyAsMissing: true))
 
-                // Register some type conversions (not the ordering discussed above)        
-                .AddParameterConversion((string value) => new TestType1(value))
+                // Register some type conversions (note the ordering discussed above)        
                 .AddParameterConversion((TestType1 value) => new TestType2(value))
+                .AddParameterConversion((string value) => new TestType1(value))
 
                 // This is a conversion applied to the return value of the function
                 .AddReturnConversion((TestType1 value) => value.ToString())
