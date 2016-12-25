@@ -53,17 +53,18 @@
     </Reference>
     <Reference Include="Microsoft.Office.Interop.Excel, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\packages\ExcelDna.Interop.14.0.1\lib\Microsoft.Office.Interop.Excel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Vbe.Interop, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\packages\ExcelDna.Interop.14.0.1\lib\Microsoft.Vbe.Interop.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Microsoft.Vbe.Interop.dll</HintPath>
     </Reference>
     <Reference Include="Office, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
       <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\packages\ExcelDna.Interop.14.0.1\lib\Office.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Excel-DNA.Interop.14.0.1\lib\Office.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -117,7 +118,9 @@
   <ItemGroup>
     <None Include="Properties\ExcelDna.Build.props" />
     <None Include="Registration.Sample.VisualBasic-AddIn.dna" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
