@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration.VisualBasic</id>
-        <version>0.34.1-beta2</version>
+        <version>0.34.6</version>
         <title>Excel-DNA Registration Extensions for Visual Basic</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
@@ -14,8 +14,8 @@
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
             <dependencies>
-      <dependency id="ExcelDna.Integration" version="0.33.9" />
-      <dependency id="ExcelDna.Registration" version="[0.34.1-beta2]" />
+      <dependency id="ExcelDna.Integration" version="0.34.6" />
+      <dependency id="ExcelDna.Registration" version="[0.34.6]" />
       <dependency id="ExcelDna.Interop" version="14.0.0" />
     </dependencies>
     </metadata>

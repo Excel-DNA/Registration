@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ExcelDna.Registration")]
-[assembly: AssemblyCopyright("Copyright ©  2015-2016")]
+[assembly: AssemblyCopyright("Copyright ©  2015-2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.34.*")]
-[assembly: AssemblyFileVersion("0.34.1.2")]
+[assembly: AssemblyFileVersion("0.34.6.1")]

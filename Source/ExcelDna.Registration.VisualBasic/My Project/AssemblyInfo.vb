@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("")> 
 <Assembly: AssemblyCompany("")> 
 <Assembly: AssemblyProduct("ExcelDna.Registration.VisualBasic")>
-<Assembly: AssemblyCopyright("Copyright ©  2015-2016")>
+<Assembly: AssemblyCopyright("Copyright ©  2015-2017")>
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
@@ -32,4 +32,4 @@ Imports System.Runtime.InteropServices
 ' <Assembly: AssemblyVersion("1.0.*")> 
 
 <Assembly: AssemblyVersion("0.34.*")>
-<Assembly: AssemblyFileVersion("0.34.1.2")>
+<Assembly: AssemblyFileVersion("0.34.6.1")>
