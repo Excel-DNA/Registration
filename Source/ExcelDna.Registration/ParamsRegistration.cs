@@ -139,7 +139,7 @@ namespace ExcelDna.Registration
             var normalParams = functionLambda.Parameters.Take(functionLambda.Parameters.Count() - 1).ToList();
             var normalParamCount = normalParams.Count;
             var paramsParamCount = maxArguments - normalParamCount;
-            var paramsParamExprs = new List<ParameterExpression>(normalParams);
+            var paramsParamExprs = new ParameterExpression[paramsParamCount];
             var blockExprs = new List<Expression>();
             var blockVars = new List<ParameterExpression>();
 
@@ -151,13 +151,22 @@ namespace ExcelDna.Registration
             blockVars.Add(argsListVarExpr);
             var argListAssignExpr = Expression.Assign(argsListVarExpr, Expression.New(argsListType));
             blockExprs.Add(argListAssignExpr);
+            var lenVarExpr = Expression.Variable(typeof(int));
+            blockVars.Add(lenVarExpr);
+            blockExprs.Add(Expression.Assign(lenVarExpr, Expression.Constant(0)));
+
             for (int i = 1; i <= paramsParamCount; i++)
             {
-                var paramExpr = Expression.Parameter(typeof(object), "arg" + i);
-                paramsParamExprs.Add(paramExpr);
-                var testParam = Expression.IfThen(Expression.Not(Expression.TypeIs(paramExpr, typeof(ExcelMissing))), 
-                                                Expression.Call(argsListVarExpr, "Add", null, 
-                                                TypeConversion.GetConversion(paramExpr, argsType)));
+                paramsParamExprs[i - 1] = Expression.Parameter(typeof(object), "arg" + i);
+                var lenTestParam = Expression.IfThen(Expression.Not(Expression.TypeIs(paramsParamExprs[i - 1], typeof(ExcelMissing))),
+                    Expression.Assign(lenVarExpr, Expression.Constant(i)));
+                blockExprs.Add(lenTestParam);
+            }
+            for (int i = 1; i <= paramsParamCount; i++)
+            {
+                var testParam = Expression.IfThen(Expression.LessThanOrEqual(Expression.Constant(i), lenVarExpr),
+                                                Expression.Call(argsListVarExpr, "Add", null,
+                                                TypeConversion.GetConversion(paramsParamExprs[i - 1], argsType)));
                 blockExprs.Add(testParam);
             }
             var argArrayVarExpr = Expression.Variable(argsArrayType);
