@@ -110,13 +110,21 @@ namespace ExcelDna.Registration
              * 
              * into:
              *     [ExcelFunction(...)]
-             *     public static string myFunc(string input, int otherInput, object arg1, object arg2, object arg3, object arg4, {...until...}, object arg253)
+             *     public static string myFunc(string input, int otherInput, object arg3, object arg4, object arg5, object arg6, {...until...}, object arg125)
              *     {
-             *         List<object> args = new List<object>();
-             *         if (!(arg1 is ExcelMissing)) args.Add(arg1);
-             *         if (!(arg2 is ExcelMissing)) args.Add(arg2);
+             *         // First we figure where in the list to stop building the param array
+             *         int lastArgToAdd = 0;
+             *         if (!(arg3 is ExcelMissing)) lastArgToAdd = 3;
+             *         if (!(arg4 is ExcelMissing)) lastArgToAdd = 4;
              *         ...
-             *         if (!(arg253 is ExcelMissing)) args.Add(arg253);
+             *         if (!(arg125 is ExcelMissing)) lastArgToAdd = 125;
+             *     
+             *         // Then add until we get there
+             *         List<object> args = new List<object>();
+             *         if (lastArgToAdd >= 3) args.Add(arg3);
+             *         if (lastArgToAdd >= 4) args.Add(arg4);
+             *         ...
+             *         if (lastArgToAdd >= 125) args.Add(arg125);
              *        
              *         Array<object> argsArray = args.ToArray();
              *         return myFunc(input, otherInput, argsArray);
@@ -139,11 +147,25 @@ namespace ExcelDna.Registration
             var normalParams = functionLambda.Parameters.Take(functionLambda.Parameters.Count() - 1).ToList();
             var normalParamCount = normalParams.Count;
             var paramsParamCount = maxArguments - normalParamCount;
-            var paramsParamExprs = new List<ParameterExpression>(normalParams);
+            var allParamExprs = new List<ParameterExpression>(normalParams);
             var blockExprs = new List<Expression>();
             var blockVars = new List<ParameterExpression>();
 
+            // Run through the arguments looking for the position of the last non-ExcelMissing argument
+            var lastArgVarExpr = Expression.Variable(typeof(int));
+            blockVars.Add(lastArgVarExpr);
+            blockExprs.Add(Expression.Assign(lastArgVarExpr, Expression.Constant(0)));
+            for (int i = normalParamCount + 1; i <= maxArguments; i++)
+            {
+                allParamExprs.Add(Expression.Parameter(typeof(object), "arg" + i));
+
+                var lenTestParam = Expression.IfThen(Expression.Not(Expression.TypeIs(allParamExprs[i - 1], typeof(ExcelMissing))),
+                                    Expression.Assign(lastArgVarExpr, Expression.Constant(i)));
+                blockExprs.Add(lenTestParam);
+            }
+
             // We know that last parameter is an array type
+            // Create a new list to hold the values
             var argsArrayType = functionLambda.Parameters.Last().Type;
             var argsType = argsArrayType.GetElementType();
             var argsListType = typeof(List<>).MakeGenericType(argsType);
@@ -151,13 +173,13 @@ namespace ExcelDna.Registration
             blockVars.Add(argsListVarExpr);
             var argListAssignExpr = Expression.Assign(argsListVarExpr, Expression.New(argsListType));
             blockExprs.Add(argListAssignExpr);
-            for (int i = 1; i <= paramsParamCount; i++)
+            // And put the (converted) arguments into the list
+            for (int i = normalParamCount + 1; i <= maxArguments; i++)
             {
-                var paramExpr = Expression.Parameter(typeof(object), "arg" + i);
-                paramsParamExprs.Add(paramExpr);
-                var testParam = Expression.IfThen(Expression.Not(Expression.TypeIs(paramExpr, typeof(ExcelMissing))), 
-                                                Expression.Call(argsListVarExpr, "Add", null, 
-                                                TypeConversion.GetConversion(paramExpr, argsType)));
+                var testParam = Expression.IfThen(Expression.GreaterThanOrEqual(lastArgVarExpr, Expression.Constant(i)),
+                                    Expression.Call(argsListVarExpr, "Add", null,
+                                        TypeConversion.GetConversion(allParamExprs[i - 1], argsType)));
+                
                 blockExprs.Add(testParam);
             }
             var argArrayVarExpr = Expression.Variable(argsArrayType);
@@ -192,7 +214,7 @@ namespace ExcelDna.Registration
                 delegateType = typeof(CustomFunc29<,,,,,,,,,,,,,,,,,,,,,,,,,,,,,>)
                                     .MakeGenericType(allParamTypes.ToArray());
             }
-            return Expression.Lambda(delegateType, blockExpr, paramsParamExprs);
+            return Expression.Lambda(delegateType, blockExpr, allParamExprs);
         }
 
         static bool IsParamsMethod(ExcelFunctionRegistration reg)

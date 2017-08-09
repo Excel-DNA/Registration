@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ExcelDna.Integration;
 
 namespace Registration.Sample
@@ -30,6 +31,8 @@ namespace Registration.Sample
             return input + "," + QtherInpEt + ", : " + args.Length;
         }
 
+        // When we enter =dnaParamsFunc2("a",,"c","d",,"f") we expect a,,c,[2:d,ExcelMissing,f]
+
         [ExcelFunction(ExplicitRegistration = true)]
         public static string dnaParamsFunc2(
             [ExcelArgument(Name = "first.Input", Description = "is a useful start")]
@@ -41,7 +44,7 @@ namespace Registration.Sample
             [ExcelArgument(Name = "Value", Description = "gives the Rest")]
             params object[] args)
         {
-            return input + "," + QtherInpEt + ", : " + args.Length;
+            return input + "," + input2 + "," + QtherInpEt + ", " + PrintArray(args);
         }
 
 
@@ -49,6 +52,12 @@ namespace Registration.Sample
         public static string dnaJoinStringParams(string separator, params string[] values)
         {
             return String.Join(separator, values);
+        }
+
+        static string PrintArray(object[] array)
+        {
+            var content = string.Join(",", array.Select(ValueType => ValueType.ToString()));
+            return $"[{array.Length}: {content}]";
         }
     }
 }
