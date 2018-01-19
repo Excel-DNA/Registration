@@ -53,7 +53,7 @@ namespace RegistrationHelpUpdate
         public void RegisterFunctions()
         {
             ExcelRegistration.GetExcelFunctions()
-                             .Select(funcReg => UpdateHelpTopic(funcReg))
+                             .Select(UpdateHelpTopic)
                              .RegisterFunctions(); 
         }
 
