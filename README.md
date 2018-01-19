@@ -28,7 +28,7 @@ To make a simple add-in that uses the Excel-DNA Registration extension to dynami
 5. Edit the RegistrationHelpUpdate-AddIn.dna file to add the ExceplicitRegistration flag:
 ```xml
 <DnaLibrary Name="RegistrationHelpUpdate Add-In" RuntimeVersion="v4.0">
-  <ExternalLibrary Path="RegistrationHelpUpdate.dll" ExplicitExports="false" ExplicitRegistration='true' LoadFromBytes="true" Pack="true" />
+  <ExternalLibrary Path="RegistrationHelpUpdate.dll" ExplicitExports="false" ExplicitRegistration="true" LoadFromBytes="true" Pack="true" />
 </DnaLibrary>
 ```
 6. Insert the following code:
@@ -80,4 +80,4 @@ namespace RegistrationHelpUpdate
 See the add-ins in the Samples directory to see various registration update extensions.
 
 ### _Registration [Error] Repeated function name..._
-_If you receive this error when opening your Excel addin, you need to add `ExplicitRegistration='true'` to the `<ExternalLibrary Path='MyAddin.dll'...` command in your .dna file_.
+_If you receive this error when opening your Excel addin, you need to add `ExplicitRegistration="true"` to the `<ExternalLibrary Path="MyAddin.dll"...` command in your .dna file_.
