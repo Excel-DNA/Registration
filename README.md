@@ -79,5 +79,52 @@ namespace RegistrationHelpUpdate
 
 See the add-ins in the Samples directory to see various registration update extensions.
 
+### Step-by-step for Visual Basic
+
+Once you have a basic Visual Basic add-in working.
+
+1. From the NuGet Package Manager Console, (or the Manage NuGet Packages dialog): 
+    PM>  Install-Package ExcelDna.Registration.VisualBasic 
+
+2. Fix up your .dna file by changing to ExplicitRegistration for your library registration, and packing the extra ExcelDna.Registration libraries: 
+
+```xml
+        <DnaLibrary Name="MyVisualBasic Add-In" RuntimeVersion="v4.0" > 
+          <ExternalLibrary Path="MyVisualBasic.dll" ExplicitRegistration="true" LoadFromBytes="true" Pack="true" /> 
+          <Reference Path="ExcelDna.Registration.dll" Pack="true" /> 
+          <Reference Path="ExcelDna.Registration.VisualBasic.dll" Pack="true" /> 
+        </DnaLibrary> 
+```
+
+3.Perform the explicit registration in your AutoOpen by calling ExcelDna.Registration.VisualBasic.PerformDefaultRegistration(): 
+
+```vb
+        Imports ExcelDna.Integration 
+        Imports ExcelDna.Registration.VisualBasic 
+
+        Public Class MyAddIn 
+                Implements IExcelAddIn 
+
+                Public Sub AutoOpen() Implements IExcelAddIn.AutoOpen 
+                        ' Code here will run eery time the add-in is loaded 
+                        PerformDefaultRegistration() 
+                End Sub 
+
+                Public Sub AutoClose() Implements IExcelAddIn.AutoClose 
+                        ' Code in here will run when the add-in is removed in the Add-Ins dialog, 
+                        ' but not when Excel closes normally 
+                End Sub 
+        End Class 
+
+
+    Public Function dnaTestParams(date1 As Date, ParamArray s() As String) As String 
+        Return s.Length 
+    End Function 
+    
+    Public Function dnaTestOptional(date1 As Date, Optional head As Boolean = True) As String 
+        Return head.ToString() 
+    End Function 
+```
+
 ### _Registration [Error] Repeated function name..._
 _If you receive this error when opening your Excel addin, you need to add `ExplicitRegistration="true"` to the `<ExternalLibrary Path="MyAddin.dll"...` command in your .dna file_.
