@@ -34,7 +34,7 @@ Public Module VbaCompatibleRegistration
                From typ In ass.GetTypes()
                Where Not typ.FullName.Contains(".My.") AndAlso typ.IsPublic
                From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
-               Where Not mi.ReturnType = GetType(Void)
+               Where Not mi.ReturnType = GetType(Void) AndAlso Not mi.IsSpecialName ' Remove Property get_xxxx methods
                Select New ExcelFunctionRegistration(mi)
     End Function
 
@@ -44,7 +44,7 @@ Public Module VbaCompatibleRegistration
                From typ In ass.GetTypes()
                Where Not typ.FullName.Contains(".My.") AndAlso typ.IsPublic
                From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
-               Where mi.ReturnType = GetType(Void)
+               Where mi.ReturnType = GetType(Void) AndAlso Not mi.IsSpecialName
                Select New ExcelCommandRegistration(mi)
     End Function
 
