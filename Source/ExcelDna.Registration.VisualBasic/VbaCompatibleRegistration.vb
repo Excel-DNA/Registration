@@ -32,7 +32,7 @@ Public Module VbaCompatibleRegistration
     Private Function GetAllPublicSharedFunctions() As IEnumerable(Of ExcelFunctionRegistration)
         Return From ass In ExcelIntegration.GetExportedAssemblies()
                From typ In ass.GetTypes()
-               Where Not typ.FullName.Contains(".My.")
+               Where Not typ.FullName.Contains(".My.") AndAlso typ.IsPublic
                From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
                Where Not mi.ReturnType = GetType(Void)
                Select New ExcelFunctionRegistration(mi)
@@ -42,7 +42,7 @@ Public Module VbaCompatibleRegistration
     Private Function GetAllPublicSharedSubs() As IEnumerable(Of ExcelCommandRegistration)
         Return From ass In ExcelIntegration.GetExportedAssemblies()
                From typ In ass.GetTypes()
-               Where Not typ.FullName.Contains(".My.")
+               Where Not typ.FullName.Contains(".My.") AndAlso typ.IsPublic
                From mi In typ.GetMethods(BindingFlags.Public Or BindingFlags.Static)
                Where mi.ReturnType = GetType(Void)
                Select New ExcelCommandRegistration(mi)
