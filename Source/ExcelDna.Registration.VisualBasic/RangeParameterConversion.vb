@@ -2,24 +2,28 @@
 Imports System.Runtime.CompilerServices
 Imports Microsoft.Office.Interop.Excel
 Imports ExcelDna.Integration
-Imports ExcelDna.Registration
 
 Public Module RangeParameterConversion
 
-    Function ReferenceToRange(ByVal xlInput As Object) As Range
+    Function ReferenceToRange(xlInput As Object) As Range
 
-        Dim xlRef As ExcelReference = xlInput   ' Will throw some Exception if not valid, which will be returned as #VALUE
+        Dim reference As ExcelReference = xlInput   ' Will throw some Exception if not valid, which will be returned as #VALUE
+        Dim app As Application = ExcelDnaUtil.Application
 
-        Dim cntRef As Long
-        Dim strText As String
-        Dim strAddress As String
+        Dim sheetName As String = XlCall.Excel(XlCall.xlSheetNm, reference)
+        Dim index As Integer = sheetName.LastIndexOf("]")
+        sheetName = sheetName.Substring(index + 1)
+        Dim ws As Worksheet = app.Sheets(sheetName)
+        Dim target As Range = app.Range(ws.Cells(reference.RowFirst + 1, reference.ColumnFirst + 1),
+                                        ws.Cells(reference.RowLast + 1, reference.ColumnLast + 1))
 
-        strAddress = XlCall.Excel(XlCall.xlfReftext, xlRef.InnerReferences(0), True)
-        For cntRef = 1 To xlRef.InnerReferences.Count - 1
-            strText = XlCall.Excel(XlCall.xlfReftext, xlRef.InnerReferences(cntRef), True)
-            strAddress = strAddress & "," & Mid(strText, strText.LastIndexOf("!") + 2) ' +2 because IndexOf starts at 0
+        For iInnerRef As Long = 1 To reference.InnerReferences.Count - 1
+            Dim innerRef As ExcelReference = reference.InnerReferences(iInnerRef)
+            Dim innerTarget As Range = app.Range(ws.Cells(innerRef.RowFirst + 1, innerRef.ColumnFirst + 1),
+                                                 ws.Cells(innerRef.RowLast + 1, innerRef.ColumnLast + 1))
+            target = app.Union(target, innerTarget)
         Next
-        ReferenceToRange = CType(ExcelDnaUtil.Application, Application).Range(strAddress)
+        Return target
     End Function
 
     Private Function UpdateAttributesForRangeParameters(reg As ExcelFunctionRegistration) As ExcelFunctionRegistration
@@ -28,15 +32,9 @@ Public Module RangeParameterConversion
                           Where parWithIndex.Parameter.Type.IsEquivalentTo(GetType(Range))
                           Select parWithIndex
 
-        Dim hasRangeParam As Boolean = False
         For Each param In rangeParams
             reg.ParameterRegistrations(param.Index).ArgumentAttribute.AllowReference = True
-            hasRangeParam = True
         Next
-
-        If hasRangeParam Then
-            reg.FunctionAttribute.IsMacroType = True
-        End If
 
         Return reg
     End Function
