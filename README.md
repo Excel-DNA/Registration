@@ -53,9 +53,13 @@ namespace RegistrationHelpUpdate
 
         public void RegisterFunctions()
         {
+            // There are various options for wrapping and transforming your functions
+            // See the Source\Samples\Registration.Sample project for a comprehensive example
+            // Here we just change the attribute before registering the functions
             ExcelRegistration.GetExcelFunctions()
                              .Select(UpdateHelpTopic)
                              .RegisterFunctions(); 
+
         }
 
         public ExcelFunctionRegistration UpdateHelpTopic(ExcelFunctionRegistration funcReg)
