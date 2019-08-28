@@ -25,10 +25,11 @@ To make a simple add-in that uses the Excel-DNA Registration extension to dynami
 2. Open the Package Manager Console.
 3. `PM> Install-Package ExcelDna.AddIn`
 4. `PM> Install-Package ExcelDna.Registration`
-5. Edit the RegistrationHelpUpdate-AddIn.dna file to add the ExceplicitRegistration flag:
+5. Edit the RegistrationHelpUpdate-AddIn.dna file to add the ExplicitRegistration flag to the function library, and add the reference to the `ExcelDna.Registration` for packing:
 ```xml
 <DnaLibrary Name="RegistrationHelpUpdate Add-In" RuntimeVersion="v4.0">
   <ExternalLibrary Path="RegistrationHelpUpdate.dll" ExplicitExports="false" ExplicitRegistration="true" LoadFromBytes="true" Pack="true" />
+  <Reference Path="ExcelDna.Registration.dll" Pack="true" />
 </DnaLibrary>
 ```
 6. Insert the following code:
