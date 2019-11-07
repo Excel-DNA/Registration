@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration</id>
-        <version>0.35.0</version>
+        <version>1.0.0</version>
         <title>Excel-DNA Registration Extensions</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
