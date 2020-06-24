@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration.FSharp</id>
-        <version>1.1.0-beta1</version>
+        <version>1.1.0-beta2</version>
         <title>Excel-DNA Registration Extensions for F#</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
@@ -14,11 +14,11 @@
         This package adds additional transformations appropriate to F# projects.</description>
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
-            <dependencies>
-      <dependency id="ExcelDna.Integration" version="[1.1.0-beta1]" />
-      <dependency id="ExcelDna.Registration" version="[1.1.0-beta1]" />
-      <dependency id="ExcelDna.Interop" version="14.0.0" />
-    </dependencies>
+        <dependencies>
+            <dependency id="ExcelDna.Integration" version="1.1.0-beta2" />
+            <dependency id="ExcelDna.Registration" version="1.1.0-beta2" />
+            <dependency id="ExcelDna.Interop" version="14.0.0" />
+        </dependencies>
     </metadata>
     <files>
         <file src="..\..\Source\ExcelDna.Registration.FSharp\bin\Release\ExcelDna.Registration.FSharp.dll" target="lib\net40\ExcelDna.Registration.FSharp.dll" />
