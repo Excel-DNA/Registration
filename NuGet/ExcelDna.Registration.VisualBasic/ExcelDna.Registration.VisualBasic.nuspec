@@ -22,5 +22,6 @@
     </metadata>
     <files>
         <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\ExcelDna.Registration.VisualBasic.dll" target="lib\net40\ExcelDna.Registration.VisualBasic.dll" />
+        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\ExcelDna.Registration.VisualBasic.pdb" target="lib\net40\ExcelDna.Registration.VisualBasic.pdb" />
     </files>
 </package>

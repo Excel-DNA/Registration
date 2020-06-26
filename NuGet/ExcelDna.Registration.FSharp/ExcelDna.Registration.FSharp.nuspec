@@ -22,5 +22,6 @@
     </metadata>
     <files>
         <file src="..\..\Source\ExcelDna.Registration.FSharp\bin\Release\ExcelDna.Registration.FSharp.dll" target="lib\net40\ExcelDna.Registration.FSharp.dll" />
+        <file src="..\..\Source\ExcelDna.Registration.FSharp\bin\Release\ExcelDna.Registration.FSharp.pdb" target="lib\net40\ExcelDna.Registration.FSharp.pdb" />
     </files>
 </package>
