@@ -73,11 +73,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\packages\ExcelDna.Integration.1.1.0-beta2\lib\ExcelDna.Integration.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\packages\ExcelDna.Integration.1.1.0\lib\ExcelDna.Integration.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
-      <HintPath>..\packages\FSharp.Core.4.6.2\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\packages\FSharp.Core.4.7.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="System" />

@@ -203,6 +203,12 @@ namespace Registration.Sample
             return val.HasValue ? "VAL: " + val : "NULL";
         }
 
+        [ExcelFunction]
+        public static string dnaNullableOptionalDateTime(DateTime? val = null)
+        {
+            return val.HasValue ? "VAL: " + val : "NULL";
+        }
+
         public enum  TestEnum1
         {
             Negative,

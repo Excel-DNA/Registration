@@ -14,6 +14,8 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,7 +27,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Debug\Registration.Sample.FSharp.XML</DocumentationFile>
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files (x86)\Microsoft Office\Root\Office16\EXCEL.EXE</StartProgram>
+    <StartProgram>C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE</StartProgram>
     <StartArguments>"Registration.Sample.FSharp-AddIn.xll"</StartArguments>
     <RemoteDebugEnabled>false</RemoteDebugEnabled>
   </PropertyGroup>
@@ -37,6 +39,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>bin\Release\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE</StartProgram>
+    <StartArguments>"Registration.Sample.FSharp-AddIn.xll"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -105,12 +110,14 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\..\packages\ExcelDna.Integration.1.1.0-beta2\lib\ExcelDna.Integration.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\packages\ExcelDna.Integration.1.1.0\lib\ExcelDna.Integration.dll</HintPath>
+      <Private>True</Private>
     </Reference>
+    <Reference Include="ExcelDna.Integration" />
     <Reference Include="FSharp.Core">
-      <HintPath>..\..\packages\FSharp.Core.4.6.2\lib\net45\FSharp.Core.dll</HintPath>
+      <HintPath>..\..\packages\FSharp.Core.4.7.2\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core" />
     <Reference Include="mscorlib" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -126,12 +133,12 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\packages\ExcelDna.AddIn.1.1.0-beta2\build\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.1.1.0-beta2\build\ExcelDna.AddIn.targets')" />
+  <Import Project="..\..\packages\ExcelDna.AddIn.1.1.0\build\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.1.1.0\build\ExcelDna.AddIn.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.1.1.0-beta2\build\ExcelDna.AddIn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ExcelDna.AddIn.1.1.0-beta2\build\ExcelDna.AddIn.targets'))" />
+    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.1.1.0\build\ExcelDna.AddIn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ExcelDna.AddIn.1.1.0\build\ExcelDna.AddIn.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
