@@ -45,48 +45,46 @@ namespace Registration.Sample
             return "Hello " + name + "!";
         }
 
-        // A function that returns a Task<T> and will be wrapped by the Registration processing
-        // It doesn't matter if this function is marked with ExcelFunction or ExcelAsyncFunction
-        [ExcelFunction]
-        public static Task<string> dnaDelayedTaskHello(string name, int msDelay)
-        {
-            return Task.Factory.StartNew(() => Delay(msDelay).ContinueWith(_ => "Hello" + name)).Unwrap();
-            // With .NET 4.5 one would do:
-            // return Task.Run(() => Task.Delay(msDelay).ContinueWith(_ => "Hello" + name));
-        }
-
-        // .NET 4.5 function with async/await
-        // Change the Example project's target runtime and uncomment
-        //[ExcelAsyncFunction]
-        //public static async Task<string> dnaDelayedTaskHello(string name, int msDelay)
+        //// A function that returns a Task<T> and will be wrapped by the Registration processing
+        //// It doesn't matter if this function is marked with ExcelFunction or ExcelAsyncFunction
+        //[ExcelFunction]
+        //public static Task<string> dnaDelayedTaskHello(string name, int msDelay)
         //{
-        //    await Task.Delay(msDelay);
-        //    return "Hello " + name;
+        //    return Task.Factory.StartNew(() => Delay(msDelay).ContinueWith(_ => "Hello" + name)).Unwrap();
+        //    // With .NET 4.5 one would do:
+        //    // return Task.Run(() => Task.Delay(msDelay).ContinueWith(_ => "Hello" + name));
         //}
+
+        [ExcelAsyncFunction]
+        public static async Task<string> dnaDelayedTaskHello(string name, int msDelay)
+        {
+            await Task.Delay(msDelay);
+            return "Hello " + name;
+        }
 
         // A function that returns a Task<T>, takes a CancellationToken as last parameter, and will be wrapped by the Registration processing
         // It doesn't matter if this function is marked with ExcelFunction or ExcelAsyncFunction.
         // Whether the registration uses the native async under Excel 2010+ will make a big difference to the cancellation here!
         [ExcelAsyncFunction]
-        public static Task<string> dnaDelayedTaskHelloWithCancellation(string name, int msDelay, CancellationToken ct)
+        public static async Task<string> dnaDelayedTaskHelloWithCancellation(string name, int msDelay, CancellationToken ct)
         {
             ct.Register(() => Debug.Print("Cancelled!"));
 
-            return Task.Factory.StartNew(() =>
-            {
-                Debug.Print("Started calc!");
-                return Delay(msDelay).ContinueWith(_ => "Hello" + name);
-            }).Unwrap();
-
-            // With .NET 4.5 one could do the same a bit simpler (or better, use async/await):
-            // return Task.Run(() => Task.Delay(msDelay).ContinueWith(_ => "Hello" + name));
+            await Task.Delay(msDelay);
+            return "Hello" + name;
         }
 
         // This is what the Task wrappers that is generated looks like.
         // Can use the same Task helper here.
+        [ExcelFunction]
         public static object dnaExplicitWrap(string name, int msDelay)
         {
-            return AsyncTaskUtil.RunTask("dnaExplicitWrap", new object[] { name, msDelay }, () => dnaDelayedTaskHello(name, msDelay));
+            if (ExcelDnaUtil.IsInFunctionWizard())
+                return "!#WIZARD#!";
+
+            return AsyncTaskUtil.RunTask("dnaExplicitWrap", new object[] { name, msDelay }, async () =>
+                await dnaDelayedTaskHello(name, msDelay)
+            );
         }
 
         // private function used here to create a 'Delay' Task, but built-in under .NET 4.5

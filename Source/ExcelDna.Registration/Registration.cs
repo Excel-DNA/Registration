@@ -38,28 +38,10 @@ namespace ExcelDna.Registration
         /// <param name="registrationEntries"></param>
         public static void RegisterFunctions(this IEnumerable<ExcelFunctionRegistration> registrationEntries)
         {
-            var delList = new List<Delegate>();
-            var attList = new List<object>();
-            var argAttList = new List<List<object>>();
-            foreach (var entry in registrationEntries)
-            {
-                try
-                {
-                    var del = entry.FunctionLambda.Compile();
-                    var att = entry.FunctionAttribute;
-                    var argAtt = new List<object>(entry.ParameterRegistrations.Select(pr => pr.ArgumentAttribute));
-
-                    delList.Add(del);
-                    attList.Add(att);
-                    argAttList.Add(argAtt);
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogDisplay.WriteLine("Exception while registering method {0} - {1}", entry.FunctionAttribute.Name, ex.ToString());
-                }
-            }
-
-            ExcelIntegration.RegisterDelegates(delList, attList, argAttList);
+            var lambdas = registrationEntries.Select(reg => reg.FunctionLambda).ToList();
+            var attribs = registrationEntries.Select(reg => reg.FunctionAttribute).ToList<object>();
+            var argAttribs = registrationEntries.Select(reg => reg.ParameterRegistrations.Select(pr => pr.ArgumentAttribute).ToList<object>()).ToList();
+            ExcelIntegration.RegisterLambdaExpressions(lambdas, attribs, argAttribs);
         }
 
         /// <summary>
@@ -84,25 +66,10 @@ namespace ExcelDna.Registration
         /// <param name="registrationEntries"></param>
         public static void RegisterCommands(this IEnumerable<ExcelCommandRegistration> registrationEntries)
         {
-            var delList = new List<Delegate>();
-            var attList = new List<object>();
-            foreach (var entry in registrationEntries)
-            {
-                try
-                {
-                    var del = entry.CommandLambda.Compile();
-                    var att = entry.CommandAttribute;
-                    
-                    delList.Add(del);
-                    attList.Add(att);
-                }
-                catch (Exception ex)
-                {
-                    Logging.LogDisplay.WriteLine("Exception while registering method {0} - {1}", entry.CommandAttribute.Name, ex.ToString());
-                }
-            }
+            var lambdas = registrationEntries.Select(reg => reg.CommandLambda).ToList();
+            var attribs = registrationEntries.Select(reg => reg.CommandAttribute).ToList<object>();
 
-            ExcelIntegration.RegisterDelegates(delList, attList, null);
+            ExcelIntegration.RegisterLambdaExpressions(lambdas, attribs, null);
         }
     }
 }

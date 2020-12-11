@@ -88,7 +88,7 @@ namespace ExcelDna.Registration
             //        }
             //        else if (fhArgs.FlowBehavior == FlowBehavior.ThrowException)
             //        {
-            //            throw fhArgs.Exception;
+            //            throw fhArgs.Exception;   // TODO: Check if we can capture and add context to the throw here
             //        }
             //        else // if (fhArgs.FlowBehavior == FlowBehavior.Default || fhArgs.FlowBehavior == FlowBehavior.RethrowException)
             //        {

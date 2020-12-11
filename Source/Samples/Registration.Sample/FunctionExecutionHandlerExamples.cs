@@ -16,7 +16,7 @@ namespace Registration.Sample
         }
 
         [ExcelFunction, Timing]
-        public static double dnaCountUpTo(long? bigNumber = 1000000)
+        public static double dnaCountUpTo(long bigNumber = 1000000)
         {
             double total = 0;
             for (long l = 0; l < bigNumber; l++)
