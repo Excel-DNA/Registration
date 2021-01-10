@@ -41,7 +41,7 @@
     <DocumentationFile>bin\Release\ExcelDna.CustomRegistration.FSharpExample.XML</DocumentationFile>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files (x86)\Microsoft Office\root\Office16\EXCEL.EXE</StartProgram>
-    <StartArguments>"Registration.Sample.FSharp-AddIn.xll"</StartArguments>
+    <StartArguments>/x "Registration.Sample.FSharp-AddIn.xll"</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -110,7 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ExcelDna.Integration">
-      <HintPath>..\..\packages\ExcelDna.Integration.1.2.0-preview1\lib\ExcelDna.Integration.dll</HintPath>
+      <HintPath>..\..\packages\ExcelDna.Integration.1.2.0-preview2\lib\ExcelDna.Integration.dll</HintPath>
     </Reference>
     <Reference Include="FSharp.Core">
       <HintPath>..\..\packages\FSharp.Core.4.7.2\lib\net45\FSharp.Core.dll</HintPath>
@@ -131,12 +131,12 @@
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="..\..\packages\ExcelDna.AddIn.1.2.0-preview1\build\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.1.2.0-preview1\build\ExcelDna.AddIn.targets')" />
+  <Import Project="..\..\packages\ExcelDna.AddIn.1.2.0-preview2\build\ExcelDna.AddIn.targets" Condition="Exists('..\..\packages\ExcelDna.AddIn.1.2.0-preview2\build\ExcelDna.AddIn.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.1.2.0-preview1\build\ExcelDna.AddIn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ExcelDna.AddIn.1.2.0-preview1\build\ExcelDna.AddIn.targets'))" />
+    <Error Condition="!Exists('..\..\packages\ExcelDna.AddIn.1.2.0-preview2\build\ExcelDna.AddIn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\ExcelDna.AddIn.1.2.0-preview2\build\ExcelDna.AddIn.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
