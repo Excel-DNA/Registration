@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration</id>
-        <version>1.2.0-preview2</version>
+        <version>1.2.3-preview</version>
         <title>Excel-DNA Registration Extensions</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
@@ -14,11 +14,13 @@
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
         <dependencies>
-          <dependency id="ExcelDna.Integration" version="1.2.0-preview2" />
+          <group targetFramework=".NETFramework4.5.2" >
+            <dependency id="ExcelDna.Integration" version="[1.2.3-preview]" />
+          </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.dll" target="lib\net40\ExcelDna.Registration.dll" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.pdb" target="lib\net40\ExcelDna.Registration.pdb" />
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.dll" target="lib\net452\ExcelDna.Registration.dll" />
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\ExcelDna.Registration.pdb" target="lib\net452\ExcelDna.Registration.pdb" />
     </files>
 </package>
