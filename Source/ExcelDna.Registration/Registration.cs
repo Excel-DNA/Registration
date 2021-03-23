@@ -38,6 +38,7 @@ namespace ExcelDna.Registration
         /// <param name="registrationEntries"></param>
         public static void RegisterFunctions(this IEnumerable<ExcelFunctionRegistration> registrationEntries)
         {
+            var entries = registrationEntries.ToList();
             var lambdas = registrationEntries.Select(reg => reg.FunctionLambda).ToList();
             var attribs = registrationEntries.Select(reg => reg.FunctionAttribute).ToList<object>();
             var argAttribs = registrationEntries.Select(reg => reg.ParameterRegistrations.Select(pr => pr.ArgumentAttribute).ToList<object>()).ToList();
