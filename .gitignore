@@ -216,3 +216,5 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 *.nupkg
+
+/Source/Samples/Registration.Sample/Properties/launchSettings.json
