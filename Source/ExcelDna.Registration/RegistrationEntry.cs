@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using ExcelDna.CustomRegistration.Utils;
 using ExcelDna.Integration;
 
 namespace ExcelDna.CustomRegistration
@@ -31,7 +30,7 @@ namespace ExcelDna.CustomRegistration
                 FunctionAttribute = new ExcelFunctionAttribute { Name = methodInfo.Name };
             else if (string.IsNullOrEmpty(FunctionAttribute.Name))
                 FunctionAttribute.Name = methodInfo.Name;
-            
+
             ArgumentAttributes = new List<ExcelArgumentAttribute>();
             foreach (var pi in methodInfo.GetParameters())
             {
@@ -49,7 +48,7 @@ namespace ExcelDna.CustomRegistration
             var lastParam = methodInfo.GetParameters().LastOrDefault();
             if (lastParam != null && lastParam.GetCustomAttribute<ParamArrayAttribute>() != null)
             {
-                var excelParamsAtt = new ExcelParamsArgumentAttribute(ArgumentAttributes.Last());
+                var excelParamsAtt = new Registration.ExcelParamsArgumentAttribute(ArgumentAttributes.Last());
                 ArgumentAttributes[ArgumentAttributes.Count - 1] = excelParamsAtt;
             }
         }
