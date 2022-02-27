@@ -1,14 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net452</TargetFrameworks>
+		<TargetFrameworks>net452;net6.0-windows</TargetFrameworks>
 
 		<RootNamespace>Registration.Sample.VisualBasic</RootNamespace>
 		<OptionCompare>Text</OptionCompare>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
+
+		<Version>1.1.0.0</Version>
+		<FileVersion>1.1.0.0</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

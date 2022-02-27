@@ -1,13 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net452</TargetFrameworks>
+		<TargetFrameworks>net452;net6.0-windows</TargetFrameworks>
+		<UseWindowsForms>true</UseWindowsForms>
 
 		<RootNamespace>ExcelDna.Registration.VisualBasic</RootNamespace>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
+
+		<Version>1.1.0.0</Version>
+		<FileVersion>1.5.1.0</FileVersion>
+		<InformationalVersion>1.5.1</InformationalVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
