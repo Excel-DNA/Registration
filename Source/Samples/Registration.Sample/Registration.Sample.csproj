@@ -1,17 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net452</TargetFrameworks>
-
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<TargetFrameworks>net452;net6.0-windows</TargetFrameworks>
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
+
+		<Version>1.1.0.0</Version>
+		<FileVersion>1.1.0.0</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
 		<Reference Include="Microsoft.CSharp" />
 		<Reference Include="System.Runtime.Caching" />
+	</ItemGroup>
+
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-windows' ">
+		<PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
