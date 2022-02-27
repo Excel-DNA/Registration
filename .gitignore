@@ -218,3 +218,4 @@ pip-log.txt
 *.nupkg
 
 /Source/Samples/Registration.Sample/Properties/launchSettings.json
+/Source/Samples/Registration.Sample.FSharp/Properties/launchSettings.json
