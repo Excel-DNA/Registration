@@ -151,6 +151,7 @@ ClientBin/
 *.[Pp]ublish.xml
 *.pfx
 *.publishsettings
+*.TaskCanvasSL
 
 # RIA/Silverlight projects
 Generated_Code/
@@ -215,3 +216,7 @@ pip-log.txt
 #Mr Developer
 .mr.developer.cfg
 *.nupkg
+
+/Source/Samples/Registration.Sample/Properties/launchSettings.json
+/Source/Samples/Registration.Sample.FSharp/Properties/launchSettings.json
+/Source/Samples/Registration.Sample.VisualBasic/Properties/launchSettings.json
