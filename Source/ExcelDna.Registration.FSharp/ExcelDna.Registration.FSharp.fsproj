@@ -4,6 +4,11 @@
 		<TargetFrameworks>net452;net6.0-windows</TargetFrameworks>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<WarnOn>3390;$(WarnOn)</WarnOn>
+		
+		<Version>1.1.0.0</Version>
+		<FileVersion>1.6.0.0</FileVersion>
+		<InformationalVersion>1.6.0</InformationalVersion>
+		
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -11,7 +16,6 @@
 		<Compile Include="FsAsyncRegistration.fs" />
 		<Compile Include="FsParameterConversions.fs" />
 		<Compile Include="FsAsyncUtil.fs" />
-		<Compile Include="AssemblyInfo.fs" />
 	</ItemGroup>
 
 	<ItemGroup>

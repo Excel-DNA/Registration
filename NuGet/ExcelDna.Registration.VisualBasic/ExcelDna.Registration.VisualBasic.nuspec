@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>ExcelDna.Registration.VisualBasic</id>
-        <version>1.6.0-preview2</version>
+        <version>1.6.0-preview3</version>
         <title>Excel-DNA Registration Extensions for Visual Basic</title>
         <authors>Govert van Drimmelen</authors>
         <owners>Govert van Drimmelen</owners>
@@ -16,13 +16,13 @@
         <tags>excel exceldna udf excel-dna</tags>
         <dependencies>
           <group targetFramework=".NETFramework4.5.2" >
-            <dependency id="ExcelDna.Integration" version="[1.6.0-preview2]" />
-            <dependency id="ExcelDna.Registration" version="[1.6.0-preview2]" />
+            <dependency id="ExcelDna.Integration" version="[1.6.0-preview3]" />
+            <dependency id="ExcelDna.Registration" version="[1.6.0-preview3]" />
             <dependency id="ExcelDna.Interop" version="14.0.0" />
           </group>
           <group targetFramework="net6.0-windows" >
-            <dependency id="ExcelDna.Integration" version="[1.6.0-preview2]" />
-            <dependency id="ExcelDna.Registration" version="[1.6.0-preview2]" />
+            <dependency id="ExcelDna.Integration" version="[1.6.0-preview3]" />
+            <dependency id="ExcelDna.Registration" version="[1.6.0-preview3]" />
           </group>
         </dependencies>
     </metadata>
