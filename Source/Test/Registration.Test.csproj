@@ -13,8 +13,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="ExcelDna.Integration" />
-		<PackageReference Include="NUnit3TestAdapter" VersionOverride="4.2.1" />
-		<PackageReference Include="NUnit" VersionOverride="3.13.2" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+		<PackageReference Include="NUnit" Version="3.13.2" />
 	</ItemGroup>
 
 	<ItemGroup>

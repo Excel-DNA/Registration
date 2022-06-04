@@ -5,7 +5,6 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<WarnOn>3390;$(WarnOn)</WarnOn>
 		<EnableDynamicLoading>true</EnableDynamicLoading>
-		<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -20,8 +19,8 @@
 	<ItemGroup>
 		<PackageReference Update="FSharp.Core" Version="4.7.2" />
 		<PackageReference Update="System.ValueTuple" Version="4.3.0" />
-		<PackageReference Include="ExcelDna.Integration" Version="1.6.0-preview3" />
-		<PackageReference Include="ExcelDna.AddIn" Version="1.6.0-preview3" />
+		<PackageReference Include="ExcelDna.Integration" />
+		<PackageReference Include="ExcelDna.AddIn" />
 	</ItemGroup>
 
 	<ItemGroup>
