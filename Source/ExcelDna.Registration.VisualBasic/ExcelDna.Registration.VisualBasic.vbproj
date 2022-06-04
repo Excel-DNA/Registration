@@ -8,10 +8,6 @@
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
-
-		<Version>1.1.0.0</Version>
-		<FileVersion>1.5.1.0</FileVersion>
-		<InformationalVersion>1.5.1</InformationalVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -4,11 +4,6 @@
 		<TargetFrameworks>net452;net6.0-windows</TargetFrameworks>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<WarnOn>3390;$(WarnOn)</WarnOn>
-		
-		<Version>1.1.0.0</Version>
-		<FileVersion>1.6.0.0</FileVersion>
-		<InformationalVersion>1.6.0</InformationalVersion>
-		
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -19,7 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FSharp.Core" Version="4.7.2" />
+		<PackageReference Update="FSharp.Core" Version="4.7.2" />
 		<PackageReference Include="System.ValueTuple" Version="4.3.0" />
 	</ItemGroup>
 
