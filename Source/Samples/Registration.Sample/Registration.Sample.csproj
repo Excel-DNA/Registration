@@ -13,12 +13,12 @@
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-windows' ">
-		<PackageReference Include="System.Runtime.Caching" Version="6.0.0" />
+		<PackageReference Include="System.Runtime.Caching" VersionOverride="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ExcelDna.Integration" Version="1.6.0-preview3" />
-		<PackageReference Include="ExcelDna.AddIn" Version="1.6.0-preview3" />
+		<PackageReference Include="ExcelDna.Integration" />
+		<PackageReference Include="ExcelDna.AddIn" />
 	</ItemGroup>
 
 	<ItemGroup>

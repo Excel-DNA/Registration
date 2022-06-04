@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="ExcelDna.Integration" Version="1.6.0-preview3" />
+    <PackageVersion Include="ExcelDna.AddIn" Version="1.6.0-preview3" />
+    <PackageVersion Include="ExcelDna.Interop" Version="14.0.1" />
+  </ItemGroup>
+</Project>
