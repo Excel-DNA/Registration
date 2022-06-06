@@ -8,18 +8,15 @@
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
-
-		<Version>1.1.0.0</Version>
-		<FileVersion>1.1.0.0</FileVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ExcelDna.Integration" Version="1.6.0-preview3" />
-		<PackageReference Include="ExcelDna.AddIn" Version="1.6.0-preview3" />
+		<PackageReference Include="ExcelDna.Integration" />
+		<PackageReference Include="ExcelDna.AddIn" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
-		<PackageReference Include="ExcelDna.Interop" Version="14.0.1" />
+		<PackageReference Include="ExcelDna.Interop" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net6.0-windows' ">

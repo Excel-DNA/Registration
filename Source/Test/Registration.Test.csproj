@@ -5,10 +5,6 @@
 
 		<SignAssembly>true</SignAssembly>
 		<AssemblyOriginatorKeyFile>..\assets\exceldna.snk</AssemblyOriginatorKeyFile>
-
-		<Version>1.1.0.0</Version>
-		<FileVersion>1.1.0.0</FileVersion>
-		<InformationalVersion>1.1.0.0</InformationalVersion>
 	</PropertyGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
@@ -16,7 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ExcelDna.Integration" Version="1.6.0-preview3" />
+		<PackageReference Include="ExcelDna.Integration" />
 		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="NUnit" Version="3.13.2" />
 	</ItemGroup>
