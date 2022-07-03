@@ -8,8 +8,8 @@
         <owners>Govert van Drimmelen</owners>
         <projectUrl>http://excel-dna.net</projectUrl>
         <repository type="git" url="https://github.com/Excel-DNA/Registration" />
-        <iconUrl>http://docs.excel-dna.net/NuGetIcon.png</iconUrl>
-        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<icon>images\ExcelDna-nu.png</icon>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Excel-DNA Registration is an enhancement for Excel-DNA.</description>
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
@@ -17,15 +17,16 @@
           <group targetFramework=".NETFramework4.5.2" >
             <dependency id="ExcelDna.Integration" version="[$ExcelDnaVersion$]" />
           </group>
-          <group targetFramework="net6.0-windows" >
+          <group targetFramework="net6.0-windows7.0" >
             <dependency id="ExcelDna.Integration" version="[$ExcelDnaVersion$]" />
           </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net452\ExcelDna.Registration.dll" target="lib\net452\ExcelDna.Registration.dll" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net452\ExcelDna.Registration.pdb" target="lib\net452\ExcelDna.Registration.pdb" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.dll" target="lib\net6.0-windows\ExcelDna.Registration.dll" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.pdb" target="lib\net6.0-windows\ExcelDna.Registration.pdb" />
-    </files>
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net452\ExcelDna.Registration.dll" target="lib\net452\" />
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net452\ExcelDna.Registration.pdb" target="lib\net452\" />
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.dll" target="lib\net6.0-windows7.0\" />
+        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.pdb" target="lib\net6.0-windows7.0\" />
+		<file src="..\..\..\ExcelDna\Package\images\ExcelDna-nu.png" target="images\" />
+	</files>
 </package>
