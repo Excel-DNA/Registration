@@ -8,8 +8,9 @@
         <owners>Govert van Drimmelen</owners>
         <projectUrl>http://excel-dna.net</projectUrl>
         <repository type="git" url="https://github.com/Excel-DNA/Registration" />
-		<icon>images\ExcelDna-nu.png</icon>
-		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <icon>images\ExcelDna-nu.png</icon>
+        <license type="expression">MIT</license>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <description>Excel-DNA Registration is an enhancement for Excel-DNA.</description>
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
