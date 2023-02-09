@@ -130,6 +130,9 @@ Once you have a basic Visual Basic add-in working.
         Return head.ToString() 
     End Function 
 ```
+### Sample Projects
+
+Sample projects for this library can be found in the [Excel-DNA Samples repository](https://github.com/Excel-DNA/Samples/tree/master/Registration.Sample).
 
 ### _Registration [Error] Repeated function name..._
 _If you receive this error when opening your Excel addin, you need to add `ExplicitRegistration="true"` to the `<ExternalLibrary Path="MyAddin.dll"...` command in your .dna file_.
