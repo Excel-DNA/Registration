@@ -10,7 +10,6 @@
 		<Compile Include="FsAsyncUtil.fs" />
 		<Compile Include="FsAsyncRegistration.fs" />
 		<Compile Include="FsParameterConversions.fs" />
-		<Compile Include="FsAsyncUtil.fs" />
 	</ItemGroup>
 
 	<ItemGroup>
