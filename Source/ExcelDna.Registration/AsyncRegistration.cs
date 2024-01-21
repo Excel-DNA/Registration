@@ -338,9 +338,9 @@ namespace ExcelDna.Registration
             // mi returns some kind of IObservable<T>. What is T? 
             var returnType = functionLambda.ReturnType.GetGenericArguments()[0];
             // Build up the Observe method with the right generic type argument
-            var obsMethod = typeof(ObservableRtdUtil)
+            var obsMethod = typeof(ExcelAsyncUtil)
                                 .GetMember("Observe", MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
-                                .Cast<MethodInfo>().First()
+                                .Cast<MethodInfo>().First(i => i.IsGenericMethodDefinition)
                                 .MakeGenericMethod(returnType);
 
             // Get the function name
