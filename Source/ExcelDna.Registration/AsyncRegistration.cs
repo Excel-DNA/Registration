@@ -35,7 +35,7 @@ namespace ExcelDna.Registration
 
             foreach (var reg in registrations)
             {
-               try
+                try
                 {
                     if (ReturnsObservable(reg.FunctionLambda))
                     {
@@ -63,7 +63,7 @@ namespace ExcelDna.Registration
                     Logging.LogDisplay.WriteLine("Exception while registering method {0} - {1}", reg.FunctionAttribute.Name, ex.ToString());
                     continue;
                 }
-                
+
                 yield return reg;
             }
         }
@@ -120,7 +120,7 @@ namespace ExcelDna.Registration
             // mi returns some kind of Task<T>. What is T? 
             var newReturnType = ReturnsTask(functionLambda) ? functionLambda.ReturnType.GetGenericArguments()[0] : functionLambda.ReturnType;
             // Build up the RunTaskWithC... method with the right generic type argument
-            var runMethod = typeof(AsyncTaskUtil)
+            var runMethod = typeof(ExcelAsyncUtil)
                                 .GetMember(runMethodName, MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
                                 .Cast<MethodInfo>().First()
                                 .MakeGenericMethod(newReturnType);
@@ -180,7 +180,7 @@ namespace ExcelDna.Registration
             // mi returns some kind of Task<T>. What is T? 
             var newReturnType = ReturnsTask(functionLambda) ? functionLambda.ReturnType.GetGenericArguments()[0] : functionLambda.ReturnType;
             // Build up the RunTaskWithC... method with the right generic type argument
-            var runMethod = typeof(AsyncTaskUtil)
+            var runMethod = typeof(ExcelAsyncUtil)
                                 .GetMember(runMethodName, MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
                                 .Cast<MethodInfo>().First()
                                 .MakeGenericMethod(newReturnType);
@@ -338,9 +338,9 @@ namespace ExcelDna.Registration
             // mi returns some kind of IObservable<T>. What is T? 
             var returnType = functionLambda.ReturnType.GetGenericArguments()[0];
             // Build up the Observe method with the right generic type argument
-            var obsMethod = typeof(ObservableRtdUtil)
+            var obsMethod = typeof(ExcelAsyncUtil)
                                 .GetMember("Observe", MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
-                                .Cast<MethodInfo>().First()
+                                .Cast<MethodInfo>().First(i => i.IsGenericMethodDefinition)
                                 .MakeGenericMethod(returnType);
 
             // Get the function name
