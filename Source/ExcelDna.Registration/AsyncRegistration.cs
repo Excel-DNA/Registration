@@ -31,7 +31,7 @@ namespace ExcelDna.Registration
         {
             // Decide whether Tasks should be using native async
             bool useNativeAsync = nativeAsyncIfAvailable && ExcelDnaUtil.ExcelVersion >= 14.0;
-            if (useNativeAsync) NativeAsyncTaskUtil.Initialize();
+            if (useNativeAsync) Integration.NativeAsyncTaskUtil.Initialize();
 
             foreach (var reg in registrations)
             {
@@ -245,7 +245,7 @@ namespace ExcelDna.Registration
             var newParams = functionLambda.Parameters.Select(p => Expression.Parameter(p.Type, p.Name)).ToList();
 
             // Build up the RunTaskWithC... method with the right generic type argument
-            var runMethod = typeof(NativeAsyncTaskUtil)
+            var runMethod = typeof(Integration.NativeAsyncTaskUtil)
                                 .GetMember(runMethodName, MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
                                 .Cast<MethodInfo>().First()
                                 .MakeGenericMethod(newReturnType);
@@ -291,7 +291,7 @@ namespace ExcelDna.Registration
             // mi returns some kind of Task<T>. What is T? 
             var newReturnType = ReturnsTask(functionLambda) ? functionLambda.ReturnType.GetGenericArguments()[0] : functionLambda.ReturnType;
             // Build up the RunTaskWithC... method with the right generic type argument
-            var runMethod = typeof(NativeAsyncTaskUtil)
+            var runMethod = typeof(Integration.NativeAsyncTaskUtil)
                                 .GetMember(runMethodName, MemberTypes.Method, BindingFlags.Static | BindingFlags.Public)
                                 .Cast<MethodInfo>().First()
                                 .MakeGenericMethod(newReturnType);
