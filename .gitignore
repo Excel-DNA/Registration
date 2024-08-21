@@ -220,3 +220,4 @@ pip-log.txt
 /Source/Samples/Registration.Sample/Properties/launchSettings.json
 /Source/Samples/Registration.Sample.FSharp/Properties/launchSettings.json
 /Source/Samples/Registration.Sample.VisualBasic/Properties/launchSettings.json
+/NuGet/nupkg
