@@ -16,7 +16,7 @@
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
         <dependencies>
-          <group targetFramework=".NETFramework4.5.2" >
+          <group targetFramework=".NETFramework4.6.2" >
             <dependency id="ExcelDna.Integration" version="[$ExcelDnaVersion$]" />
             <dependency id="ExcelDna.Registration" version="[$ExcelDnaVersion$]" />
             <dependency id="ExcelDna.Interop" version="14.0.0" />
@@ -28,8 +28,8 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net452\ExcelDna.Registration.VisualBasic.dll" target="lib\net452\" />
-        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net452\ExcelDna.Registration.VisualBasic.pdb" target="lib\net452\" />
+        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net462\ExcelDna.Registration.VisualBasic.dll" target="lib\net462\" />
+        <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net462\ExcelDna.Registration.VisualBasic.pdb" target="lib\net462\" />
         <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net6.0-windows\ExcelDna.Registration.VisualBasic.dll" target="lib\net6.0-windows7.0\" />
         <file src="..\..\Source\ExcelDna.Registration.VisualBasic\bin\Release\net6.0-windows\ExcelDna.Registration.VisualBasic.pdb" target="lib\net6.0-windows7.0\" />
 		<file src="..\..\..\ExcelDna\Package\images\ExcelDna-nu.png" target="images\" />
