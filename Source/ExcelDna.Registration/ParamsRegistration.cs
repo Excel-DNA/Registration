@@ -33,28 +33,30 @@ namespace ExcelDna.Registration
                         var paramsArgAttrib = lastParam.ArgumentAttribute;
                         paramsArgAttrib.Name = paramsArgAttrib.Name + "1";
 
-                        // Add the ellipse argument
-                        reg.ParameterRegistrations.Add(
-                            new ExcelParameterRegistration(
-                                new ExcelArgumentAttribute
+                        // Add the ellipsis argument
+                        ExcelParameterRegistration newParameter = new ExcelParameterRegistration(
+                                    new ExcelArgumentAttribute
                                     {
                                         Name = "...",
                                         Description = paramsArgAttrib.Description,
                                         AllowReference = paramsArgAttrib.AllowReference
-                                    }));
+                                    });
+                        newParameter.CustomAttributes.AddRange(lastParam.CustomAttributes);
+                        reg.ParameterRegistrations.Add(newParameter);
 
                         // And the rest with no Name, but copying the description
                         var restCount = reg.FunctionLambda.Parameters.Count - reg.ParameterRegistrations.Count;
                         for (int i = 0; i < restCount; i++)
                         {
-                            reg.ParameterRegistrations.Add(
-                                new ExcelParameterRegistration(
+                            newParameter = new ExcelParameterRegistration(
                                     new ExcelArgumentAttribute
-                                        {
-                                            Name = string.Empty,
-                                            Description = paramsArgAttrib.Description,
-                                            AllowReference = paramsArgAttrib.AllowReference
-                                        }));
+                                    {
+                                        Name = string.Empty,
+                                        Description = paramsArgAttrib.Description,
+                                        AllowReference = paramsArgAttrib.AllowReference
+                                    });
+                            newParameter.CustomAttributes.AddRange(lastParam.CustomAttributes);
+                            reg.ParameterRegistrations.Add(newParameter);
                         }
 
                         // Check that we still have a valid registration structure
