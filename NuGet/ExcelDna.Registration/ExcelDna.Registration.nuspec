@@ -11,23 +11,14 @@
         <icon>images\ExcelDna-nu.png</icon>
         <license type="expression">MIT</license>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Excel-DNA Registration is an enhancement for Excel-DNA.</description>
+        <description>This NuGet package is deprecated. Migrated to ExcelDna.Integration.</description>
         <summary>Excel-DNA Registration provides custom registration and function transformation helpers to Excel-DNA add-ins.</summary>
         <tags>excel exceldna udf excel-dna</tags>
         <dependencies>
-          <group targetFramework=".NETFramework4.6.2" >
             <dependency id="ExcelDna.Integration" version="[$ExcelDnaVersion$]" />
-          </group>
-          <group targetFramework="net6.0-windows7.0" >
-            <dependency id="ExcelDna.Integration" version="[$ExcelDnaVersion$]" />
-          </group>
         </dependencies>
     </metadata>
     <files>
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net462\ExcelDna.Registration.dll" target="lib\net462\" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net462\ExcelDna.Registration.pdb" target="lib\net462\" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.dll" target="lib\net6.0-windows7.0\" />
-        <file src="..\..\Source\ExcelDna.Registration\bin\Release\net6.0-windows\ExcelDna.Registration.pdb" target="lib\net6.0-windows7.0\" />
-		<file src="..\..\..\ExcelDna\Package\images\ExcelDna-nu.png" target="images\" />
-	</files>
+        <file src="..\..\..\ExcelDna\Package\images\ExcelDna-nu.png" target="images\" />
+    </files>
 </package>
